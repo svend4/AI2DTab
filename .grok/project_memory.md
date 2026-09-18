@@ -1,0 +1,3 @@
+- Исследует теорию четырёх ступеней офиса (документ → таблица → база → почта) как инфраструктуру для ИИ-проектного управления; метафоры: Access как «3D», Outlook как «тессеракт во времени». [2026-09-18]
+- Живые ступени 3–4: SQLite и CLI в artifacts/ai-pm-kit/engine/ (pm.py init|status|open|check|next|export), база project-store.sqlite. [2026-09-18]
+- Полный экспорт чата Enbek→OS: attachments/ChatGPT_2026_09_18__1900.md и 1902.json (81 ход, нумерация 1–30155). Нарезка: engine/drivers/samples/export-6aac361f/ (18 этажей, sequence непрерывный S01→S30155). HTML share для тел 17041+ не использовать. [2026-09-18]

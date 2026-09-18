@@ -1,0 +1,37 @@
+id	cluster	layer	type	title	status	body
+ont-S17041	C	2	observation	Главный переход	raw	До сих пор Innovation OS уже умеет: /  / ```text / обмениваться State / объявлять Capabilities / передавать Claims / передавать Evidence / запрашивать Actions / договариваться о Schema / ``` /  / Теперь возникает более глубокий вопрос: /  / ```text / Что именно означают используемые понятия? / ``` /  / ---
+ont-S17042	C	2	observation	Потому что одинаковое слово не гарантирует одинаковый смысл	raw	Например: /  / ```text / Project / ``` /  / в одной системе может означать: /  / ```text / любую рабочую задачу / ``` /  / а в другой: /  / ```text / долгосрочную инициативу с бюджетом / ``` /  / ---
+ont-S17059	C	2	observation	Это важное различие	raw	```text / rename / ≠ / semantic change / ``` /  / ---
+ont-S17074	C	2	observation	Negative boundary:	raw	```text / Capability ≠ Resource. / ``` /  / ---
+ont-S17084	C	2	observation	Translation ≠ guaranteed equivalence	raw	---
+ont-S17142	C	2	observation	Critical invariant:	raw	```text / Ontology ≠ Policy. / ``` /  / ---
+ont-S17181	C	2	observation	Critical invariant:	raw	```text / Executable Concept / ≠ / Authorized Action. / ``` /  / ---
+ont-S17256	C	2	observation	Critical invariant:	raw	```text / Mapping ≠ Equivalence. / ``` /  / ---
+ont-S17298	C	2	observation	Semantic Linting	raw	Could detect: /  / ```text / undefined concept / deprecated predicate / wrong relation direction / unit mismatch / ``` /  / ---
+ont-S17320	C	2	observation	Same UI invariant as elsewhere.	raw	---
+ont-S17326	C	2	observation	Discussion ≠ Decision.	raw	---
+ont-S17451	C	2	observation	Contract ≠ implementation.	raw	---
+ont-S17490	C	2	observation	Sunset Date ≠ automatic deletion.	raw	---
+ont-S17547	C	2	observation	This is Core invariant reused.	raw	---
+ont-S17569	C	2	observation	Critical invariant:	raw	```text / Knowledge Graph may contain disagreement. / ``` /  / ---
+ont-S17576	C	2	observation	Canonicalization ≠ semantic rewriting.	raw	---
+ont-S17611	C	2	observation	Event ≠ Claim.	raw	---
+ont-S17636	C	2	observation	But composite definition ≠ current system instance.	raw	---
+ont-S17647	C	2	observation	Archetype ≠ Root Type.	raw	---
+ont-S17736	C	2	observation	Generated test protects invariant.	raw	---
+ont-S17793	C	2	observation	Need protected semantic invariants.	raw	---
+ont-S17795	C	2	observation	Extensions may refine,	raw	but not contradict kernel invariants. /  / ---
+ont-S17796	C	2	observation	Example:	raw	```text / UNKNOWN ≠ NO / ``` /  / kernel-level rule. /  / ---
+ont-S17799	C	2	observation	Extension violating invariant:	raw	```text / rejected / ``` /  / ---
+ont-S17801	C	2	observation	Kernel Invariant Validator	raw	Runs on: /  / ```text / profile install / ontology update / schema update / ``` /  / ---
+ont-S17923	C	2	observation	Critical distinctions:	raw	```text / Model ≠ Agent / Agent ≠ Role / Role ≠ Task / ``` /  / ---
+ont-S17924	C	2	observation	These should become standard semantic invariants.	raw	---
+ont-S18059	C	2	observation	But widespread usage ≠ best design automatically.	raw	---
+ont-S18195	C	2	observation	Ontology Change ≠ Historical Reality Change	raw	Important invariant. /  / ---
+ont-S18241	C	2	observation	But frequency alone ≠ semantic necessity.	raw	---
+ont-S18265	C	2	observation	But core invariants protect consistency.	raw	---
+ont-S18271	C	2	observation	Example invariant test:	raw	```python / assert proposal.type != decision.type / ``` /  / conceptually. /  / ---
+ont-S18278	C	2	observation	Contains:	raw	```text / root types / core predicates / invariants / ``` /  / ---
+ont-S18426	C	2	observation	Again:	raw	```text / UNKNOWN ≠ safe. / ``` /  / ---
+ont-S18432	C	2	observation	Example OCR returns valid JSON but wrong text.	raw	---
+ont-S18488	C	2	observation	Architecture Invariants	raw	```text / Concept ≠ Entity. / ``` /  / ---

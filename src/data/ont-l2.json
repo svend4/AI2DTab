@@ -1,0 +1,326 @@
+[
+  {
+    "id": "ont-S17041",
+    "cluster": "C",
+    "layer": "2",
+    "type": "observation",
+    "title": "Главный переход",
+    "status": "raw",
+    "body": "До сих пор Innovation OS уже умеет: /  / ```text / обмениваться State / объявлять Capabilities / передавать Claims / передавать Evidence / запрашивать Actions / договариваться о Schema / ``` /  / Теперь возникает более глубокий вопрос: /  / ```text / Что именно означают используемые понятия? / ``` /  / ---"
+  },
+  {
+    "id": "ont-S17042",
+    "cluster": "C",
+    "layer": "2",
+    "type": "observation",
+    "title": "Потому что одинаковое слово не гарантирует одинаковый смысл",
+    "status": "raw",
+    "body": "Например: /  / ```text / Project / ``` /  / в одной системе может означать: /  / ```text / любую рабочую задачу / ``` /  / а в другой: /  / ```text / долгосрочную инициативу с бюджетом / ``` /  / ---"
+  },
+  {
+    "id": "ont-S17059",
+    "cluster": "C",
+    "layer": "2",
+    "type": "observation",
+    "title": "Это важное различие",
+    "status": "raw",
+    "body": "```text / rename / ≠ / semantic change / ``` /  / ---"
+  },
+  {
+    "id": "ont-S17074",
+    "cluster": "C",
+    "layer": "2",
+    "type": "observation",
+    "title": "Negative boundary:",
+    "status": "raw",
+    "body": "```text / Capability ≠ Resource. / ``` /  / ---"
+  },
+  {
+    "id": "ont-S17084",
+    "cluster": "C",
+    "layer": "2",
+    "type": "observation",
+    "title": "Translation ≠ guaranteed equivalence",
+    "status": "raw",
+    "body": "---"
+  },
+  {
+    "id": "ont-S17142",
+    "cluster": "C",
+    "layer": "2",
+    "type": "observation",
+    "title": "Critical invariant:",
+    "status": "raw",
+    "body": "```text / Ontology ≠ Policy. / ``` /  / ---"
+  },
+  {
+    "id": "ont-S17181",
+    "cluster": "C",
+    "layer": "2",
+    "type": "observation",
+    "title": "Critical invariant:",
+    "status": "raw",
+    "body": "```text / Executable Concept / ≠ / Authorized Action. / ``` /  / ---"
+  },
+  {
+    "id": "ont-S17256",
+    "cluster": "C",
+    "layer": "2",
+    "type": "observation",
+    "title": "Critical invariant:",
+    "status": "raw",
+    "body": "```text / Mapping ≠ Equivalence. / ``` /  / ---"
+  },
+  {
+    "id": "ont-S17298",
+    "cluster": "C",
+    "layer": "2",
+    "type": "observation",
+    "title": "Semantic Linting",
+    "status": "raw",
+    "body": "Could detect: /  / ```text / undefined concept / deprecated predicate / wrong relation direction / unit mismatch / ``` /  / ---"
+  },
+  {
+    "id": "ont-S17320",
+    "cluster": "C",
+    "layer": "2",
+    "type": "observation",
+    "title": "Same UI invariant as elsewhere.",
+    "status": "raw",
+    "body": "---"
+  },
+  {
+    "id": "ont-S17326",
+    "cluster": "C",
+    "layer": "2",
+    "type": "observation",
+    "title": "Discussion ≠ Decision.",
+    "status": "raw",
+    "body": "---"
+  },
+  {
+    "id": "ont-S17451",
+    "cluster": "C",
+    "layer": "2",
+    "type": "observation",
+    "title": "Contract ≠ implementation.",
+    "status": "raw",
+    "body": "---"
+  },
+  {
+    "id": "ont-S17490",
+    "cluster": "C",
+    "layer": "2",
+    "type": "observation",
+    "title": "Sunset Date ≠ automatic deletion.",
+    "status": "raw",
+    "body": "---"
+  },
+  {
+    "id": "ont-S17547",
+    "cluster": "C",
+    "layer": "2",
+    "type": "observation",
+    "title": "This is Core invariant reused.",
+    "status": "raw",
+    "body": "---"
+  },
+  {
+    "id": "ont-S17569",
+    "cluster": "C",
+    "layer": "2",
+    "type": "observation",
+    "title": "Critical invariant:",
+    "status": "raw",
+    "body": "```text / Knowledge Graph may contain disagreement. / ``` /  / ---"
+  },
+  {
+    "id": "ont-S17576",
+    "cluster": "C",
+    "layer": "2",
+    "type": "observation",
+    "title": "Canonicalization ≠ semantic rewriting.",
+    "status": "raw",
+    "body": "---"
+  },
+  {
+    "id": "ont-S17611",
+    "cluster": "C",
+    "layer": "2",
+    "type": "observation",
+    "title": "Event ≠ Claim.",
+    "status": "raw",
+    "body": "---"
+  },
+  {
+    "id": "ont-S17636",
+    "cluster": "C",
+    "layer": "2",
+    "type": "observation",
+    "title": "But composite definition ≠ current system instance.",
+    "status": "raw",
+    "body": "---"
+  },
+  {
+    "id": "ont-S17647",
+    "cluster": "C",
+    "layer": "2",
+    "type": "observation",
+    "title": "Archetype ≠ Root Type.",
+    "status": "raw",
+    "body": "---"
+  },
+  {
+    "id": "ont-S17736",
+    "cluster": "C",
+    "layer": "2",
+    "type": "observation",
+    "title": "Generated test protects invariant.",
+    "status": "raw",
+    "body": "---"
+  },
+  {
+    "id": "ont-S17793",
+    "cluster": "C",
+    "layer": "2",
+    "type": "observation",
+    "title": "Need protected semantic invariants.",
+    "status": "raw",
+    "body": "---"
+  },
+  {
+    "id": "ont-S17795",
+    "cluster": "C",
+    "layer": "2",
+    "type": "observation",
+    "title": "Extensions may refine,",
+    "status": "raw",
+    "body": "but not contradict kernel invariants. /  / ---"
+  },
+  {
+    "id": "ont-S17796",
+    "cluster": "C",
+    "layer": "2",
+    "type": "observation",
+    "title": "Example:",
+    "status": "raw",
+    "body": "```text / UNKNOWN ≠ NO / ``` /  / kernel-level rule. /  / ---"
+  },
+  {
+    "id": "ont-S17799",
+    "cluster": "C",
+    "layer": "2",
+    "type": "observation",
+    "title": "Extension violating invariant:",
+    "status": "raw",
+    "body": "```text / rejected / ``` /  / ---"
+  },
+  {
+    "id": "ont-S17801",
+    "cluster": "C",
+    "layer": "2",
+    "type": "observation",
+    "title": "Kernel Invariant Validator",
+    "status": "raw",
+    "body": "Runs on: /  / ```text / profile install / ontology update / schema update / ``` /  / ---"
+  },
+  {
+    "id": "ont-S17923",
+    "cluster": "C",
+    "layer": "2",
+    "type": "observation",
+    "title": "Critical distinctions:",
+    "status": "raw",
+    "body": "```text / Model ≠ Agent / Agent ≠ Role / Role ≠ Task / ``` /  / ---"
+  },
+  {
+    "id": "ont-S17924",
+    "cluster": "C",
+    "layer": "2",
+    "type": "observation",
+    "title": "These should become standard semantic invariants.",
+    "status": "raw",
+    "body": "---"
+  },
+  {
+    "id": "ont-S18059",
+    "cluster": "C",
+    "layer": "2",
+    "type": "observation",
+    "title": "But widespread usage ≠ best design automatically.",
+    "status": "raw",
+    "body": "---"
+  },
+  {
+    "id": "ont-S18195",
+    "cluster": "C",
+    "layer": "2",
+    "type": "observation",
+    "title": "Ontology Change ≠ Historical Reality Change",
+    "status": "raw",
+    "body": "Important invariant. /  / ---"
+  },
+  {
+    "id": "ont-S18241",
+    "cluster": "C",
+    "layer": "2",
+    "type": "observation",
+    "title": "But frequency alone ≠ semantic necessity.",
+    "status": "raw",
+    "body": "---"
+  },
+  {
+    "id": "ont-S18265",
+    "cluster": "C",
+    "layer": "2",
+    "type": "observation",
+    "title": "But core invariants protect consistency.",
+    "status": "raw",
+    "body": "---"
+  },
+  {
+    "id": "ont-S18271",
+    "cluster": "C",
+    "layer": "2",
+    "type": "observation",
+    "title": "Example invariant test:",
+    "status": "raw",
+    "body": "```python / assert proposal.type != decision.type / ``` /  / conceptually. /  / ---"
+  },
+  {
+    "id": "ont-S18278",
+    "cluster": "C",
+    "layer": "2",
+    "type": "observation",
+    "title": "Contains:",
+    "status": "raw",
+    "body": "```text / root types / core predicates / invariants / ``` /  / ---"
+  },
+  {
+    "id": "ont-S18426",
+    "cluster": "C",
+    "layer": "2",
+    "type": "observation",
+    "title": "Again:",
+    "status": "raw",
+    "body": "```text / UNKNOWN ≠ safe. / ``` /  / ---"
+  },
+  {
+    "id": "ont-S18432",
+    "cluster": "C",
+    "layer": "2",
+    "type": "observation",
+    "title": "Example OCR returns valid JSON but wrong text.",
+    "status": "raw",
+    "body": "---"
+  },
+  {
+    "id": "ont-S18488",
+    "cluster": "C",
+    "layer": "2",
+    "type": "observation",
+    "title": "Architecture Invariants",
+    "status": "raw",
+    "body": "```text / Concept ≠ Entity. / ``` /  / ---"
+  }
+]
