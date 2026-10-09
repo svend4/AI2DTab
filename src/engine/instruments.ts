@@ -1,9 +1,9 @@
 /**
  * Приборы: съём состояния книги и красная зона.
  *
- * v1 держала пороги в коде (`if charge < 0.2`). v2 — правила как данные:
- * каждое правило знает предупреждение и вопрос-GAP, который оно сажает.
- * Новые правила — новая строка в RULES, не новая ветка if.
+ * Правила — данные: каждое знает предупреждение и вопрос-GAP, который сажает.
+ * Вычтенные (rejected) строки не участвуют ни в массе кластера, ни в рёбрах:
+ * кластер, который целиком вычли, не должен поднимать красную зону.
  */
 import { isJunk, resolveName } from "./sets.ts";
 import type { Book, Cluster, Hops, Readout } from "./types.ts";
@@ -70,46 +70,48 @@ export const RULES: Rule[] = [
 ];
 
 export function emptyHops(): Hops {
-  const h = {} as Hops;
+  const h = Object.create(null) as Hops;
   for (const a of CLUSTERS) {
-    h[a] = {} as Record<Cluster, number>;
+    h[a] = Object.create(null) as Record<Cluster, number>;
     for (const b of CLUSTERS) h[a][b] = 0;
   }
   return h;
 }
 
 export function readout(book: Book): Readout {
-  const objs = book.objects;
-  const byId = new Map(objs.map((o) => [o.id, o]));
-  const raw = objs.filter((o) => o.status === "raw").length;
-  const canon = objs.filter((o) => o.status === "canon").length;
-  const total = objs.length;
+  const live = book.objects.filter((o) => o.status !== "rejected");
+  const byId = new Map(book.objects.map((o) => [o.id, o]));
+  const raw = live.filter((o) => o.status === "raw").length;
+  const canon = live.filter((o) => o.status === "canon").length;
+  const rejected = book.objects.length - live.length;
+  const total = live.length;
   const packets = book.links.length;
-  const cluster: Record<string, number> = {};
-  for (const o of objs) cluster[o.cluster] = (cluster[o.cluster] ?? 0) + 1;
+  const cluster: Record<string, number> = Object.create(null);
+  for (const o of live) cluster[o.cluster] = (cluster[o.cluster] ?? 0) + 1;
   const neqIds = resolveName(book, "NEQ");
   const cellIds = resolveName(book, "CELL");
-  const junk = objs.filter((o) => o.status === "raw" && isJunk(o)).length;
+  const junk = live.filter((o) => o.status === "raw" && isJunk(o)).length;
   const den = Math.max(1, raw + canon);
   const charge = Math.round((canon / den) * 10000) / 10000;
   const cshare = Math.round(((cluster.C ?? 0) / Math.max(1, total)) * 10000) / 10000;
   const sparse = Math.round((packets / Math.max(1, total * Math.max(total - 1, 1))) * 1e6) / 1e6;
   const hops = emptyHops();
   for (const l of book.links) {
-    const a = byId.get(l.from)?.cluster;
-    const b = byId.get(l.to)?.cluster;
-    if (a && b) hops[a][b] += 1;
+    const f = byId.get(l.from);
+    const t = byId.get(l.to);
+    if (!f || !t || f.status === "rejected" || t.status === "rejected") continue;
+    if ((CLUSTERS as string[]).includes(f.cluster) && (CLUSTERS as string[]).includes(t.cluster)) hops[f.cluster][t.cluster] += 1;
   }
   const linked = new Set(book.links.flatMap((l) => [l.from, l.to]));
-  const orphans = objs.filter((o) => o.status === "canon" && !linked.has(o.id)).length;
-  const openQuestions = objs.filter((o) => o.type === "question" && ["open", "raw"].includes(o.status)).length;
+  const orphans = live.filter((o) => o.status === "canon" && !linked.has(o.id)).length;
+  const openQuestions = live.filter((o) => o.type === "question" && ["open", "raw"].includes(o.status)).length;
 
   const notes: string[] = [];
   const neqC = [...neqIds].filter((id) => byId.get(id)?.cluster === "C").length;
   if (cshare > 0.45 && neqIds.size && neqC / neqIds.size >= 0.8) notes.push("масса C = ячейки, не перекос");
 
   const partial: Readout = {
-    charge, raw, canon, neq: neqIds.size, cells: cellIds.size, packets, objects: total,
+    charge, rejected, raw, canon, neq: neqIds.size, cells: cellIds.size, packets, objects: total,
     cshare, junk, sparse, orphans, openQuestions, cluster, hops, warns: [], notes,
   };
   partial.warns = RULES.filter((r) => r.when(partial)).map((r) => r.warn);

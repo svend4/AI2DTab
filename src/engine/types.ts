@@ -57,6 +57,8 @@ export type Link = { from: string; to: string; rel: string; note?: string };
 
 export type Origin = { objectId: string; sessionId: string; span?: string };
 
+export type Actor = "human" | "machine";
+
 export type Event = {
   seq: number;
   ts: string;
@@ -64,10 +66,25 @@ export type Event = {
   action: string;
   objectId?: string;
   detail?: string;
+  /** Номер хода (один вызов exec — один ход; BATCH — один ход). UNDO откатывает ход целиком. */
+  move?: number;
   /** Снимок полей до/после — ради UNDO и аудита. */
   before?: Partial<Obj> | null;
   after?: Partial<Obj> | null;
   link?: Link;
+  /** Откачено UNDO: событие остаётся в журнале, SPEC считает его отдельно. */
+  undone?: boolean;
+};
+
+/** Письмо между сессиями (таблица packets из v1). Сохраняется как есть. */
+export type Packet = {
+  id: string;
+  fromSession: string;
+  toSession: string;
+  subject: string;
+  body: string;
+  createdAt: string;
+  readAt?: string | null;
 };
 
 export type Book = {
@@ -76,12 +93,16 @@ export type Book = {
   links: Link[];
   origins: Origin[];
   events: Event[];
+  packets?: Packet[];
+  /** Счётчики глаголов из событий, вытесненных при уплотнении журнала. */
+  compacted?: Record<string, number>;
 };
 
 export type Hops = Record<Cluster, Record<Cluster, number>>;
 
 export type Readout = {
   charge: number;
+  rejected: number;
   raw: number;
   canon: number;
   neq: number;
@@ -109,6 +130,15 @@ export type ExecResult = {
 };
 
 export const CLUSTERS: Cluster[] = ["A", "B", "C", "D"];
+
+export const STATUSES: Status[] = ["raw", "canon", "rejected", "open", "closed", "draft", "candidate", "dormant"];
+
+/** Имена множеств: такой id зарезервирован, объект с ним не адресуется. */
+export const RESERVED_IDS: ReadonlySet<string> = new Set([
+  "NEQ", "NE", "CELL", "CELLS", "RAW", "CANON", "SESSION", "OPEN", "JUNK", "OBS", "OBSERVATION", "A", "B", "C", "D", "ALL", "*",
+]);
+
+export const ID_RE = /^[A-Za-z0-9_.:-]{1,80}$/;
 
 export const NO_CANON: ReadonlySet<string> = new Set(["session", "tape"]);
 

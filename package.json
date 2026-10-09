@@ -19,7 +19,7 @@
     "test": "node --test 'scripts/**/*.test.mjs' && node --experimental-strip-types --test src/lib/app-data/app-data.test.ts src/lib/app-data/readiness-schedule.test.ts src/lib/auth/gate-identity.test.ts src/lib/auth/sign-in-gate.test.ts && npm run test:engine",
     "lint": "eslint .",
     "format": "prettier --write .",
-    "test:engine": "node --experimental-strip-types --test src/engine/engine.test.ts"
+    "test:engine": "node --experimental-strip-types --test src/engine/engine.test.ts src/engine/plant.test.ts src/lib/storage.test.mjs"
   },
   "dependencies": {
     "@electric-sql/pglite": "^0.5.4",
