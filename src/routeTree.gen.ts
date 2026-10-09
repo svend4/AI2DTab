@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as CycleRouteImport } from './routes/cycle'
 import { Route as L2RouteImport } from './routes/l2'
 import { Route as L3RouteImport } from './routes/l3'
 import { Route as L4RouteImport } from './routes/l4'
@@ -17,6 +18,11 @@ import { Route as L4RouteImport } from './routes/l4'
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CycleRoute = CycleRouteImport.update({
+  id: '/cycle',
+  path: '/cycle',
   getParentRoute: () => rootRouteImport,
 } as any)
 const L2Route = L2RouteImport.update({
@@ -37,12 +43,14 @@ const L4Route = L4RouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/cycle': typeof CycleRoute
   '/l2': typeof L2Route
   '/l3': typeof L3Route
   '/l4': typeof L4Route
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/cycle': typeof CycleRoute
   '/l2': typeof L2Route
   '/l3': typeof L3Route
   '/l4': typeof L4Route
@@ -50,20 +58,22 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/cycle': typeof CycleRoute
   '/l2': typeof L2Route
   '/l3': typeof L3Route
   '/l4': typeof L4Route
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/l2' | '/l3' | '/l4'
+  fullPaths: '/' | '/cycle' | '/l2' | '/l3' | '/l4'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/l2' | '/l3' | '/l4'
-  id: '__root__' | '/' | '/l2' | '/l3' | '/l4'
+  to: '/' | '/cycle' | '/l2' | '/l3' | '/l4'
+  id: '__root__' | '/' | '/cycle' | '/l2' | '/l3' | '/l4'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  CycleRoute: typeof CycleRoute
   L2Route: typeof L2Route
   L3Route: typeof L3Route
   L4Route: typeof L4Route
@@ -76,6 +86,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/cycle': {
+      id: '/cycle'
+      path: '/cycle'
+      fullPath: '/cycle'
+      preLoaderRoute: typeof CycleRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/l2': {
@@ -104,6 +121,7 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  CycleRoute: CycleRoute,
   L2Route: L2Route,
   L3Route: L3Route,
   L4Route: L4Route,

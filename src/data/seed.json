@@ -1,0 +1,576 @@
+{
+ "objects": [
+  {
+   "id": "A001",
+   "cluster": "A",
+   "layer": 1,
+   "type": "artifact",
+   "title": "контур observe-model-recommend-act-measure-learn",
+   "status": "draft",
+   "body": null,
+   "created_at": "2026-09-18",
+   "updated_at": "2026-09-18",
+   "owner": "registrar"
+  },
+  {
+   "id": "A002",
+   "cluster": "A",
+   "layer": 1,
+   "type": "artifact",
+   "title": "поля цифрового профиля",
+   "status": "draft",
+   "body": null,
+   "created_at": "2026-09-18",
+   "updated_at": "2026-09-18",
+   "owner": "registrar"
+  },
+  {
+   "id": "D001",
+   "cluster": "A",
+   "layer": 1,
+   "type": "decision",
+   "title": "датой выплаты считать 01.01.2027",
+   "status": "canon",
+   "body": "пока нет нового письма Минтруда",
+   "created_at": "2026-09-18",
+   "updated_at": "2026-09-18",
+   "owner": "human"
+  },
+  {
+   "id": "D002",
+   "cluster": "A",
+   "layer": 1,
+   "type": "decision",
+   "title": "ИИ не заменяет карьерные центры",
+   "status": "canon",
+   "body": "гибрид",
+   "created_at": "2026-09-18",
+   "updated_at": "2026-09-18",
+   "owner": "human"
+  },
+  {
+   "id": "D003",
+   "cluster": "A",
+   "layer": 1,
+   "type": "decision",
+   "title": "foresight-спека не принадлежит проекту A",
+   "status": "canon",
+   "body": null,
+   "created_at": "2026-09-18",
+   "updated_at": "2026-09-18",
+   "owner": "human"
+  },
+  {
+   "id": "F001",
+   "cluster": "A",
+   "layer": 1,
+   "type": "fact",
+   "title": "13 дней до статуса, пилот 01.10.2026",
+   "status": "canon",
+   "body": "оргреформа, не сама модель ИИ",
+   "created_at": "2026-09-18",
+   "updated_at": "2026-09-18",
+   "owner": "registrar"
+  },
+  {
+   "id": "F002",
+   "cluster": "A",
+   "layer": 1,
+   "type": "fact",
+   "title": "выплата max 3 мес с 01.01.2027",
+   "status": "canon",
+   "body": "центральная линия Минтруда",
+   "created_at": "2026-09-18",
+   "updated_at": "2026-09-18",
+   "owner": "registrar"
+  },
+  {
+   "id": "F003",
+   "cluster": "A",
+   "layer": 1,
+   "type": "fact",
+   "title": "потолок выплаты 45% от 7 МЗП",
+   "status": "canon",
+   "body": null,
+   "created_at": "2026-09-18",
+   "updated_at": "2026-09-18",
+   "owner": "registrar"
+  },
+  {
+   "id": "F004",
+   "cluster": "A",
+   "layer": 1,
+   "type": "fact",
+   "title": "840,6 тыс вакансий / 1,022 млн резюме в 2026",
+   "status": "canon",
+   "body": null,
+   "created_at": "2026-09-18",
+   "updated_at": "2026-09-18",
+   "owner": "registrar"
+  },
+  {
+   "id": "F005",
+   "cluster": "A",
+   "layer": 1,
+   "type": "fact",
+   "title": "пилот Павлодар, масштаб на страну 2026",
+   "status": "canon",
+   "body": null,
+   "created_at": "2026-09-18",
+   "updated_at": "2026-09-18",
+   "owner": "registrar"
+  },
+  {
+   "id": "F006",
+   "cluster": "A",
+   "layer": 1,
+   "type": "fact",
+   "title": "заявленные функции ИИ Enbek",
+   "status": "canon",
+   "body": "профиль, резюме, вакансии, gap, Skills Enbek",
+   "created_at": "2026-09-18",
+   "updated_at": "2026-09-18",
+   "owner": "registrar"
+  },
+  {
+   "id": "P001",
+   "cluster": "A",
+   "layer": 1,
+   "type": "packet",
+   "title": "пакет в технопарк: контур и граф, без выплат",
+   "status": "closed",
+   "body": "см. packets",
+   "created_at": "2026-09-18",
+   "updated_at": "2026-09-18",
+   "owner": "courier"
+  },
+  {
+   "id": "Q001",
+   "cluster": "A",
+   "layer": 1,
+   "type": "question",
+   "title": "13 дней — сервис или отсрочка статуса",
+   "status": "open",
+   "body": null,
+   "created_at": "2026-09-18",
+   "updated_at": "2026-09-18",
+   "owner": "human"
+  },
+  {
+   "id": "Q002",
+   "cluster": "A",
+   "layer": 1,
+   "type": "question",
+   "title": "какая дата выплат официально при конфликте источников",
+   "status": "open",
+   "body": null,
+   "created_at": "2026-09-18",
+   "updated_at": "2026-09-18",
+   "owner": "human"
+  },
+  {
+   "id": "Q003",
+   "cluster": "A",
+   "layer": 1,
+   "type": "question",
+   "title": "есть ли у Enbek живой skill-graph с id",
+   "status": "open",
+   "body": null,
+   "created_at": "2026-09-18",
+   "updated_at": "2026-09-18",
+   "owner": "human"
+  },
+  {
+   "id": "S001",
+   "cluster": "A",
+   "layer": 1,
+   "type": "session",
+   "title": "ChatGPT share Enbek",
+   "status": "closed",
+   "body": "https://chatgpt.com/share/6aad25ca-efbc-83ed-aa6f-984372bd4525",
+   "created_at": "2026-09-17T17:50:00",
+   "updated_at": "2026-09-18",
+   "owner": "human"
+  },
+  {
+   "id": "D101",
+   "cluster": "B",
+   "layer": 1,
+   "type": "decision",
+   "title": "первая волна: person skill task artifact decision",
+   "status": "canon",
+   "body": null,
+   "created_at": "2026-09-18",
+   "updated_at": "2026-09-18",
+   "owner": "human"
+  },
+  {
+   "id": "D102",
+   "cluster": "B",
+   "layer": 1,
+   "type": "decision",
+   "title": "сдача = task + accepted artifact",
+   "status": "canon",
+   "body": null,
+   "created_at": "2026-09-18",
+   "updated_at": "2026-09-18",
+   "owner": "human"
+  },
+  {
+   "id": "Q101",
+   "cluster": "B",
+   "layer": 1,
+   "type": "question",
+   "title": "какие узлы заводить первыми",
+   "status": "closed",
+   "body": null,
+   "created_at": "2026-09-18",
+   "updated_at": "2026-09-18",
+   "owner": "human"
+  },
+  {
+   "id": "S002",
+   "cluster": "B",
+   "layer": 1,
+   "type": "session",
+   "title": "какие узлы графа первыми",
+   "status": "closed",
+   "body": null,
+   "created_at": "2026-09-18",
+   "updated_at": "2026-09-18",
+   "owner": "human"
+  },
+  {
+   "id": "T101",
+   "cluster": "B",
+   "layer": 1,
+   "type": "task",
+   "title": "написать SESSION S002",
+   "status": "closed",
+   "body": null,
+   "created_at": "2026-09-18",
+   "updated_at": "2026-09-18",
+   "owner": "human"
+  },
+  {
+   "id": "T201",
+   "cluster": "B",
+   "layer": 1,
+   "type": "task",
+   "title": "не копировать Enbek",
+   "status": "open",
+   "body": "правило из SP001",
+   "created_at": "2026-09-18",
+   "updated_at": "2026-09-18",
+   "owner": "human"
+  },
+  {
+   "id": "C-OS",
+   "cluster": "C",
+   "layer": 1,
+   "type": "question",
+   "title": "выжимка Innovation OS PAST/PRESENT/PLANNED или вычесть кластер",
+   "status": "open",
+   "body": "в чате только ярлыки",
+   "created_at": "2026-09-18",
+   "updated_at": "2026-09-18",
+   "owner": "human"
+  },
+  {
+   "id": "D103",
+   "cluster": "D",
+   "layer": 2,
+   "type": "decision",
+   "title": "вторая волна: observation signal signpost",
+   "status": "canon",
+   "body": null,
+   "created_at": "2026-09-18",
+   "updated_at": "2026-09-18",
+   "owner": "human"
+  },
+  {
+   "id": "O001",
+   "cluster": "D",
+   "layer": 2,
+   "type": "observation",
+   "title": "Inbusiness 17.09.2026",
+   "status": "raw",
+   "body": "https://inbusiness.kz/ru/news/rabotu-kazahstancam-budet-podbirat-ii-kak-izmenitsya-sistema-zanyatosti",
+   "created_at": "2026-09-18",
+   "updated_at": "2026-09-18",
+   "owner": "registrar"
+  },
+  {
+   "id": "O002",
+   "cluster": "D",
+   "layer": 2,
+   "type": "observation",
+   "title": "TimesCA 11.08.2026 Павлодар 39000/962",
+   "status": "raw",
+   "body": "причинность трудоустройств не доказана",
+   "created_at": "2026-09-18",
+   "updated_at": "2026-09-18",
+   "owner": "registrar"
+  },
+  {
+   "id": "Q102",
+   "cluster": "D",
+   "layer": 2,
+   "type": "question",
+   "title": "что брать из спеки 12633+",
+   "status": "closed",
+   "body": null,
+   "created_at": "2026-09-18",
+   "updated_at": "2026-09-18",
+   "owner": "human"
+  },
+  {
+   "id": "S003",
+   "cluster": "D",
+   "layer": 2,
+   "type": "session",
+   "title": "отбор объектов из спеки 12633+",
+   "status": "closed",
+   "body": null,
+   "created_at": "2026-09-18",
+   "updated_at": "2026-09-18",
+   "owner": "human"
+  },
+  {
+   "id": "S004",
+   "cluster": "D",
+   "layer": 2,
+   "type": "session",
+   "title": "живая регистрация слоя 2",
+   "status": "closed",
+   "body": null,
+   "created_at": "2026-09-18",
+   "updated_at": "2026-09-18",
+   "owner": "human"
+  },
+  {
+   "id": "SIG001",
+   "cluster": "D",
+   "layer": 2,
+   "type": "signal",
+   "title": "госконтур matching уже в пилоте",
+   "status": "candidate",
+   "body": "O001+O002; relevant_to D102",
+   "created_at": "2026-09-18",
+   "updated_at": "2026-09-18",
+   "owner": "registrar"
+  },
+  {
+   "id": "SP001",
+   "cluster": "D",
+   "layer": 2,
+   "type": "signpost",
+   "title": "третья observation про граф навыков с id",
+   "status": "dormant",
+   "body": "пока не сработал",
+   "created_at": "2026-09-18",
+   "updated_at": "2026-09-18",
+   "owner": "registrar"
+  }
+ ],
+ "links": [
+  {
+   "from_id": "D001",
+   "to_id": "F002",
+   "rel": "cites",
+   "note": "дата из факта"
+  },
+  {
+   "from_id": "F002",
+   "to_id": "Q002",
+   "rel": "contradicts",
+   "note": "региональные даты"
+  },
+  {
+   "from_id": "D002",
+   "to_id": "F006",
+   "rel": "refines",
+   "note": "заявка ИИ не равна замене центров"
+  },
+  {
+   "from_id": "D003",
+   "to_id": "P001",
+   "rel": "derived_from",
+   "note": "отделение хвоста"
+  },
+  {
+   "from_id": "Q001",
+   "to_id": "F001",
+   "rel": "refines",
+   "note": null
+  },
+  {
+   "from_id": "D101",
+   "to_id": "Q101",
+   "rel": "replaces",
+   "note": "закрыл вопрос"
+  },
+  {
+   "from_id": "D102",
+   "to_id": "P001",
+   "rel": "cites",
+   "note": "контур сдачи из пакета"
+  },
+  {
+   "from_id": "D103",
+   "to_id": "Q102",
+   "rel": "replaces",
+   "note": null
+  },
+  {
+   "from_id": "O001",
+   "to_id": "SIG001",
+   "rel": "feeds",
+   "note": null
+  },
+  {
+   "from_id": "O002",
+   "to_id": "SIG001",
+   "rel": "feeds",
+   "note": null
+  },
+  {
+   "from_id": "SIG001",
+   "to_id": "D102",
+   "rel": "relevant_to",
+   "note": "контур проверки факта"
+  },
+  {
+   "from_id": "SIG001",
+   "to_id": "SP001",
+   "rel": "raises",
+   "note": null
+  },
+  {
+   "from_id": "SP001",
+   "to_id": "T201",
+   "rel": "triggers",
+   "note": "запрет копии Enbek"
+  },
+  {
+   "from_id": "A001",
+   "to_id": "P001",
+   "rel": "derived_from",
+   "note": null
+  },
+  {
+   "from_id": "T101",
+   "to_id": "S002",
+   "rel": "derived_from",
+   "note": null
+  }
+ ],
+ "origins": [
+  {
+   "object_id": "F001",
+   "session_id": "S001",
+   "span": "статья + разбор"
+  },
+  {
+   "object_id": "F002",
+   "session_id": "S001",
+   "span": "статья + разбор"
+  },
+  {
+   "object_id": "F003",
+   "session_id": "S001",
+   "span": "статья"
+  },
+  {
+   "object_id": "F004",
+   "session_id": "S001",
+   "span": "статья"
+  },
+  {
+   "object_id": "F005",
+   "session_id": "S001",
+   "span": "статья"
+  },
+  {
+   "object_id": "F006",
+   "session_id": "S001",
+   "span": "статья"
+  },
+  {
+   "object_id": "Q001",
+   "session_id": "S001",
+   "span": null
+  },
+  {
+   "object_id": "Q002",
+   "session_id": "S001",
+   "span": null
+  },
+  {
+   "object_id": "Q003",
+   "session_id": "S001",
+   "span": null
+  },
+  {
+   "object_id": "D001",
+   "session_id": "S001",
+   "span": null
+  },
+  {
+   "object_id": "D002",
+   "session_id": "S001",
+   "span": null
+  },
+  {
+   "object_id": "D003",
+   "session_id": "S001",
+   "span": null
+  },
+  {
+   "object_id": "D101",
+   "session_id": "S002",
+   "span": null
+  },
+  {
+   "object_id": "D102",
+   "session_id": "S002",
+   "span": null
+  },
+  {
+   "object_id": "D103",
+   "session_id": "S003",
+   "span": null
+  },
+  {
+   "object_id": "O001",
+   "session_id": "S004",
+   "span": null
+  },
+  {
+   "object_id": "O002",
+   "session_id": "S004",
+   "span": null
+  },
+  {
+   "object_id": "SIG001",
+   "session_id": "S004",
+   "span": null
+  },
+  {
+   "object_id": "SP001",
+   "session_id": "S004",
+   "span": null
+  }
+ ],
+ "packets": [
+  {
+   "id": "P001",
+   "from_session": "S001",
+   "to_session": "S002",
+   "subject": "что перенять из контура Enbek",
+   "body": "Учти: гибрид ИИ+человек; контур observe-learn; граф урезать.\nНе повторяй: выплаты, 13 дней.\nПроверь: аналог фактической сдачи.",
+   "created_at": "2026-09-18",
+   "read_at": "2026-09-18"
+  }
+ ]
+}
