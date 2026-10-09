@@ -11,7 +11,7 @@
  * строки типа label/noise. Вычтенные (rejected) не входят ни в одно имя,
  * кроме ALL и status:rejected.
  */
-import { isCellTitle, JUNK_TITLE } from "./cells.ts";
+import { JUNK_TITLE } from "./cells.ts";
 import type { Book, Obj } from "./types.ts";
 import { NO_CANON } from "./types.ts";
 

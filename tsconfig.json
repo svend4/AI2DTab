@@ -31,5 +31,8 @@
   "include": [
     "src",
     "server"
+  ],
+  "exclude": [
+    "src/**/*.test.mjs"
   ]
 }

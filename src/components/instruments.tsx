@@ -61,8 +61,8 @@ export function InstrumentPanel({ instr }: { instr: Readout | null }) {
   const warns = i.warns ?? [];
   return (
     <div className="flex flex-col gap-2">
-      <p className="font-mono text-[11px] leading-relaxed tracking-wide text-subtle">
-        INSTR {Math.round(i.charge * 100)}% · {i.raw}r/{i.canon}c · ячеек {i.cells} (≠ {i.neq}) · рёбер {i.packets} · C {Math.round(i.cshare * 100)}% · мусор {i.junk} · сироты {i.orphans}
+      <p className="min-w-0 break-words font-mono text-[11px] leading-relaxed tracking-wide text-subtle">
+        INSTR {Math.round(i.charge * 100)}% · {i.raw}r/{i.canon}c · вычтено {i.rejected} · ячеек {i.cells} (≠ {i.neq}) · рёбер {i.packets} · C {Math.round(i.cshare * 100)}% · мусор {i.junk} · сироты {i.orphans}
         {warns.length ? ` · WARN ${warns.length}` : ""}
       </p>
       <section aria-label="приборы" className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-7">
@@ -76,7 +76,7 @@ export function InstrumentPanel({ instr }: { instr: Readout | null }) {
           <HopMatrix hops={i.hops} />
         </div>
       </section>
-      <p className={`font-mono text-[11px] ${warns.length ? "text-[color:var(--color-warn)]" : "text-subtle"}`}>
+      <p className={`min-w-0 break-words font-mono text-[11px] ${warns.length ? "text-[color:var(--color-warn)]" : "text-subtle"}`}>
         красная зона · {warns.length ? warns.join(" · ") : "нет"}
         {(i.notes ?? []).length ? ` · ${i.notes.join(" · ")}` : ""}
       </p>

@@ -193,6 +193,7 @@ test("MERGE/DIFFBOOK: канон побеждает, рёбра объединя
   assert.ok(a.book.events.some((e) => e.detail?.includes("(merged)")));
   const m2 = mergeBooks(a.book, b.book);
   assert.equal(m2.report.added, 0, "повторное слияние ничего не добавляет");
+  assert.equal(m2.book.events.length, a.book.events.length, "и не удваивает журнал");
   assert.ok(a.exec("DIFFBOOK " + JSON.stringify(b.book)).text.startsWith("DIFFBOOK added=0"));
 });
 
@@ -207,7 +208,10 @@ test("формулы, SPEC, JSON, HELP, журнал уплотняется", ()
   const j = JSON.parse(d.exec("JSON").text);
   assert.equal(j.actor, "human");
   assert.ok(d.exec("HELP").text.includes("MERGE"));
-  for (let i = 0; i < 5200; i++) d.exec("WIRE D001 F003 cites") && d.exec("UNWIRE D001 F003 cites");
+  for (let i = 0; i < 5200; i++) {
+    d.exec("WIRE D001 F003 cites");
+    d.exec("UNWIRE D001 F003 cites");
+  }
   assert.ok(d.book.events.length <= 5000);
   assert.ok((d.book.compacted?.WIRE ?? 0) > 0);
   assert.equal(d.book.events[0].action, "seed");

@@ -1,0 +1,2018 @@
+[
+ {
+  "idx": 0,
+  "text": "# 22292. Program Synthesizer can create.",
+  "machine": {
+   "type": "observation",
+   "why": "абзац",
+   "title": "22292. Program Synthesizer can create.",
+   "cell": null
+  }
+ },
+ {
+  "idx": 1,
+  "text": "```text\nimplements\n≠\nconforms\n```",
+  "machine": {
+   "type": "observation",
+   "why": "ячейка найдена в теле",
+   "title": "implements\n≠\nconforms",
+   "cell": {
+    "pred": "implements",
+    "rel": "≠",
+    "obj": "conforms"
+   }
+  }
+ },
+ {
+  "idx": 2,
+  "text": "```text\nSelect tactile sensing architecture\n```",
+  "machine": {
+   "type": "observation",
+   "why": "абзац",
+   "title": "```text",
+   "cell": null
+  }
+ },
+ {
+  "idx": 3,
+  "text": "```text\nsupports profile X v2\n```",
+  "machine": {
+   "type": "observation",
+   "why": "абзац",
+   "title": "```text",
+   "cell": null
+  }
+ },
+ {
+  "idx": 4,
+  "text": "Всё это относится к кластеру:",
+  "machine": {
+   "type": "observation",
+   "why": "абзац",
+   "title": "Всё это относится к кластеру:",
+   "cell": null
+  }
+ },
+ {
+  "idx": 5,
+  "text": "```text\nTARGET_ARCHITECTURE_EQUALS_MIGRATION_PLAN\n```",
+  "machine": {
+   "type": "observation",
+   "why": "абзац",
+   "title": "```text",
+   "cell": null
+  }
+ },
+ {
+  "idx": 6,
+  "text": "# 2832. Strategy Engine + Physical Infrastructure",
+  "machine": {
+   "type": "observation",
+   "why": "абзац",
+   "title": "2832. Strategy Engine + Physical Infrastructure",
+   "cell": null
+  }
+ },
+ {
+  "idx": 7,
+  "text": "```text\nПочему эти шаги?\n```",
+  "machine": {
+   "type": "observation",
+   "why": "абзац",
+   "title": "```text",
+   "cell": null
+  }
+ },
+ {
+  "idx": 8,
+  "text": "```text\nnavigation\ndiscovery\nsimulation\neducation\ncoordination\n```",
+  "machine": {
+   "type": "observation",
+   "why": "абзац",
+   "title": "```text",
+   "cell": null
+  }
+ },
+ {
+  "idx": 9,
+  "text": "```text\n5–20 machines\n5 people\n10 materials\n5 capabilities\n```",
+  "machine": {
+   "type": "observation",
+   "why": "абзац",
+   "title": "```text",
+   "cell": null
+  }
+ },
+ {
+  "idx": 10,
+  "text": "```text\none major data migration\nper operational window.\n```",
+  "machine": {
+   "type": "observation",
+   "why": "абзац",
+   "title": "```text",
+   "cell": null
+  }
+ },
+ {
+  "idx": 11,
+  "text": "# 29900. Major milestone",
+  "machine": {
+   "type": "observation",
+   "why": "абзац",
+   "title": "29900. Major milestone",
+   "cell": null
+  }
+ },
+ {
+  "idx": 12,
+  "text": "```text\nRunbook Exists\n≠\nRunbook Works.\n```",
+  "machine": {
+   "type": "observation",
+   "why": "ячейка найдена в теле",
+   "title": "Runbook Exists\n≠\nRunbook Works.",
+   "cell": {
+    "pred": "Runbook Exists",
+    "rel": "≠",
+    "obj": "Runbook Works"
+   }
+  }
+ },
+ {
+  "idx": 13,
+  "text": "# 19377. Simulation result presented as real evidence.",
+  "machine": {
+   "type": "observation",
+   "why": "абзац",
+   "title": "19377. Simulation result presented as real evidence.",
+   "cell": null
+  }
+ },
+ {
+  "idx": 14,
+  "text": "```text\nsearch\nsensor\nexperiment\nhuman question\n```",
+  "machine": {
+   "type": "observation",
+   "why": "абзац",
+   "title": "```text",
+   "cell": null
+  }
+ },
+ {
+  "idx": 15,
+  "text": "# 25345. Remote Derived View",
+  "machine": {
+   "type": "observation",
+   "why": "абзац",
+   "title": "25345. Remote Derived View",
+   "cell": null
+  }
+ },
+ {
+  "idx": 16,
+  "text": "For safety-critical/technical domains:",
+  "machine": {
+   "type": "observation",
+   "why": "абзац",
+   "title": "For safety-critical/technical domains:",
+   "cell": null
+  }
+ },
+ {
+  "idx": 17,
+  "text": "```text\nintegrated system tests\noperational pilot\nevidence requirements\n```",
+  "machine": {
+   "type": "observation",
+   "why": "абзац",
+   "title": "```text",
+   "cell": null
+  }
+ },
+ {
+  "idx": 18,
+  "text": "# 25886. Production activation:",
+  "machine": {
+   "type": "observation",
+   "why": "абзац",
+   "title": "25886. Production activation:",
+   "cell": null
+  }
+ },
+ {
+  "idx": 19,
+  "text": "# 28484. This can alter architecture.",
+  "machine": {
+   "type": "observation",
+   "why": "абзац",
+   "title": "28484. This can alter architecture.",
+   "cell": null
+  }
+ },
+ {
+  "idx": 20,
+  "text": "```text\ntemplates\npackages\nvisualizations\n```",
+  "machine": {
+   "type": "observation",
+   "why": "абзац",
+   "title": "```text",
+   "cell": null
+  }
+ },
+ {
+  "idx": 21,
+  "text": "# 26168. But historical audit attribution remains.",
+  "machine": {
+   "type": "observation",
+   "why": "абзац",
+   "title": "26168. But historical audit attribution remains.",
+   "cell": null
+  }
+ },
+ {
+  "idx": 22,
+  "text": "# 27441. Example API request accepted,",
+  "machine": {
+   "type": "observation",
+   "why": "абзац",
+   "title": "27441. Example API request accepted,",
+   "cell": null
+  }
+ },
+ {
+  "idx": 23,
+  "text": "```text\nEU grant\nangel\ncorporate sponsor\nVC\n```",
+  "machine": {
+   "type": "observation",
+   "why": "абзац",
+   "title": "```text",
+   "cell": null
+  }
+ },
+ {
+  "idx": 24,
+  "text": "```text id=\"km2229\"\nWorld State t1\nvs\nWorld State t2\n```",
+  "machine": {
+   "type": "observation",
+   "why": "абзац",
+   "title": "```text id=\"km2229\"",
+   "cell": null
+  }
+ },
+ {
+  "idx": 25,
+  "text": "# 28435. Possible implementations:",
+  "machine": {
+   "type": "observation",
+   "why": "абзац",
+   "title": "28435. Possible implementations:",
+   "cell": null
+  }
+ },
+ {
+  "idx": 26,
+  "text": "# 6576. Repository state",
+  "machine": {
+   "type": "observation",
+   "why": "абзац",
+   "title": "6576. Repository state",
+   "cell": null
+  }
+ },
+ {
+  "idx": 27,
+  "text": "# 15336. Model already loaded can reduce latency.",
+  "machine": {
+   "type": "observation",
+   "why": "абзац",
+   "title": "15336. Model already loaded can reduce latency.",
+   "cell": null
+  }
+ },
+ {
+  "idx": 28,
+  "text": "# 8069. Proposal evidence chain",
+  "machine": {
+   "type": "observation",
+   "why": "абзац",
+   "title": "8069. Proposal evidence chain",
+   "cell": null
+  }
+ },
+ {
+  "idx": 29,
+  "text": "Не обязательно календарно, но useful sequence.",
+  "machine": {
+   "type": "observation",
+   "why": "абзац",
+   "title": "Не обязательно календарно, но useful sequence.",
+   "cell": null
+  }
+ },
+ {
+  "idx": 30,
+  "text": "# 28886. STOP ≠ project failure necessarily.",
+  "machine": {
+   "type": "observation",
+   "why": "ячейка pred rel obj",
+   "title": "28886. STOP ≠ project failure necessarily.",
+   "cell": {
+    "pred": "28886. STOP",
+    "rel": "≠",
+    "obj": "project failure necessarily"
+   }
+  }
+ },
+ {
+  "idx": 31,
+  "text": "Procedures themselves могут быть packages.",
+  "machine": {
+   "type": "observation",
+   "why": "абзац",
+   "title": "Procedures themselves могут быть packages.",
+   "cell": null
+  }
+ },
+ {
+  "idx": 32,
+  "text": "can store high-level approved choices.",
+  "machine": {
+   "type": "observation",
+   "why": "абзац",
+   "title": "can store high-level approved choices.",
+   "cell": null
+  }
+ },
+ {
+  "idx": 33,
+  "text": "An unused capability can still be valuable because:",
+  "machine": {
+   "type": "observation",
+   "why": "абзац",
+   "title": "An unused capability can still be valuable because:",
+   "cell": null
+  }
+ },
+ {
+  "idx": 34,
+  "text": "# 28962. No one resilience score necessary.",
+  "machine": {
+   "type": "observation",
+   "why": "абзац",
+   "title": "28962. No one resilience score necessary.",
+   "cell": null
+  }
+ },
+ {
+  "idx": 35,
+  "text": "# 25169. Knowledge Commons Federation",
+  "machine": {
+   "type": "observation",
+   "why": "абзац",
+   "title": "25169. Knowledge Commons Federation",
+   "cell": null
+  }
+ },
+ {
+  "idx": 36,
+  "text": "# 5915. Один schema source",
+  "machine": {
+   "type": "observation",
+   "why": "абзац",
+   "title": "5915. Один schema source",
+   "cell": null
+  }
+ },
+ {
+  "idx": 37,
+  "text": "```text\nNEW JOB EVENT\n      ↓\nupdate Demand Graph\n      ↓\nrun matching\n      ↓\nupdate teams\n```",
+  "machine": {
+   "type": "observation",
+   "why": "абзац",
+   "title": "```text",
+   "cell": null
+  }
+ },
+ {
+  "idx": 38,
+  "text": "# 22069. This is specific interoperability trust.",
+  "machine": {
+   "type": "observation",
+   "why": "абзац",
+   "title": "22069. This is specific interoperability trust.",
+   "cell": null
+  }
+ },
+ {
+  "idx": 39,
+  "text": "Funding staged around decision gates.",
+  "machine": {
+   "type": "observation",
+   "why": "абзац",
+   "title": "Funding staged around decision gates.",
+   "cell": null
+  }
+ },
+ {
+  "idx": 40,
+  "text": "```text\nModel A today\nModel B tomorrow\n```",
+  "machine": {
+   "type": "observation",
+   "why": "абзац",
+   "title": "```text",
+   "cell": null
+  }
+ },
+ {
+  "idx": 41,
+  "text": "это observed technology demand.",
+  "machine": {
+   "type": "observation",
+   "why": "абзац",
+   "title": "это observed technology demand.",
+   "cell": null
+  }
+ },
+ {
+  "idx": 42,
+  "text": "```text\nSources\nRevision\nContributors\nLicense\nContext\n```",
+  "machine": {
+   "type": "observation",
+   "why": "абзац",
+   "title": "```text",
+   "cell": null
+  }
+ },
+ {
+  "idx": 43,
+  "text": "# 7684. It links to underlying Claims/Evidence",
+  "machine": {
+   "type": "observation",
+   "why": "абзац",
+   "title": "7684. It links to underlying Claims/Evidence",
+   "cell": null
+  }
+ },
+ {
+  "idx": 44,
+  "text": "```text\nHypothesis:\nFlat optical fiber can detect\nlocalized pressure under bending.\n```",
+  "machine": {
+   "type": "observation",
+   "why": "абзац",
+   "title": "```text",
+   "cell": null
+  }
+ },
+ {
+  "idx": 45,
+  "text": "```text\nTesseract adapter\nVision model\nCloud OCR API\nHuman transcription\n```",
+  "machine": {
+   "type": "observation",
+   "why": "абзац",
+   "title": "```text",
+   "cell": null
+  }
+ },
+ {
+  "idx": 46,
+  "text": "# 66. Это уже Innovation Discovery",
+  "machine": {
+   "type": "observation",
+   "why": "абзац",
+   "title": "66. Это уже Innovation Discovery",
+   "cell": null
+  }
+ },
+ {
+  "idx": 47,
+  "text": "# 7850. This is cross-observatory project assembly",
+  "machine": {
+   "type": "observation",
+   "why": "абзац",
+   "title": "7850. This is cross-observatory project assembly",
+   "cell": null
+  }
+ },
+ {
+  "idx": 48,
+  "text": "```text\nsystem can independently assemble\ncandidate transition plans.\n```",
+  "machine": {
+   "type": "observation",
+   "why": "абзац",
+   "title": "```text",
+   "cell": null
+  }
+ },
+ {
+  "idx": 49,
+  "text": "```text\ndecision impact\ncost of investigation\nprobability result changes decision\ndeadline\n```",
+  "machine": {
+   "type": "observation",
+   "why": "абзац",
+   "title": "```text",
+   "cell": null
+  }
+ },
+ {
+  "idx": 50,
+  "text": "# 15570. Declared backup capability ≠ verified recovery capability.",
+  "machine": {
+   "type": "observation",
+   "why": "ячейка pred rel obj",
+   "title": "15570. Declared backup capability ≠ verified recovery capability.",
+   "cell": {
+    "pred": "15570. Declared backup capability",
+    "rel": "≠",
+    "obj": "verified recovery capability"
+   }
+  }
+ },
+ {
+  "idx": 51,
+  "text": "```text id=\"km2095\"\nvalid time\n+\nsystem knowledge time\n```",
+  "machine": {
+   "type": "observation",
+   "why": "абзац",
+   "title": "```text id=\"km2095\"",
+   "cell": null
+  }
+ },
+ {
+  "idx": 52,
+  "text": "```text\nTalent Resolver Plugin\n```",
+  "machine": {
+   "type": "observation",
+   "why": "абзац",
+   "title": "```text",
+   "cell": null
+  }
+ },
+ {
+  "idx": 53,
+  "text": "# 23015. This is simulation planning.",
+  "machine": {
+   "type": "observation",
+   "why": "абзац",
+   "title": "23015. This is simulation planning.",
+   "cell": null
+  }
+ },
+ {
+  "idx": 54,
+  "text": "Used carefully where judgment requires multiple domain experts.",
+  "machine": {
+   "type": "observation",
+   "why": "абзац",
+   "title": "Used carefully where judgment requires multiple domain experts.",
+   "cell": null
+  }
+ },
+ {
+  "idx": 55,
+  "text": "```text\nAutonomous Lab\n    ↓\nLab Device API Standard\n    ↓\nDevice Connectors\n```",
+  "machine": {
+   "type": "observation",
+   "why": "абзац",
+   "title": "```text",
+   "cell": null
+  }
+ },
+ {
+  "idx": 56,
+  "text": "# 12063. Не вся программа должна пройти все стадии",
+  "machine": {
+   "type": "observation",
+   "why": "абзац",
+   "title": "12063. Не вся программа должна пройти все стадии",
+   "cell": null
+  }
+ },
+ {
+  "idx": 57,
+  "text": "# 1395. Policy Hierarchy",
+  "machine": {
+   "type": "observation",
+   "why": "абзац",
+   "title": "1395. Policy Hierarchy",
+   "cell": null
+  }
+ },
+ {
+  "idx": 58,
+  "text": "# 18182. Semantic Standards and Data Fabric",
+  "machine": {
+   "type": "observation",
+   "why": "абзац",
+   "title": "18182. Semantic Standards and Data Fabric",
+   "cell": null
+  }
+ },
+ {
+  "idx": 59,
+  "text": "Concept definition may change.",
+  "machine": {
+   "type": "observation",
+   "why": "абзац",
+   "title": "Concept definition may change.",
+   "cell": null
+  }
+ },
+ {
+  "idx": 60,
+  "text": "# 7096. project.lock updated.",
+  "machine": {
+   "type": "observation",
+   "why": "абзац",
+   "title": "7096. project.lock updated.",
+   "cell": null
+  }
+ },
+ {
+  "idx": 61,
+  "text": "```text\nMission Coverage View\n```",
+  "machine": {
+   "type": "observation",
+   "why": "абзац",
+   "title": "```text",
+   "cell": null
+  }
+ },
+ {
+  "idx": 62,
+  "text": "```text id=\"f10esg\"\nwhich commitments/capabilities affected?\n```",
+  "machine": {
+   "type": "observation",
+   "why": "абзац",
+   "title": "```text id=\"f10esg\"",
+   "cell": null
+  }
+ },
+ {
+  "idx": 63,
+  "text": "```text\nsmall projects wait much longer.\n```",
+  "machine": {
+   "type": "observation",
+   "why": "абзац",
+   "title": "```text",
+   "cell": null
+  }
+ },
+ {
+  "idx": 64,
+  "text": "# 16834. But local controller still validates.",
+  "machine": {
+   "type": "observation",
+   "why": "абзац",
+   "title": "16834. But local controller still validates.",
+   "cell": null
+  }
+ },
+ {
+  "idx": 65,
+  "text": "For certain contexts, verifier must not be same as builder.",
+  "machine": {
+   "type": "observation",
+   "why": "абзац",
+   "title": "For certain contexts, verifier must not be same as builder.",
+   "cell": null
+  }
+ },
+ {
+  "idx": 66,
+  "text": "# 116. Mixed Organization",
+  "machine": {
+   "type": "observation",
+   "why": "абзац",
+   "title": "116. Mixed Organization",
+   "cell": null
+  }
+ },
+ {
+  "idx": 67,
+  "text": "```text\ncompact semantic state diff.\n```",
+  "machine": {
+   "type": "observation",
+   "why": "абзац",
+   "title": "```text",
+   "cell": null
+  }
+ },
+ {
+  "idx": 68,
+  "text": "# 8345. Shipment constraints",
+  "machine": {
+   "type": "observation",
+   "why": "абзац",
+   "title": "8345. Shipment constraints",
+   "cell": null
+  }
+ },
+ {
+  "idx": 69,
+  "text": "```text\nhn-extractor-0.1\n```",
+  "machine": {
+   "type": "observation",
+   "why": "абзац",
+   "title": "```text",
+   "cell": null
+  }
+ },
+ {
+  "idx": 70,
+  "text": "```text\nNode A\nPROVIDES\nsemantic_resource_search\n```",
+  "machine": {
+   "type": "observation",
+   "why": "абзац",
+   "title": "```text",
+   "cell": null
+  }
+ },
+ {
+  "idx": 71,
+  "text": "# 12449. Mission Portfolio API",
+  "machine": {
+   "type": "observation",
+   "why": "абзац",
+   "title": "12449. Mission Portfolio API",
+   "cell": null
+  }
+ },
+ {
+  "idx": 72,
+  "text": "```text\nreported\ndemonstrated\noperational\n```",
+  "machine": {
+   "type": "observation",
+   "why": "абзац",
+   "title": "```text",
+   "cell": null
+  }
+ },
+ {
+  "idx": 73,
+  "text": "```text\nindependent emergency stop\n```",
+  "machine": {
+   "type": "observation",
+   "why": "абзац",
+   "title": "```text",
+   "cell": null
+  }
+ },
+ {
+  "idx": 74,
+  "text": "```text\nShared Project.\n```",
+  "machine": {
+   "type": "observation",
+   "why": "абзац",
+   "title": "```text",
+   "cell": null
+  }
+ },
+ {
+  "idx": 75,
+  "text": "# 6620. Реальный operational chain",
+  "machine": {
+   "type": "observation",
+   "why": "абзац",
+   "title": "6620. Реальный operational chain",
+   "cell": null
+  }
+ },
+ {
+  "idx": 76,
+  "text": "# 8988. Но это render types,",
+  "machine": {
+   "type": "observation",
+   "why": "абзац",
+   "title": "8988. Но это render types,",
+   "cell": null
+  }
+ },
+ {
+  "idx": 77,
+  "text": "Когда local transaction:",
+  "machine": {
+   "type": "question",
+   "why": "вопрос",
+   "title": "Когда local transaction:",
+   "cell": null
+  }
+ },
+ {
+  "idx": 78,
+  "text": "после policy compilation:",
+  "machine": {
+   "type": "observation",
+   "why": "абзац",
+   "title": "после policy compilation:",
+   "cell": null
+  }
+ },
+ {
+  "idx": 79,
+  "text": "в единую систему исполнения.",
+  "machine": {
+   "type": "observation",
+   "why": "абзац",
+   "title": "в единую систему исполнения.",
+   "cell": null
+  }
+ },
+ {
+  "idx": 80,
+  "text": "Long-term commitments/constraints.",
+  "machine": {
+   "type": "observation",
+   "why": "абзац",
+   "title": "Long-term commitments/constraints.",
+   "cell": null
+  }
+ },
+ {
+  "idx": 81,
+  "text": "# 14767. This is same abstract architecture as:",
+  "machine": {
+   "type": "observation",
+   "why": "абзац",
+   "title": "14767. This is same abstract architecture as:",
+   "cell": null
+  }
+ },
+ {
+  "idx": 82,
+  "text": "```text\nчто нужно выполнить\n```",
+  "machine": {
+   "type": "observation",
+   "why": "абзац",
+   "title": "```text",
+   "cell": null
+  }
+ },
+ {
+  "idx": 83,
+  "text": "Теперь появляется другой класс вопроса:",
+  "machine": {
+   "type": "observation",
+   "why": "абзац",
+   "title": "Теперь появляется другой класс вопроса:",
+   "cell": null
+  }
+ },
+ {
+  "idx": 84,
+  "text": "```text\nWe lack reliable benchmark for AI browser agents.\n```",
+  "machine": {
+   "type": "observation",
+   "why": "абзац",
+   "title": "```text",
+   "cell": null
+  }
+ },
+ {
+  "idx": 85,
+  "text": "```text\nideas\nactive projects\nsubprojects\nresearch projects\nstartup projects\ncompany challenges\ngrant projects\n```",
+  "machine": {
+   "type": "observation",
+   "why": "абзац",
+   "title": "```text",
+   "cell": null
+  }
+ },
+ {
+  "idx": 86,
+  "text": "# 15973. `COMPATIBLE_WITH_ADAPTER`",
+  "machine": {
+   "type": "observation",
+   "why": "абзац",
+   "title": "15973. `COMPATIBLE_WITH_ADAPTER`",
+   "cell": null
+  }
+ },
+ {
+  "idx": 87,
+  "text": "```text\nEvent\n↓\nAffected Concepts/Capabilities\n↓\nSubscribers\n```",
+  "machine": {
+   "type": "observation",
+   "why": "абзац",
+   "title": "```text",
+   "cell": null
+  }
+ },
+ {
+  "idx": 88,
+  "text": "```text\ninno spatial route <origin> <destination>\n```",
+  "machine": {
+   "type": "observation",
+   "why": "абзац",
+   "title": "```text",
+   "cell": null
+  }
+ },
+ {
+  "idx": 89,
+  "text": "Architecture may require partner capability.",
+  "machine": {
+   "type": "observation",
+   "why": "абзац",
+   "title": "Architecture may require partner capability.",
+   "cell": null
+  }
+ },
+ {
+  "idx": 90,
+  "text": "# 15289. Execution Placement is therefore specialized capability matching.",
+  "machine": {
+   "type": "observation",
+   "why": "абзац",
+   "title": "15289. Execution Placement is therefore specialized capability matching.",
+   "cell": null
+  }
+ },
+ {
+  "idx": 91,
+  "text": "```text\nLab A PROVIDES microscopy\nProject B REQUIRES microscopy\nCompany C PROVIDES sample preparation\nPaper D SUPPORTS method M\n```",
+  "machine": {
+   "type": "observation",
+   "why": "абзац",
+   "title": "```text",
+   "cell": null
+  }
+ },
+ {
+  "idx": 92,
+  "text": "# **Capability Capital, Ecosystem Learning & Technological Development Accounting v0.1**",
+  "machine": {
+   "type": "observation",
+   "why": "абзац",
+   "title": "**Capability Capital, Ecosystem Learning & Technological Development Accounting v0.1**",
+   "cell": null
+  }
+ },
+ {
+  "idx": 93,
+  "text": "# 17776. During migration:",
+  "machine": {
+   "type": "observation",
+   "why": "абзац",
+   "title": "17776. During migration:",
+   "cell": null
+  }
+ },
+ {
+  "idx": 94,
+  "text": "# 9319. Prediction Error Registry records difference.",
+  "machine": {
+   "type": "observation",
+   "why": "абзац",
+   "title": "9319. Prediction Error Registry records difference.",
+   "cell": null
+  }
+ },
+ {
+  "idx": 95,
+  "text": "```text\nArchitecture\n    ↓\nPrototype\n    ↓\nEvaluation\n    ↓\nSecurity Review\n    ↓\nPilot\n```",
+  "machine": {
+   "type": "observation",
+   "why": "абзац",
+   "title": "```text",
+   "cell": null
+  }
+ },
+ {
+  "idx": 96,
+  "text": "```text\nevents\nclaims\nartifact manifests\n```",
+  "machine": {
+   "type": "observation",
+   "why": "абзац",
+   "title": "```text",
+   "cell": null
+  }
+ },
+ {
+  "idx": 97,
+  "text": "# 20514. Unknowns can be assigned:",
+  "machine": {
+   "type": "observation",
+   "why": "абзац",
+   "title": "20514. Unknowns can be assigned:",
+   "cell": null
+  }
+ },
+ {
+  "idx": 98,
+  "text": "Engineer trained on machine,",
+  "machine": {
+   "type": "observation",
+   "why": "абзац",
+   "title": "Engineer trained on machine,",
+   "cell": null
+  }
+ },
+ {
+  "idx": 99,
+  "text": "```text id=\"0usv88\"\noptical interrogator.\n```",
+  "machine": {
+   "type": "observation",
+   "why": "абзац",
+   "title": "```text id=\"0usv88\"",
+   "cell": null
+  }
+ },
+ {
+  "idx": 100,
+  "text": "# 13775. Explanation should show:",
+  "machine": {
+   "type": "observation",
+   "why": "абзац",
+   "title": "13775. Explanation should show:",
+   "cell": null
+  }
+ },
+ {
+  "idx": 101,
+  "text": "```text\nENABLES\nmodel evaluation\n```",
+  "machine": {
+   "type": "observation",
+   "why": "абзац",
+   "title": "```text",
+   "cell": null
+  }
+ },
+ {
+  "idx": 102,
+  "text": "```text\nresearch\nreference implementation\nvalidation\npilot\n```",
+  "machine": {
+   "type": "observation",
+   "why": "абзац",
+   "title": "```text",
+   "cell": null
+  }
+ },
+ {
+  "idx": 103,
+  "text": "# 98. Центральная формула Federated Resolver",
+  "machine": {
+   "type": "observation",
+   "why": "абзац",
+   "title": "98. Центральная формула Federated Resolver",
+   "cell": null
+  }
+ },
+ {
+  "idx": 104,
+  "text": "```text\n20 papers\n100 claims\n30 evidence links\n10 contradiction pairs\n```",
+  "machine": {
+   "type": "observation",
+   "why": "абзац",
+   "title": "```text",
+   "cell": null
+  }
+ },
+ {
+  "idx": 105,
+  "text": "Например calibration certificate:",
+  "machine": {
+   "type": "observation",
+   "why": "абзац",
+   "title": "Например calibration certificate:",
+   "cell": null
+  }
+ },
+ {
+  "idx": 106,
+  "text": "Each organization stores:",
+  "machine": {
+   "type": "observation",
+   "why": "абзац",
+   "title": "Each organization stores:",
+   "cell": null
+  }
+ },
+ {
+  "idx": 107,
+  "text": "Поэтому отдельная базовая сущность не нужна.",
+  "machine": {
+   "type": "observation",
+   "why": "абзац",
+   "title": "Поэтому отдельная базовая сущность не нужна.",
+   "cell": null
+  }
+ },
+ {
+  "idx": 108,
+  "text": "```text id=\"sraxda\"\nProject A:\nmaximize openness\n\nProject B:\nproprietary closed deployment\n```",
+  "machine": {
+   "type": "observation",
+   "why": "абзац",
+   "title": "```text id=\"sraxda\"",
+   "cell": null
+  }
+ },
+ {
+  "idx": 109,
+  "text": "# 26373. Но такая система может состоять из:",
+  "machine": {
+   "type": "observation",
+   "why": "абзац",
+   "title": "26373. Но такая система может состоять из:",
+   "cell": null
+  }
+ },
+ {
+  "idx": 110,
+  "text": "```text\nTrigger\n↓\nAPI\n↓\nTransform\n↓\nStore\n```",
+  "machine": {
+   "type": "observation",
+   "why": "абзац",
+   "title": "```text",
+   "cell": null
+  }
+ },
+ {
+  "idx": 111,
+  "text": "# 19423. Добавить proposed component.",
+  "machine": {
+   "type": "observation",
+   "why": "абзац",
+   "title": "19423. Добавить proposed component.",
+   "cell": null
+  }
+ },
+ {
+  "idx": 112,
+  "text": "```text\nHN Talent Graph\n```",
+  "machine": {
+   "type": "observation",
+   "why": "абзац",
+   "title": "```text",
+   "cell": null
+  }
+ },
+ {
+  "idx": 113,
+  "text": "# 9100. This is semantic compilation for physical world",
+  "machine": {
+   "type": "observation",
+   "why": "абзац",
+   "title": "9100. This is semantic compilation for physical world",
+   "cell": null
+  }
+ },
+ {
+  "idx": 114,
+  "text": "# 3145. Research adversarial review",
+  "machine": {
+   "type": "observation",
+   "why": "абзац",
+   "title": "3145. Research adversarial review",
+   "cell": null
+  }
+ },
+ {
+  "idx": 115,
+  "text": "```text\nstalls\ngoods\nroutes\ncrowding\ndelivery flows\n```",
+  "machine": {
+   "type": "observation",
+   "why": "абзац",
+   "title": "```text",
+   "cell": null
+  }
+ },
+ {
+  "idx": 116,
+  "text": "Нужен uncertainty propagation.",
+  "machine": {
+   "type": "observation",
+   "why": "абзац",
+   "title": "Нужен uncertainty propagation.",
+   "cell": null
+  }
+ },
+ {
+  "idx": 117,
+  "text": "```text\nresolution option\n```",
+  "machine": {
+   "type": "observation",
+   "why": "абзац",
+   "title": "```text",
+   "cell": null
+  }
+ },
+ {
+  "idx": 118,
+  "text": "Rare/high-impact possibilities.",
+  "machine": {
+   "type": "observation",
+   "why": "абзац",
+   "title": "Rare/high-impact possibilities.",
+   "cell": null
+  }
+ },
+ {
+  "idx": 119,
+  "text": "```text\ntemperature rise.\n```",
+  "machine": {
+   "type": "observation",
+   "why": "абзац",
+   "title": "```text",
+   "cell": null
+  }
+ },
+ {
+  "idx": 120,
+  "text": "```text\nprovider conforms to v1\n```",
+  "machine": {
+   "type": "observation",
+   "why": "абзац",
+   "title": "```text",
+   "cell": null
+  }
+ },
+ {
+  "idx": 121,
+  "text": "```text\nstrong internal validity\nweak external validity\n```",
+  "machine": {
+   "type": "observation",
+   "why": "абзац",
+   "title": "```text",
+   "cell": null
+  }
+ },
+ {
+  "idx": 122,
+  "text": "Conversation can be represented as:",
+  "machine": {
+   "type": "observation",
+   "why": "абзац",
+   "title": "Conversation can be represented as:",
+   "cell": null
+  }
+ },
+ {
+  "idx": 123,
+  "text": "```text\nRust engineers\n```",
+  "machine": {
+   "type": "observation",
+   "why": "абзац",
+   "title": "```text",
+   "cell": null
+  }
+ },
+ {
+  "idx": 124,
+  "text": "```text id=\"00ij2m\"\nbase world\n+\nscenario patch\n```",
+  "machine": {
+   "type": "observation",
+   "why": "абзац",
+   "title": "```text id=\"00ij2m\"",
+   "cell": null
+  }
+ },
+ {
+  "idx": 125,
+  "text": "Но authority определяет:",
+  "machine": {
+   "type": "observation",
+   "why": "абзац",
+   "title": "Но authority определяет:",
+   "cell": null
+  }
+ },
+ {
+  "idx": 126,
+  "text": "# 23303. Elegant allocation rule proposed,",
+  "machine": {
+   "type": "observation",
+   "why": "абзац",
+   "title": "23303. Elegant allocation rule proposed,",
+   "cell": null
+  }
+ },
+ {
+  "idx": 127,
+  "text": "# 20630. Mission Control Event Types",
+  "machine": {
+   "type": "observation",
+   "why": "абзац",
+   "title": "20630. Mission Control Event Types",
+   "cell": null
+  }
+ },
+ {
+  "idx": 128,
+  "text": "LEARNING_FIRST may prefer B.",
+  "machine": {
+   "type": "observation",
+   "why": "абзац",
+   "title": "LEARNING_FIRST may prefer B.",
+   "cell": null
+  }
+ },
+ {
+  "idx": 129,
+  "text": "Только если нет — рассматривается изменение стандарта.",
+  "machine": {
+   "type": "observation",
+   "why": "абзац",
+   "title": "Только если нет — рассматривается изменение стандарта.",
+   "cell": null
+  }
+ },
+ {
+  "idx": 130,
+  "text": "# 27147. Security Fabric applies.",
+  "machine": {
+   "type": "observation",
+   "why": "абзац",
+   "title": "27147. Security Fabric applies.",
+   "cell": null
+  }
+ },
+ {
+  "idx": 131,
+  "text": "```text\nvalidated Claims\nMethods\nEvidence\nResearch Syntheses\nStandards\n```",
+  "machine": {
+   "type": "observation",
+   "why": "абзац",
+   "title": "```text",
+   "cell": null
+  }
+ },
+ {
+  "idx": 132,
+  "text": "```text id=\"se2512\"\nSILENT_AUTOMATION\n```",
+  "machine": {
+   "type": "observation",
+   "why": "абзац",
+   "title": "```text id=\"se2512\"",
+   "cell": null
+  }
+ },
+ {
+  "idx": 133,
+  "text": "# 15553. Resource Isolation Policy",
+  "machine": {
+   "type": "observation",
+   "why": "абзац",
+   "title": "15553. Resource Isolation Policy",
+   "cell": null
+  }
+ },
+ {
+  "idx": 134,
+  "text": "```text\nConflict Resolution Time\n```",
+  "machine": {
+   "type": "observation",
+   "why": "абзац",
+   "title": "```text",
+   "cell": null
+  }
+ },
+ {
+  "idx": 135,
+  "text": "# 9782. Policy conflict:",
+  "machine": {
+   "type": "observation",
+   "why": "абзац",
+   "title": "9782. Policy conflict:",
+   "cell": null
+  }
+ },
+ {
+  "idx": 136,
+  "text": "```text\nbad results\n→ invest more only because already invested\n```",
+  "machine": {
+   "type": "observation",
+   "why": "абзац",
+   "title": "```text",
+   "cell": null
+  }
+ },
+ {
+  "idx": 137,
+  "text": "Kafka не нужен на старте.",
+  "machine": {
+   "type": "observation",
+   "why": "абзац",
+   "title": "Kafka не нужен на старте.",
+   "cell": null
+  }
+ },
+ {
+  "idx": 138,
+  "text": "```text\nin simulation/digital twin\n```",
+  "machine": {
+   "type": "observation",
+   "why": "абзац",
+   "title": "```text",
+   "cell": null
+  }
+ },
+ {
+  "idx": 139,
+  "text": "```text\nrequired input set\n```",
+  "machine": {
+   "type": "observation",
+   "why": "абзац",
+   "title": "```text",
+   "cell": null
+  }
+ },
+ {
+  "idx": 140,
+  "text": "# 881. Example",
+  "machine": {
+   "type": "observation",
+   "why": "абзац",
+   "title": "881. Example",
+   "cell": null
+  }
+ },
+ {
+  "idx": 141,
+  "text": "Пример:",
+  "machine": {
+   "type": "observation",
+   "why": "абзац",
+   "title": "Пример:",
+   "cell": null
+  }
+ },
+ {
+  "idx": 142,
+  "text": "output wrong.",
+  "machine": {
+   "type": "observation",
+   "why": "абзац",
+   "title": "output wrong.",
+   "cell": null
+  }
+ },
+ {
+  "idx": 143,
+  "text": "```text\nread API\n```",
+  "machine": {
+   "type": "observation",
+   "why": "абзац",
+   "title": "```text",
+   "cell": null
+  }
+ },
+ {
+  "idx": 144,
+  "text": "Первый enrichment:",
+  "machine": {
+   "type": "observation",
+   "why": "абзац",
+   "title": "Первый enrichment:",
+   "cell": null
+  }
+ },
+ {
+  "idx": 145,
+  "text": "# 5323. Frontend tests",
+  "machine": {
+   "type": "observation",
+   "why": "абзац",
+   "title": "5323. Frontend tests",
+   "cell": null
+  }
+ },
+ {
+  "idx": 146,
+  "text": "memory.",
+  "machine": {
+   "type": "observation",
+   "why": "абзац",
+   "title": "memory.",
+   "cell": null
+  }
+ },
+ {
+  "idx": 147,
+  "text": "Core screens:",
+  "machine": {
+   "type": "observation",
+   "why": "абзац",
+   "title": "Core screens:",
+   "cell": null
+  }
+ },
+ {
+  "idx": 148,
+  "text": "During incident:",
+  "machine": {
+   "type": "observation",
+   "why": "абзац",
+   "title": "During incident:",
+   "cell": null
+  }
+ },
+ {
+  "idx": 149,
+  "text": "contains:",
+  "machine": {
+   "type": "observation",
+   "why": "абзац",
+   "title": "contains:",
+   "cell": null
+  }
+ },
+ {
+  "idx": 150,
+  "text": "Например:",
+  "machine": {
+   "type": "observation",
+   "why": "абзац",
+   "title": "Например:",
+   "cell": null
+  }
+ },
+ {
+  "idx": 151,
+  "text": "# 264. Team Contract",
+  "machine": {
+   "type": "observation",
+   "why": "абзац",
+   "title": "264. Team Contract",
+   "cell": null
+  }
+ },
+ {
+  "idx": 152,
+  "text": "```text\ncuration.\n```",
+  "machine": {
+   "type": "observation",
+   "why": "абзац",
+   "title": "```text",
+   "cell": null
+  }
+ },
+ {
+  "idx": 153,
+  "text": "Или:",
+  "machine": {
+   "type": "observation",
+   "why": "абзац",
+   "title": "Или:",
+   "cell": null
+  }
+ },
+ {
+  "idx": 154,
+  "text": "# 2264. Tombstone",
+  "machine": {
+   "type": "observation",
+   "why": "абзац",
+   "title": "2264. Tombstone",
+   "cell": null
+  }
+ },
+ {
+  "idx": 155,
+  "text": "```text\n200 GB.\n```",
+  "machine": {
+   "type": "observation",
+   "why": "абзац",
+   "title": "```text",
+   "cell": null
+  }
+ },
+ {
+  "idx": 156,
+  "text": "Live demo:",
+  "machine": {
+   "type": "observation",
+   "why": "абзац",
+   "title": "Live demo:",
+   "cell": null
+  }
+ },
+ {
+  "idx": 157,
+  "text": "must mature.",
+  "machine": {
+   "type": "observation",
+   "why": "абзац",
+   "title": "must mature.",
+   "cell": null
+  }
+ },
+ {
+  "idx": 158,
+  "text": "# 4977. n8n/Make",
+  "machine": {
+   "type": "observation",
+   "why": "абзац",
+   "title": "4977. n8n/Make",
+   "cell": null
+  }
+ },
+ {
+  "idx": 159,
+  "text": "```text\nn8n\n```",
+  "machine": {
+   "type": "observation",
+   "why": "абзац",
+   "title": "```text",
+   "cell": null
+  }
+ },
+ {
+  "idx": 160,
+  "text": "Связывает:",
+  "machine": {
+   "type": "observation",
+   "why": "абзац",
+   "title": "Связывает:",
+   "cell": null
+  }
+ },
+ {
+  "idx": 161,
+  "text": "Теперь:",
+  "machine": {
+   "type": "observation",
+   "why": "абзац",
+   "title": "Теперь:",
+   "cell": null
+  }
+ },
+ {
+  "idx": 162,
+  "text": "May be speculative.",
+  "machine": {
+   "type": "observation",
+   "why": "абзац",
+   "title": "May be speculative.",
+   "cell": null
+  }
+ },
+ {
+  "idx": 163,
+  "text": "Example:",
+  "machine": {
+   "type": "observation",
+   "why": "абзац",
+   "title": "Example:",
+   "cell": null
+  }
+ },
+ {
+  "idx": 164,
+  "text": "# 3323. Scout B",
+  "machine": {
+   "type": "observation",
+   "why": "абзац",
+   "title": "3323. Scout B",
+   "cell": null
+  }
+ },
+ {
+  "idx": 165,
+  "text": "```text\nCLAIM\n```",
+  "machine": {
+   "type": "observation",
+   "why": "абзац",
+   "title": "```text",
+   "cell": null
+  }
+ },
+ {
+  "idx": 166,
+  "text": "until discovery.",
+  "machine": {
+   "type": "observation",
+   "why": "абзац",
+   "title": "until discovery.",
+   "cell": null
+  }
+ },
+ {
+  "idx": 167,
+  "text": "Changes since cursor.",
+  "machine": {
+   "type": "observation",
+   "why": "абзац",
+   "title": "Changes since cursor.",
+   "cell": null
+  }
+ },
+ {
+  "idx": 168,
+  "text": "```text\nCapability\n```",
+  "machine": {
+   "type": "observation",
+   "why": "абзац",
+   "title": "```text",
+   "cell": null
+  }
+ },
+ {
+  "idx": 169,
+  "text": "Поэтому:",
+  "machine": {
+   "type": "observation",
+   "why": "абзац",
+   "title": "Поэтому:",
+   "cell": null
+  }
+ },
+ {
+  "idx": 170,
+  "text": "Conceptually:",
+  "machine": {
+   "type": "observation",
+   "why": "абзац",
+   "title": "Conceptually:",
+   "cell": null
+  }
+ },
+ {
+  "idx": 171,
+  "text": "Store:",
+  "machine": {
+   "type": "observation",
+   "why": "абзац",
+   "title": "Store:",
+   "cell": null
+  }
+ },
+ {
+  "idx": 172,
+  "text": "High-level workflow:",
+  "machine": {
+   "type": "observation",
+   "why": "абзац",
+   "title": "High-level workflow:",
+   "cell": null
+  }
+ },
+ {
+  "idx": 173,
+  "text": "# 20057. Case 12",
+  "machine": {
+   "type": "observation",
+   "why": "абзац",
+   "title": "20057. Case 12",
+   "cell": null
+  }
+ },
+ {
+  "idx": 174,
+  "text": "# 536. Hybrid",
+  "machine": {
+   "type": "observation",
+   "why": "абзац",
+   "title": "536. Hybrid",
+   "cell": null
+  }
+ },
+ {
+  "idx": 175,
+  "text": "accumulate.",
+  "machine": {
+   "type": "observation",
+   "why": "абзац",
+   "title": "accumulate.",
+   "cell": null
+  }
+ },
+ {
+  "idx": 176,
+  "text": "# 4330. Inspector tab 1",
+  "machine": {
+   "type": "observation",
+   "why": "абзац",
+   "title": "4330. Inspector tab 1",
+   "cell": null
+  }
+ },
+ {
+  "idx": 177,
+  "text": "# 4039. Game Engine",
+  "machine": {
+   "type": "observation",
+   "why": "абзац",
+   "title": "4039. Game Engine",
+   "cell": null
+  }
+ },
+ {
+  "idx": 178,
+  "text": "Important:",
+  "machine": {
+   "type": "observation",
+   "why": "абзац",
+   "title": "Important:",
+   "cell": null
+  }
+ },
+ {
+  "idx": 179,
+  "text": "loops.",
+  "machine": {
+   "type": "observation",
+   "why": "абзац",
+   "title": "loops.",
+   "cell": null
+  }
+ },
+ {
+  "idx": 180,
+  "text": "Shows:",
+  "machine": {
+   "type": "observation",
+   "why": "абзац",
+   "title": "Shows:",
+   "cell": null
+  }
+ },
+ {
+  "idx": 181,
+  "text": "or:",
+  "machine": {
+   "type": "observation",
+   "why": "абзац",
+   "title": "or:",
+   "cell": null
+  }
+ },
+ {
+  "idx": 182,
+  "text": "Мы умеем:",
+  "machine": {
+   "type": "observation",
+   "why": "абзац",
+   "title": "Мы умеем:",
+   "cell": null
+  }
+ },
+ {
+  "idx": 183,
+  "text": "Candidate 1:",
+  "machine": {
+   "type": "observation",
+   "why": "абзац",
+   "title": "Candidate 1:",
+   "cell": null
+  }
+ },
+ {
+  "idx": 184,
+  "text": "# 19437. Но:",
+  "machine": {
+   "type": "observation",
+   "why": "абзац",
+   "title": "19437. Но:",
+   "cell": null
+  }
+ },
+ {
+  "idx": 185,
+  "text": "# 9248. Spatial tables",
+  "machine": {
+   "type": "observation",
+   "why": "абзац",
+   "title": "9248. Spatial tables",
+   "cell": null
+  }
+ },
+ {
+  "idx": 186,
+  "text": "```text\nGraph DB X\n```",
+  "machine": {
+   "type": "observation",
+   "why": "абзац",
+   "title": "```text",
+   "cell": null
+  }
+ },
+ {
+  "idx": 187,
+  "text": "# 3869. Funding Lens",
+  "machine": {
+   "type": "observation",
+   "why": "абзац",
+   "title": "3869. Funding Lens",
+   "cell": null
+  }
+ },
+ {
+  "idx": 188,
+  "text": "# 1189. Example",
+  "machine": {
+   "type": "observation",
+   "why": "абзац",
+   "title": "1189. Example",
+   "cell": null
+  }
+ },
+ {
+  "idx": 189,
+  "text": "# 21. Compatibility",
+  "machine": {
+   "type": "observation",
+   "why": "абзац",
+   "title": "21. Compatibility",
+   "cell": null
+  }
+ },
+ {
+  "idx": 190,
+  "text": "Не:",
+  "machine": {
+   "type": "observation",
+   "why": "абзац",
+   "title": "Не:",
+   "cell": null
+  }
+ },
+ {
+  "idx": 191,
+  "text": "Registry хранит:",
+  "machine": {
+   "type": "observation",
+   "why": "абзац",
+   "title": "Registry хранит:",
+   "cell": null
+  }
+ },
+ {
+  "idx": 192,
+  "text": "# 28946. Example:",
+  "machine": {
+   "type": "observation",
+   "why": "абзац",
+   "title": "28946. Example:",
+   "cell": null
+  }
+ },
+ {
+  "idx": 193,
+  "text": "# 4861. Another",
+  "machine": {
+   "type": "observation",
+   "why": "абзац",
+   "title": "4861. Another",
+   "cell": null
+  }
+ },
+ {
+  "idx": 194,
+  "text": "# 8733. Creates:",
+  "machine": {
+   "type": "observation",
+   "why": "абзац",
+   "title": "8733. Creates:",
+   "cell": null
+  }
+ },
+ {
+  "idx": 195,
+  "text": "# 23002. Example:",
+  "machine": {
+   "type": "observation",
+   "why": "абзац",
+   "title": "23002. Example:",
+   "cell": null
+  }
+ },
+ {
+  "idx": 196,
+  "text": "# 17487. Example:",
+  "machine": {
+   "type": "observation",
+   "why": "абзац",
+   "title": "17487. Example:",
+   "cell": null
+  }
+ },
+ {
+  "idx": 197,
+  "text": "Use Pydantic Settings.",
+  "machine": {
+   "type": "observation",
+   "why": "абзац",
+   "title": "Use Pydantic Settings.",
+   "cell": null
+  }
+ },
+ {
+  "idx": 198,
+  "text": "```text\ngood match\n```",
+  "machine": {
+   "type": "observation",
+   "why": "абзац",
+   "title": "```text",
+   "cell": null
+  }
+ },
+ {
+  "idx": 199,
+  "text": "Possible tasks:",
+  "machine": {
+   "type": "observation",
+   "why": "абзац",
+   "title": "Possible tasks:",
+   "cell": null
+  }
+ }
+]

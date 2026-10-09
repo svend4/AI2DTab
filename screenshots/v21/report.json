@@ -1,0 +1,144 @@
+{
+  "routes": [
+    {
+      "route": "/",
+      "width": 1280,
+      "scrollWidth": 1280,
+      "innerWidth": 1280,
+      "ok": true
+    },
+    {
+      "route": "/l2",
+      "width": 1280,
+      "scrollWidth": 1280,
+      "innerWidth": 1280,
+      "ok": true
+    },
+    {
+      "route": "/l3",
+      "width": 1280,
+      "scrollWidth": 1280,
+      "innerWidth": 1280,
+      "ok": true
+    },
+    {
+      "route": "/l4",
+      "width": 1280,
+      "scrollWidth": 1280,
+      "innerWidth": 1280,
+      "ok": true
+    },
+    {
+      "route": "/cycle",
+      "width": 1280,
+      "scrollWidth": 1280,
+      "innerWidth": 1280,
+      "ok": true
+    },
+    {
+      "route": "/",
+      "width": 390,
+      "scrollWidth": 390,
+      "innerWidth": 390,
+      "ok": true
+    },
+    {
+      "route": "/l2",
+      "width": 390,
+      "scrollWidth": 390,
+      "innerWidth": 390,
+      "ok": true
+    },
+    {
+      "route": "/l3",
+      "width": 390,
+      "scrollWidth": 390,
+      "innerWidth": 390,
+      "ok": true
+    },
+    {
+      "route": "/l4",
+      "width": 390,
+      "scrollWidth": 390,
+      "innerWidth": 390,
+      "ok": true
+    },
+    {
+      "route": "/cycle",
+      "width": 390,
+      "scrollWidth": 390,
+      "innerWidth": 390,
+      "ok": true
+    }
+  ],
+  "scenario": [
+    {
+      "name": "L1 plant kit",
+      "text": "PLANT → посажено 36\nпропущено (уже есть) 0\nn=36 planted=36 skipped=0\nоткрыть L2 →"
+    },
+    {
+      "name": "L2 FILL via command bar",
+      "echo": "23:41:40 › FILL · ACCEPT NEQ ∩ RAW → ok=18 refuse=0 skip=0 · ACCEPT ont-S17074"
+    },
+    {
+      "name": "UNDO via command bar",
+      "echo": "23:41:41 › UNDO · UNDO ход 4: 18 — ACCEPT ont-S18488, ACCEPT ont-S18426, ACCEPT ont-S18241, ACCEPT ont-S18195, ACCEPT ont-S18059, ACCEPT ont-S17923…"
+    },
+    {
+      "name": "machine actor → per-row accept",
+      "headerNote": 1,
+      "rowMsg": "REFUSE O001 machine cannot canon",
+      "echo": "23:41:41 › ACCEPT O001 · REFUSE O001 machine cannot canon"
+    },
+    {
+      "name": "L3 CHAIN",
+      "chainHead": "CHAIN · цепочки ячеек без ребра · 0",
+      "chainItems": 1,
+      "wired": "no chains"
+    },
+    {
+      "name": "L4 export JSON",
+      "file": "book.json",
+      "objects": 67,
+      "links": 15,
+      "events": 59,
+      "undone": 18
+    },
+    {
+      "name": "L4 journal/saved",
+      "undoneRows": 18,
+      "savedLine": ""
+    },
+    {
+      "name": "L4 import merge via DIFFBOOK",
+      "diffLine": "DIFFBOOK: новых +1 · нет в файле −0 · изменённых ~0 · рёбер +0 / −0",
+      "mergeMsg": "слияние · other.json · слияние: +1 объектов, +0 рёбер → всего 68 объектов, 15 рёбер · MERGE added=1 links=0 origins=0 conflicts=0 · сохранено: 49,8 КБ · IndexedDB"
+    },
+    {
+      "name": "L4 TSV import",
+      "tsvDiff": "DIFFBOOK: новых +2 · нет в файле −68 · изменённых ~0 · рёбер +0 / −15",
+      "tsvMsg": "слияние · TSV rows.tsv · слияние: +2 объектов, +0 рёбер → всего 70 объектов, 15 рёбер · MERGE added=2 links=0 origins=0 conflicts=0 · сохранено: 50,4 КБ · IndexedDB",
+      "look": "23:42:14 › LOOK T-tsv-1 · LOOK T-tsv-1 → 1 · T-tsv-1 fact canon строка из tsv",
+      "tsvStatus": null
+    },
+    {
+      "name": "SSR command input disabled",
+      "disabled": true
+    },
+    {
+      "name": "mobile after data",
+      "l2": {
+        "sw": 390,
+        "vw": 390
+      }
+    },
+    {
+      "name": "mobile after data l3",
+      "l3": {
+        "sw": 390,
+        "vw": 390
+      }
+    }
+  ],
+  "consoleErrors": []
+}

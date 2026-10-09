@@ -10,6 +10,8 @@ export function CommandBar() {
   const [line, setLine] = useState("");
   const [hist, setHist] = useState(-1);
   const [help, setHelp] = useState(false);
+  const ready = useDesk((s) => s.ready);
+  const saved = useDesk((s) => s.saved);
   const exec = useDesk((s) => s.exec);
   const query = useDesk((s) => s.query);
   const echo = useDesk((s) => s.echo);
@@ -17,7 +19,9 @@ export function CommandBar() {
   const last = echo[0];
 
   function run(e: FormEvent) {
+    // до гидратации submit ушёл бы нативным GET — страхуемся и здесь, не только disabled
     e.preventDefault();
+    if (!ready) return;
     const t = line.trim();
     if (!t) return;
     setLine("");
@@ -47,36 +51,42 @@ export function CommandBar() {
   }
 
   return (
-    <div className="flex flex-col gap-2">
-      <form onSubmit={run} className="flex flex-col gap-2 sm:flex-row sm:items-center">
+    <div className="flex min-w-0 flex-col gap-2">
+      <form onSubmit={run} className="flex flex-col gap-2 sm:flex-row sm:items-center" aria-busy={!ready}>
         <label className="sr-only" htmlFor="cmd">команда</label>
         <input
           id="cmd"
           value={line}
+          disabled={!ready}
           onChange={(e) => setLine(e.target.value)}
           onKeyDown={key}
-          placeholder="=FILL  SET NEQ ∩ (RAW ∪ CANON) \ C  WHY id  UNDO  HELP"
-          className="h-11 min-w-0 flex-1 rounded-md border border-border bg-elevated px-3 font-mono text-sm outline-none focus:border-border-strong"
+          placeholder={ready ? "=FILL  SET NEQ ∩ (RAW ∪ CANON) \\ C  WHY id  UNDO  HELP" : "читаем книгу…"}
+          className="h-11 min-w-0 flex-1 rounded-md border border-border bg-elevated px-3 font-mono text-sm outline-none focus:border-border-strong disabled:opacity-50"
           autoComplete="off"
         />
         <div className="flex gap-2">
-          <button type="submit" className="h-11 rounded-md bg-fg px-4 text-sm font-medium text-accent-fg">Выполнить</button>
+          <button type="submit" disabled={!ready} className="h-11 rounded-md bg-fg px-4 text-sm font-medium text-accent-fg disabled:opacity-40">Выполнить</button>
           <button type="button" onClick={() => setHelp((h) => !h)} className="h-11 rounded-md border border-border px-3 text-sm" aria-expanded={help}>
             {help ? "скрыть" : "алфавит"}
           </button>
         </div>
       </form>
       {last ? (
-        <p className={`font-mono text-xs ${last.out.ok ? "text-muted" : "text-[color:var(--color-warn)]"}`} aria-live="polite">
+        <p className={`min-w-0 break-words font-mono text-xs ${last.out.ok ? "text-muted" : "text-[color:var(--color-warn)]"}`} aria-live="polite">
           <span className="text-subtle">{last.at} › {last.line.slice(0, 40)}</span> · {tail(last.out.text)}
+        </p>
+      ) : null}
+      {saved?.error ? (
+        <p className="min-w-0 break-words font-mono text-xs text-[color:var(--color-warn)]" role="alert">
+          запись не сохранилась: {saved.error} — книга живёт в памяти до перезагрузки, снимите экспорт JSON на L4
         </p>
       ) : null}
       {help ? (
         <dl className="grid gap-x-4 gap-y-1 rounded-md border border-border bg-surface p-3 font-mono text-[11px] sm:grid-cols-2">
           {VERBS.map((v) => (
-            <div key={v.verb} className="flex gap-2">
+            <div key={v.verb} className="flex min-w-0 gap-2">
               <dt className={`shrink-0 ${v.write ? "text-fg" : "text-muted"}`}>{v.verb}</dt>
-              <dd className="text-subtle">{v.doc}</dd>
+              <dd className="min-w-0 break-words text-subtle">{v.doc}</dd>
             </div>
           ))}
         </dl>

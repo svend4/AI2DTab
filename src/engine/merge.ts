@@ -117,9 +117,13 @@ export function mergeBooks(base: Book, incoming: Book, policy: MergePolicy = {})
     const pk = new Set(book.packets.map((p) => p.id));
     for (const p of incoming.packets) if (!pk.has(p.id)) book.packets.push({ ...p });
   }
+  // события: только те, которых в базе ещё нет (слияние собственного экспорта не удваивает журнал)
+  const evKey = (e: Book["events"][number]) => `${e.ts}\t${e.action}\t${e.objectId ?? ""}\t${(e.detail ?? "").replace(/ \(merged\)$/, "")}`;
+  const haveEv = new Set(book.events.map(evKey));
   let seq = book.events.reduce((m, e) => Math.max(m, e.seq), 0);
   for (const e of incoming.events) {
-    if (e.action === "seed") continue;
+    if (e.action === "seed" || haveEv.has(evKey(e))) continue;
+    haveEv.add(evKey(e));
     book.events.push({ ...e, seq: ++seq, detail: `${e.detail ?? ""} (merged)`.trim() });
   }
   return { book, report };
