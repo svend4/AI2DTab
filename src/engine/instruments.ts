@@ -85,7 +85,11 @@ export function readout(book: Book): Readout {
   const canon = live.filter((o) => o.status === "canon").length;
   const rejected = book.objects.length - live.length;
   const total = live.length;
-  const packets = book.links.length;
+  const liveLinks = book.links.filter((l) => {
+    const f = byId.get(l.from), t = byId.get(l.to);
+    return f && t && f.status !== "rejected" && t.status !== "rejected";
+  });
+  const packets = liveLinks.length;
   const cluster: Record<string, number> = Object.create(null);
   for (const o of live) cluster[o.cluster] = (cluster[o.cluster] ?? 0) + 1;
   const neqIds = resolveName(book, "NEQ");
@@ -96,13 +100,12 @@ export function readout(book: Book): Readout {
   const cshare = Math.round(((cluster.C ?? 0) / Math.max(1, total)) * 10000) / 10000;
   const sparse = Math.round((packets / Math.max(1, total * Math.max(total - 1, 1))) * 1e6) / 1e6;
   const hops = emptyHops();
-  for (const l of book.links) {
-    const f = byId.get(l.from);
-    const t = byId.get(l.to);
-    if (!f || !t || f.status === "rejected" || t.status === "rejected") continue;
+  for (const l of liveLinks) {
+    const f = byId.get(l.from)!;
+    const t = byId.get(l.to)!;
     if ((CLUSTERS as string[]).includes(f.cluster) && (CLUSTERS as string[]).includes(t.cluster)) hops[f.cluster][t.cluster] += 1;
   }
-  const linked = new Set(book.links.flatMap((l) => [l.from, l.to]));
+  const linked = new Set(liveLinks.flatMap((l) => [l.from, l.to]));
   const orphans = live.filter((o) => o.status === "canon" && !linked.has(o.id)).length;
   const openQuestions = live.filter((o) => o.type === "question" && ["open", "raw"].includes(o.status)).length;
 

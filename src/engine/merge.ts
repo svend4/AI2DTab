@@ -61,6 +61,12 @@ export type MergeReport = {
 
 const RANK: Record<string, number> = { canon: 3, closed: 2, open: 2, candidate: 2, dormant: 2, draft: 1, raw: 1, rejected: 0 };
 
+/** При политике «канон побеждает» вычтенное в базе липкое: его поднимает только канон. */
+function wins(cur: Status, inc: Status): boolean {
+  if (cur === "rejected") return inc === "canon";
+  return (RANK[inc] ?? 1) > (RANK[cur] ?? 1);
+}
+
 /** Слияние: новые записи и рёбра добавляются; при конфликте статуса по умолчанию побеждает канон. */
 export function mergeBooks(base: Book, incoming: Book, policy: MergePolicy = {}): { book: Book; report: MergeReport } {
   const prefer = policy.prefer ?? "canon";
@@ -87,7 +93,7 @@ export function mergeBooks(base: Book, incoming: Book, policy: MergePolicy = {})
     if (cur.status !== inc.status) {
       let chosen: Status = cur.status;
       if (prefer === "incoming") chosen = inc.status;
-      else if (prefer === "canon") chosen = (RANK[inc.status] ?? 1) > (RANK[cur.status] ?? 1) ? inc.status : cur.status;
+      else if (prefer === "canon") chosen = wins(cur.status, inc.status) ? inc.status : cur.status;
       report.conflicts.push({ id: inc.id, base: cur.status, incoming: inc.status, chosen });
       if (chosen !== cur.status) {
         cur.status = chosen;
@@ -124,7 +130,9 @@ export function mergeBooks(base: Book, incoming: Book, policy: MergePolicy = {})
   for (const e of incoming.events) {
     if (e.action === "seed" || haveEv.has(evKey(e))) continue;
     haveEv.add(evKey(e));
-    book.events.push({ ...e, seq: ++seq, detail: `${e.detail ?? ""} (merged)`.trim() });
+    // чужая история: без номера хода и без снимков — UNDO её не трогает
+    const { move: _m, before: _b, after: _a, link: _l, ...rest } = e;
+    book.events.push({ ...rest, seq: ++seq, detail: `${e.detail ?? ""} (merged)`.trim() });
   }
   return { book, report };
 }

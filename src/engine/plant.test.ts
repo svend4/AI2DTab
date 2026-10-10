@@ -82,7 +82,16 @@ test("TSV: ячейка из тела для ярлыков-обёрток, не
   assert.equal(inv.why, "tsv: ячейка из тела");
   const bad = plantTsv("id\ttitle\nX; PURGE\tsafe\nRAW\tx");
   assert.equal(bad[0].id, "X_PURGE");
-  assert.equal(bad[1].id, "RAW");
+  assert.equal(bad[1].id, "RAW-id", "имя множества как id получает суффикс");
+});
+
+test("явные маркеры раньше неявных решений; use of — не решение; ~~~ и тройной ``` закрыты сами", () => {
+  assert.equal(classify("Факт: Kafka не нужен на старте.").type, "fact");
+  assert.equal(classify("TODO: не нужно трогать конфиг").type, "task");
+  assert.equal(classify("Use of the term ontology varies between teams.").type, "observation");
+  assert.equal(classify("Use Pydantic Settings.").type, "decision");
+  assert.equal(chunk("```a``` ```\ncode line\n```\n\nпервый абзац\n\nвторой абзац").length, 3);
+  assert.equal(chunk("~~~ x ~~~\n\nабзац 1\n\nабзац 2").length, 3);
 });
 
 test("код с != в блоке — не ячейка", () => {

@@ -65,6 +65,7 @@ export const VERBS: { verb: string; doc: string; write: boolean }[] = [
 
 const TAB = "\t";
 const MAX_EVENTS = 5000;
+const WRITE_VERBS = new Set([...VERBS.filter((v) => v.write).map((v) => v.verb.split(" ")[0]), "CUT"]);
 
 function tsvLine(cols: (string | number | undefined)[]): string {
   return cols.map((c) => String(c ?? "").replace(/\t/g, " ").replace(/\n/g, " / ")).join(TAB);
@@ -82,6 +83,8 @@ export class Desk {
     this.book = book ?? emptyBook();
     this.seq = this.book.events.reduce((m, e) => Math.max(m, e.seq), 0);
     this.move = this.book.events.reduce((m, e) => Math.max(m, e.move ?? 0), 0);
+    const lastActor = [...this.book.events].reverse().find((e) => e.action === "ACTOR" && !e.undone);
+    if (lastActor?.detail === "machine") this.actor = "machine";
   }
 
   // ---------- низкоуровневые записи ----------
@@ -94,24 +97,44 @@ export class Desk {
     return ev;
   }
 
-  /** Журнал не растёт бесконечно: старые события сворачиваются в счётчики глаголов. */
+  /**
+   * Журнал не растёт бесконечно: старые события сворачиваются в счётчики глаголов.
+   * Не трогаются: seed, события текущего хода и последнего откатываемого хода —
+   * иначе UNDO большой посадки был бы частичным.
+   */
   private compact(): void {
-    const over = this.book.events.length - MAX_EVENTS;
+    let over = this.book.events.length - MAX_EVENTS;
     if (over <= 0) return;
-    const drop = this.book.events.splice(1, over); // seed остаётся первым
+    const ev = this.book.events;
+    const lastUndoable = ev.reduce((m, e) => (!e.undone && e.action !== "UNDO" && e.move !== undefined && e.move !== this.move && (e.before !== undefined || e.link) ? Math.max(m, e.move) : m), -1);
+    const keep: Event[] = [ev[0]];
     this.book.compacted = this.book.compacted ?? {};
-    for (const e of drop) this.book.compacted[e.action] = (this.book.compacted[e.action] ?? 0) + 1;
+    for (let i = 1; i < ev.length; i++) {
+      const e = ev[i];
+      if (over > 0 && e.move !== this.move && e.move !== lastUndoable) {
+        this.book.compacted[e.action] = (this.book.compacted[e.action] ?? 0) + 1;
+        over--;
+        continue;
+      }
+      keep.push(e);
+    }
+    this.book.events = keep;
   }
 
   get(id: string): Obj | undefined {
     return this.book.objects.find((o) => o.id === id);
   }
 
-  private setStatus(o: Obj, status: Status, action: string, detail?: string): void {
-    const before = { status: o.status, updatedAt: o.updatedAt, pred: o.pred, rel: o.rel, obj: o.obj };
+  /** Снимок полей до/после. Отсутствующее поле пишется как null, чтобы пережить JSON и сняться при откате. */
+  private snap(o: Obj): Partial<Obj> {
+    return { status: o.status, updatedAt: o.updatedAt, pred: o.pred ?? (null as unknown as string), rel: o.rel ?? (null as unknown as Obj["rel"]), obj: o.obj ?? (null as unknown as string) };
+  }
+
+  private setStatus(o: Obj, status: Status, action: string, detail?: string, before?: Partial<Obj>): void {
+    const b = before ?? this.snap(o);
     o.status = status;
     o.updatedAt = nowIso();
-    this.log(action, o.id, detail ?? o.title, { before, after: { status, updatedAt: o.updatedAt, pred: o.pred, rel: o.rel, obj: o.obj } });
+    this.log(action, o.id, detail ?? o.title, { before: b, after: this.snap(o) });
   }
 
   private insert(o: Obj, action: string, detail?: string): boolean {
@@ -140,9 +163,11 @@ export class Desk {
       const ex = this.get(s.id);
       let id = s.id;
       if (ex) {
-        if (ex.hash === s.hash || !ex.hash) {
-          skipped.push(s.id);
-          lines.push(`skip ${s.id} already ${ex.type}/${ex.status}`);
+        // тот же текст мог уже сесть под суффиксом: ищем по хешу во всей семье id
+        const same = ex.hash === s.hash || !ex.hash ? ex : this.book.objects.find((o) => o.hash === s.hash && o.id.startsWith(`${s.id}-`));
+        if (same) {
+          skipped.push(same.id);
+          lines.push(`skip ${same.id} already ${same.type}/${same.status}`);
           continue;
         }
         id = this.uniqueId(s.id);
@@ -169,11 +194,12 @@ export class Desk {
       return `REFUSE ${o.id} machine cannot canon`;
     }
     if (o.status === "canon") return `skip ${o.id} already canon`;
+    const before = this.snap(o);
     if (!o.pred) {
       const cell = parseCell(o.title);
       if (cell) Object.assign(o, cell);
     }
-    this.setStatus(o, "canon", "ACCEPT");
+    this.setStatus(o, "canon", "ACCEPT", undefined, before);
     return `ACCEPT ${o.id}`;
   }
 
@@ -206,6 +232,8 @@ export class Desk {
   undo(): string {
     const last = [...this.book.events].reverse().find((e) => !e.undone && e.action !== "UNDO" && e.move !== undefined && (e.before !== undefined || e.link));
     if (!last) return "нечего откатывать";
+    const latestWrite = [...this.book.events].reverse().find((e) => !e.undone && e.action !== "UNDO" && e.move !== undefined);
+    if (latestWrite && latestWrite.action === "MERGE" && latestWrite.move !== last.move) return "MERGE не откатывается: слейте обратно экспорт, снятый до слияния (DIFFBOOK покажет разницу)";
     const group = this.book.events.filter((e) => e.move === last.move && !e.undone && e.action !== "UNDO").reverse();
     const done: string[] = [];
     for (const ev of group) {
@@ -219,7 +247,15 @@ export class Desk {
         this.book.objects = this.book.objects.filter((o) => o.id !== ev.objectId);
       } else if (ev.before && ev.objectId) {
         const o = this.get(ev.objectId);
-        if (o) Object.assign(o, ev.before);
+        if (!o) continue;
+        if (this.actor === "machine" && ev.before.status === "canon") {
+          done.push(`REFUSE ${ev.objectId} machine cannot canon`);
+          continue;
+        }
+        for (const [k, v] of Object.entries(ev.before)) {
+          if (v === null || v === undefined) delete (o as unknown as Record<string, unknown>)[k];
+          else (o as unknown as Record<string, unknown>)[k] = v;
+        }
       } else {
         continue;
       }
@@ -344,6 +380,18 @@ export class Desk {
   }
 
   // ---------- исполнитель строки ----------
+
+  /** Чтение для рендера: без нового хода и без записи. Пишущие глаголы здесь отвергаются. */
+  read(line: string): ExecResult {
+    const verb = (line || "").trim().replace(/^=/, "").split(/\s+/)[0]?.toUpperCase() ?? "";
+    if (WRITE_VERBS.has(verb)) return { ok: false, verb, text: `${verb}: только через exec`, wrote: false };
+    this.depth++;
+    try {
+      return this.run(line);
+    } finally {
+      this.depth--;
+    }
+  }
 
   exec(line: string): ExecResult {
     const top = this.depth === 0;
@@ -614,10 +662,10 @@ export class Desk {
             const d = diffBooks(b, other);
             return res(true, [`DIFFBOOK added=${d.added.length} removed=${d.removed.length} changed=${d.changed.length} links+${d.linksAdded.length} links-${d.linksRemoved.length}`, ...d.added.slice(0, 20).map((o) => `+ ${o.id} ${o.title.slice(0, 60)}`), ...d.removed.slice(0, 20).map((o) => `- ${o.id} ${o.title.slice(0, 60)}`), ...d.changed.slice(0, 20).map((c) => `~ ${c.id} ${JSON.stringify(c.before)} → ${JSON.stringify(c.after)}`), ...warnings.slice(0, 10).map((w) => `! ${w}`)].join("\n"), d);
           }
-          const { book: merged, report } = mergeBooks(b, other);
+          const { book: merged, report } = mergeBooks(b, other, { prefer: this.actor === "machine" ? "base" : "canon" });
           this.book = merged;
           this.seq = this.book.events.reduce((mx, e) => Math.max(mx, e.seq), 0);
-          this.log("MERGE", undefined, `+${report.added} объектов, +${report.linksAdded} рёбер, конфликтов ${report.conflicts.length}`);
+          this.log("MERGE", undefined, `+${report.added} объектов, +${report.linksAdded} рёбер, конфликтов ${report.conflicts.length}${this.actor === "machine" ? " (machine: статусы базы сохранены)" : ""}`);
           return res(true, [`MERGE added=${report.added} links=${report.linksAdded} origins=${report.originsAdded} conflicts=${report.conflicts.length}`, ...report.conflicts.slice(0, 20).map((c) => `~ ${c.id} ${c.base} vs ${c.incoming} → ${c.chosen}`), ...warnings.slice(0, 10).map((w) => `! ${w}`)].join("\n"), report);
         }
         case "SPEC": {
@@ -647,10 +695,19 @@ export class Desk {
         }
         case "BATCH": {
           const verbs = new Set(VERBS.map((v) => v.verb.split(" ")[0]).concat(["CUT", "CONCORD", "RANGE", "GAUGE", "PANEL", "MUL", "TIMES"]));
-          const bits = arg
-            .split(/;|\n(?=\s*[A-Za-z]{3,}\b)/)
-            .map((s) => s.trim())
-            .filter((s) => s && verbs.has(s.replace(/^=/, "").split(/\s+/)[0].toUpperCase()) || /^=/.test(s));
+          // ';' делит ходы; перевод строки делит только если следующая строка начинается с глагола,
+          // иначе это продолжение аргумента (многострочный PLANT), пустые строки сохраняются
+          const bits: string[] = [];
+          for (const piece of arg.split(";")) {
+            const lines = piece.split("\n");
+            lines.forEach((line, i) => {
+              const head = line.trim().replace(/^=/, "").split(/\s+/)[0]?.toUpperCase() ?? "";
+              const isCmd = verbs.has(head) || /^\s*=/.test(line);
+              if (i === 0 || isCmd || !bits.length) {
+                if (line.trim()) bits.push(line.trim());
+              } else bits[bits.length - 1] += `\n${line}`;
+            });
+          }
           const out: string[] = [];
           let ran = 0;
           for (const bit of bits) {

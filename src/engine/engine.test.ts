@@ -106,7 +106,8 @@ test("UNDO откатывает ход целиком и оставляет со
   d.exec(`ACCEPT ${id}`);
   d.exec("UNDO");
   assert.equal(d.get(id)!.status, "raw");
-  assert.equal(evalSet(d.book, "NEQ").ids.has(id), false, "после отката ACCEPT штамп ячейки снят (вопрос — не observation)");
+  assert.equal(d.get(id)!.pred, undefined, "после отката ACCEPT штамп ячейки снят");
+  assert.equal(evalSet(d.book, "CELL").ids.has(id), false);
   const links = d.book.links.length;
   d.exec("BATCH WIRE F001 F002 refines; WIRE F003 F004 cites");
   assert.equal(d.book.links.length, links + 2);
@@ -173,6 +174,82 @@ test("normalizeBook: прототипное загрязнение, мусорн
   assert.equal(typeof Object.prototype.toString, "function", "прототип не тронут");
   assert.ok(r.objects === 3);
   assert.equal(normalizeBook("garbage").warnings[0].startsWith("не книга"), true);
+  const re = normalizeBook({ version: 2, objects: [{ id: "a b" }, { id: "RAW" }, { id: "ok" }, { id: "X" }, { id: "X" }, { id: "X-2", title: "real X-2" }], links: [{ from: "a b", to: "ok", rel: "cites" }, { from: "RAW", to: "ok", rel: "cites" }, { from: "X-2", to: "ok", rel: "cites" }], origins: [{ objectId: "a b", sessionId: "S1" }], events: [] });
+  assert.deepEqual(re.book.links.map((l) => l.from), ["a_b", "RAW-id", "X-2"], "рёбра переназначены на новые id");
+  assert.ok(re.book.objects.some((o) => o.id === "X-2" && o.title === "real X-2"), "настоящий X-2 не вытеснен дубликатом X");
+  assert.ok(re.book.objects.some((o) => o.id === "X-3"), "дубликат X получил свободный суффикс");
+  assert.equal(re.book.origins[0].objectId, "a_b");
+});
+
+test("уплотнение не трогает текущий ход: UNDO большой посадки полный", () => {
+  const d = new Desk();
+  const big = Array.from({ length: 5300 }, (_, i) => `абзац номер ${i} со своим текстом`).join("\n\n");
+  d.exec("PLANT " + big);
+  assert.equal(d.book.objects.length, 5300);
+  d.exec("UNDO");
+  assert.equal(d.book.objects.length, 0, "все 5300 записей откачены");
+  assert.equal(d.book.origins.length, 0);
+});
+
+test("MERGE: чужая история без номеров ходов; UNDO сразу после MERGE отказывает; машина не поднимает канон", () => {
+  const a = fresh();
+  const b = fresh();
+  b.exec("ACCEPT Q003");
+  a.exec("ACCEPT Q001");
+  a.exec("MERGE " + JSON.stringify(b.book));
+  assert.ok(a.book.events.filter((e) => e.detail?.includes("(merged)")).every((e) => e.move === undefined && e.before === undefined));
+  assert.ok(a.exec("UNDO").text.startsWith("MERGE не откатывается"));
+  assert.equal(a.get("Q001")!.status, "canon", "свой ход не задет");
+  a.exec("WIRE D001 F003 cites");
+  assert.ok(a.exec("UNDO").text.includes("WIRE"), "после нового хода UNDO откатывает только его");
+  assert.equal(a.get("Q003")!.status, "canon");
+  const c = fresh();
+  c.exec("ACTOR machine");
+  c.exec("MERGE " + JSON.stringify(b.book));
+  assert.equal(c.get("Q003")!.status, "open", "под машиной статусы базы сохранены");
+  const m = fresh();
+  m.exec("ACCEPT Q001");
+  m.exec("REPAIR Q001");
+  m.exec("ACTOR machine");
+  assert.ok(m.exec("UNDO").text.includes("REFUSE"));
+  assert.equal(m.get("Q001")!.status, "raw");
+});
+
+test("посадка идемпотентна и после развода суффиксом; BATCH с английскими строками; read() не двигает ход", () => {
+  const d = new Desk();
+  const heads = Array.from({ length: 20 }, (_, i) => `# ${i + 1}. Секция ${i}\n\nтело ${i}\n`).join("\n");
+  const other = Array.from({ length: 20 }, (_, i) => `# ${i + 1}. Секция ${i}\n\nдругое тело ${i}\n`).join("\n");
+  d.exec("PLANT " + heads);
+  d.exec("PLANT " + other);
+  assert.equal(d.book.objects.length, 40);
+  const r = d.exec("PLANT " + other);
+  assert.equal((r.data as any).planted.length, 0, "повтор текста с суффиксными id пропущен");
+  const b = d.exec("BATCH PLANT first paragraph here\n\nsecond paragraph there; INSTR");
+  assert.ok(b.ok);
+  assert.ok(d.book.objects.some((o) => o.title === "second paragraph there"), "английская строка не потеряна");
+  const before = d.book.events.at(-1)!.move!;
+  d.read("NEXT"); d.read("SPEC"); d.read("CHAIN");
+  assert.ok(!d.read("ACCEPT S1").ok, "read не пишет");
+  d.exec("WIRE S1 S2 cites");
+  assert.equal(d.book.events.at(-1)!.move, before + 1, "номера ходов сплошные");
+});
+
+test("вычтенное липкое при слиянии; рёбра к вычтенному не спасают от сиротства; and-1 — это id; ACTOR переживает перезапуск", () => {
+  const a = fresh();
+  const older = JSON.parse(JSON.stringify(a.book));
+  a.exec("TAKE Q001");
+  a.exec("MERGE " + JSON.stringify(older));
+  assert.equal(a.get("Q001")!.status, "rejected");
+  const d = new Desk();
+  d.exec("PLANT id\tcluster\tlayer\ttype\ttitle\tstatus\tbody\nX\tA\t1\tfact\tфакт икс\traw\t\nY\tB\t1\tfact\tфакт игрек\traw\t\nand-1\tC\t2\tobservation\tстранный id\traw\t");
+  d.exec("ACCEPT X"); d.exec("WIRE X Y cites"); d.exec("TAKE Y");
+  const r = readout(d.book);
+  assert.equal(r.packets, 0); assert.equal(r.orphans, 1);
+  assert.deepEqual(tokenize("and-1").map((t) => t.k), ["name"]);
+  assert.ok(d.exec("WHY and-1").ok);
+  d.exec("ACTOR machine");
+  const d2 = new Desk(JSON.parse(JSON.stringify(d.book)));
+  assert.equal(d2.actor, "machine");
 });
 
 test("MERGE/DIFFBOOK: канон побеждает, рёбра объединяются, события дописываются", () => {

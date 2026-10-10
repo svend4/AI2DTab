@@ -13,6 +13,7 @@
 import { flattenCellBlock, isLabel, JUNK_TITLE, parseCell } from "./cells.ts";
 import { fnv1a, normalizeForHash } from "./hash.ts";
 import type { Cluster, Obj, ObjType } from "./types.ts";
+import { RESERVED_IDS } from "./types.ts";
 
 export type ChunkMode = "paragraph" | "section" | "auto";
 
@@ -42,8 +43,9 @@ export function unquote(text: string): string[] {
 }
 
 function selfClosedFence(line: string): boolean {
-  const n = (line.match(/```/g) || []).length;
-  return n >= 2;
+  const tok = /^\s*~~~/.test(line) ? "~~~" : "```";
+  const n = line.split(tok).length - 1;
+  return n >= 2 && n % 2 === 0;
 }
 
 export function countNumbered(lines: string[]): number {
@@ -179,14 +181,14 @@ export function classify(text: string): Omit<Seedling, "id" | "hash"> {
   if (/\?\s*$/.test(firstLine) || QUESTION.test(firstLine)) {
     return { ...base, type: "question", title, body: t.slice(0, 800), why: "вопрос" };
   }
-  if (DECISION.test(firstLine) || (/(^|[\s(])(не нужен|не нужна|не нужно|необходим[ао]?|обязателен|обязательно)(?=[\s.,;:!?)]|$)/i.test(firstLine) && firstLine.length < 120) || /^(use|используем|выбираем|will use|do not|don't|never|always)(?=[\s.,:]|$)/i.test(firstLine)) {
-    return { ...base, type: "decision", title: title.replace(/^(решено|решение|decision|decided)\s*:?\s*/i, ""), why: "маркер решения" };
-  }
   if (FACT.test(firstLine)) {
     return { ...base, type: "fact", title: title.replace(/^(факт|fact)\s*:?\s*/i, ""), why: "маркер факта" };
   }
   if (TASK.test(firstLine)) {
     return { ...base, type: "task", title: title.replace(/^(todo|задача|task)\s*:?\s*|^[-*]\s*\[ \]\s*/i, ""), why: "маркер задачи" };
+  }
+  if (DECISION.test(firstLine) || (/(^|[\s(])(не нужен|не нужна|не нужно|необходим[ао]?|обязателен|обязательно)(?=[\s.,;:!?)]|$)/i.test(firstLine) && firstLine.length < 120) || /^(используем|выбираем|will use|do not|don't|never|always)(?=[\s.,:]|$)/i.test(firstLine) || /^use\s+(?!of\b)\S/i.test(firstLine)) {
+    return { ...base, type: "decision", title: title.replace(/^(решено|решение|decision|decided)\s*:?\s*/i, ""), why: "маркер решения" };
   }
   if (/инвариант|invariant|negative boundary/i.test(t)) {
     return { ...base, type: "observation", title, why: "инвариант без ячейки — проверить заголовок" };
@@ -250,6 +252,7 @@ export function plantTsv(text: string): Seedling[] {
     head.forEach((h, i) => (rec[h] = (cells[i] ?? "").trim()));
     let id = rec.id.replace(/[^A-Za-z0-9_.:-]+/g, "_").slice(0, 80);
     if (!id) continue;
+    if (RESERVED_IDS.has(id.toUpperCase())) id = `${id}-id`;
     if (seen.has(id)) {
       let n = 2;
       while (seen.has(`${id}-${n}`)) n++;

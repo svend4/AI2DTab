@@ -192,7 +192,7 @@ export const useDesk = create<DeskState>()((set, get) => ({
     });
     return booting;
   },
-  query: (line) => getDesk().exec(line),
+  query: (line) => getDesk().read(line),
   exec: (line) => {
     const d = getDesk();
     const out = d.exec(line);

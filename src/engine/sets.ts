@@ -25,7 +25,7 @@ const OP_MAP: Record<string, "∩" | "∪" | "\\"> = {
 
 export function tokenize(expr: string): Tok[] {
   const out: Tok[] = [];
-  const re = /\s*(\(|\)|∩|∪|\\|&|\||\bAND\b|\bOR\b|\bMINUS\b|\band\b|\bor\b|\bminus\b|(?<=\s)-(?=\s)|[^\s()∩∪\\&|]+)/gy;
+  const re = /\s*(\(|\)|∩|∪|\\|&|\||(?<![^\s(])(?:AND|OR|MINUS|and|or|minus)(?![^\s)])|(?<=\s)-(?=\s)|[^\s()∩∪\\&|]+)/gy;
   let m: RegExpExecArray | null;
   let pos = 0;
   while (pos < expr.length) {

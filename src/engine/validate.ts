@@ -29,7 +29,7 @@ function isoOr(v: unknown, def: string): string {
 }
 
 /** Безопасный id: только [A-Za-z0-9_.:-], не имя множества, не длиннее 80. */
-export function safeId(raw: unknown, warnings: string[], seen: Set<string>): string | null {
+export function safeId(raw: unknown, warnings: string[], seen: Set<string>, reservedLater: Set<string> = new Set()): string | null {
   let id = str(raw).trim();
   if (!id) return null;
   const orig = id;
@@ -42,9 +42,9 @@ export function safeId(raw: unknown, warnings: string[], seen: Set<string>): str
     id = `${id}-id`;
     warnings.push(`id ${orig} совпадает с именем множества → ${id}`);
   }
-  if (seen.has(id)) {
+  if (seen.has(id) || (id !== orig && reservedLater.has(id))) {
     let n = 2;
-    while (seen.has(`${id}-${n}`)) n++;
+    while (seen.has(`${id}-${n}`) || reservedLater.has(`${id}-${n}`)) n++;
     warnings.push(`дубликат id ${id} → ${id}-${n}`);
     id = `${id}-${n}`;
   }
@@ -52,10 +52,12 @@ export function safeId(raw: unknown, warnings: string[], seen: Set<string>): str
   return id;
 }
 
-function normObj(raw: unknown, warnings: string[], seen: Set<string>, ts: string): Obj | null {
+function normObj(raw: unknown, warnings: string[], seen: Set<string>, ts: string, later: Set<string>, idMap: Map<string, string>): Obj | null {
   if (!isObj(raw)) return null;
-  const id = safeId(raw.id, warnings, seen);
+  const id = safeId(raw.id, warnings, seen, later);
   if (!id) return null;
+  const orig = str(raw.id).trim();
+  if (!idMap.has(orig)) idMap.set(orig, id);
   const clusterRaw = str(raw.cluster, "C").toUpperCase();
   const cluster = (CLUSTERS as string[]).includes(clusterRaw) ? (clusterRaw as Cluster) : "C";
   if (cluster !== clusterRaw) warnings.push(`${id}: кластер «${str(raw.cluster).slice(0, 20)}» → C`);
@@ -97,17 +99,24 @@ export function normalizeBook(input: unknown): Normalized {
     warnings.push("версия книги не указана: читаю как семя v1");
   }
   const seen = new Set<string>();
+  // все исходные id заранее: суффикс дубликата не должен совпасть с настоящим id дальше по списку
+  const later = new Set<string>(input.objects.filter(isObj).map((r) => str(r.id).trim()).filter(Boolean));
+  const idMap = new Map<string, string>();
   for (const r of input.objects) {
-    const o = normObj(r, warnings, seen, ts);
+    const o = normObj(r, warnings, seen, ts, later, idMap);
     if (o) book.objects.push(o);
     else warnings.push("пропущена запись без id");
   }
   const ids = new Set(book.objects.map((o) => o.id));
+  const remap = (v: unknown) => {
+    const k = str(v).trim();
+    return idMap.get(k) ?? k;
+  };
   const linkKeys = new Set<string>();
   for (const l of Array.isArray(input.links) ? input.links : []) {
     if (!isObj(l)) continue;
-    const from = str(l.from ?? l.from_id).trim();
-    const to = str(l.to ?? l.to_id).trim();
+    const from = remap(l.from ?? l.from_id);
+    const to = remap(l.to ?? l.to_id);
     const rel = str(l.rel, "candidate").slice(0, 40) || "candidate";
     if (!ids.has(from) || !ids.has(to)) {
       warnings.push(`ребро ${from || "?"} → ${to || "?"} указывает на отсутствующую запись`);
@@ -122,7 +131,7 @@ export function normalizeBook(input: unknown): Normalized {
   }
   for (const g of Array.isArray(input.origins) ? input.origins : []) {
     if (!isObj(g)) continue;
-    const objectId = str(g.objectId ?? g.object_id).trim();
+    const objectId = remap(g.objectId ?? g.object_id);
     const sessionId = str(g.sessionId ?? g.session_id).trim();
     if (!ids.has(objectId) || !sessionId) continue;
     const origin: Origin = { objectId, sessionId: sessionId.slice(0, 80) };
@@ -152,7 +161,7 @@ export function normalizeBook(input: unknown): Normalized {
     if (!action) continue;
     seq = Math.max(seq + 1, Number(e.seq) || 0);
     const ev: Event = { seq, ts: isoOr(e.ts, ts), actor: str(e.actor, "seed").slice(0, 40), action };
-    if (e.objectId != null) ev.objectId = str(e.objectId).slice(0, 80);
+    if (e.objectId != null) ev.objectId = remap(e.objectId).slice(0, 80);
     if (e.detail != null) ev.detail = str(e.detail).slice(0, 400);
     if (typeof e.move === "number") ev.move = e.move;
     if (e.undone === true) ev.undone = true;
