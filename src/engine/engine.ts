@@ -93,14 +93,13 @@ export class Desk {
     const ev: Event = { seq: ++this.seq, ts: nowIso(), actor: `${this.actor}:exec`, action, objectId, detail, move: this.move, ...extra };
     this.book.events.push(ev);
     this.writes++;
-    this.compact();
     return ev;
   }
 
   /**
    * Журнал не растёт бесконечно: старые события сворачиваются в счётчики глаголов.
-   * Не трогаются: seed, события текущего хода и последнего откатываемого хода —
-   * иначе UNDO большой посадки был бы частичным.
+   * Вызывается один раз в начале хода. Не трогаются: seed и события последнего
+   * откатываемого хода — иначе UNDO большой посадки был бы частичным.
    */
   private compact(): void {
     let over = this.book.events.length - MAX_EVENTS;
@@ -159,22 +158,31 @@ export class Desk {
     const collisions: string[] = [];
     const lines: string[] = [];
     const ts = nowIso();
+    // индексы на время посадки: 32 тыс. записей не должны стоить 32 тыс. линейных поисков каждая
+    const byId = new Map(this.book.objects.map((o) => [o.id, o]));
+    const byHash = new Map<string, Obj[]>();
+    for (const o of this.book.objects) if (o.hash) byHash.set(o.hash, [...(byHash.get(o.hash) ?? []), o]);
     for (const s of seedlings) {
-      const ex = this.get(s.id);
+      const ex = byId.get(s.id);
       let id = s.id;
       if (ex) {
         // тот же текст мог уже сесть под суффиксом: ищем по хешу во всей семье id
-        const same = ex.hash === s.hash || !ex.hash ? ex : this.book.objects.find((o) => o.hash === s.hash && o.id.startsWith(`${s.id}-`));
+        const same = ex.hash === s.hash || !ex.hash ? ex : (byHash.get(s.hash) ?? []).find((o) => o.id.startsWith(`${s.id}-`));
         if (same) {
           skipped.push(same.id);
           lines.push(`skip ${same.id} already ${same.type}/${same.status}`);
           continue;
         }
-        id = this.uniqueId(s.id);
+        let n = 2;
+        while (byId.has(`${s.id}-${n}`)) n++;
+        id = `${s.id}-${n}`;
         collisions.push(id);
       }
       const o = toObj({ ...s, id }, ts, `${this.actor}:plant`);
-      this.insert(o, "PLANT", `${s.why}: ${s.title}`.slice(0, 160));
+      byId.set(o.id, o);
+      byHash.set(o.hash!, [...(byHash.get(o.hash!) ?? []), o]);
+      this.book.objects.push(o);
+      this.log("PLANT", o.id, `${s.why}: ${s.title}`.slice(0, 160), { before: null });
       if (s.turn !== undefined || source) {
         this.book.origins.push({ objectId: o.id, sessionId: source ?? "tape", span: s.turn !== undefined ? `turn ${s.turn}` : s.why });
       }
@@ -395,7 +403,11 @@ export class Desk {
 
   exec(line: string): ExecResult {
     const top = this.depth === 0;
-    if (top) this.move++;
+    if (top) {
+      // уплотнение — один раз на ход, до него: события самого хода никогда не режутся
+      this.compact();
+      this.move++;
+    }
     const writesBefore = this.writes;
     this.depth++;
     try {

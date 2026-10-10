@@ -289,7 +289,8 @@ test("формулы, SPEC, JSON, HELP, журнал уплотняется", ()
     d.exec("WIRE D001 F003 cites");
     d.exec("UNWIRE D001 F003 cites");
   }
-  assert.ok(d.book.events.length <= 5000);
+  d.exec("STATUS"); // уплотнение — в начале следующего хода
+  assert.ok(d.book.events.length <= 5001, `events=${d.book.events.length}`);
   assert.ok((d.book.compacted?.WIRE ?? 0) > 0);
   assert.equal(d.book.events[0].action, "seed");
 });

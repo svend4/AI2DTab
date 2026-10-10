@@ -15,7 +15,7 @@
 ленту. Язык управления — алфавит глаголов (`PLANT ACCEPT TAKE SET NEQ FILL
 SWEEP GAP SETTLE WIRE PORT SPEC …`) с алгеброй множеств над id и «ячейками»
 вида `pred ≠ obj`. Источник сырья — диалог ChatGPT на 344 тыс. строк
-(81 ход, из них ~70 — «Да» / «Продолжение») про Enbek.kz и «Innovation OS».
+(81 ход, из них 74 — «Да» / «Продолжение» и их варианты) про Enbek.kz и «Innovation OS».
 
 ## 1. Сводка
 

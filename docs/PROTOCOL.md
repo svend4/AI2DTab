@@ -56,7 +56,7 @@ A–D → C, неизвестный статус → raw, id приводитс�
 ячейка (≠ → ⊂ = vs) со статусом raw|canon; вычтенные (`rejected`) не входят
 ни в одно имя, кроме `ALL` и `status:rejected`; `JUNK` — ярлыки-обёртки
 («Example:», «Например:») и строки типа label.
-Фильтры: `type:question` `status:raw` `cluster:C` `rel:→` `owner:human:plant`
+Фильтры: `type:question` `status:raw` `cluster:C` `rel:→` `layer:1` `owner:human:plant`
 `has:pred` `has:body` `has:link` `turn:12`. Операторы: `∩ ∪ \` (или `& | -`,
 `AND OR MINUS`, регистр любой), скобки. Приоритет: `∩` выше `∪` и `\`.
 То же выражение понимает `VOCAB`.
