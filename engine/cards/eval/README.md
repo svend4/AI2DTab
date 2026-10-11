@@ -38,6 +38,17 @@ python3 matrix.py --work /tmp/work --out /tmp/out_synth --workers 4 synth:tools:
 python3 score.py /tmp/out_synth --matrix                                     # таблица и матрица «вопрос × вариант»; вопросы с invalid исключены (--include-invalid вернёт)
 python3 synth_stats.py /tmp/out_synth                                        # доли с интервалами и парное сравнение с tools
 
+# смысловой lint (раздел 7 в RESULTS.md)
+python3 semlint_eval.py run   --db /tmp/work/chat.sqlite --arm main --out results/semlint/main1.json     # 24 понятия, как есть (--arm small — малая модель)
+python3 semlint_eval.py plant --db /tmp/work/chat.sqlite --arm main --out results/semlint/plant_main.json # в копию базы добавляются 10 реплик-противоречий
+python3 semlint_eval.py canon --arm main --out results/semlint/canon_main.json                            # копия настоящего стола + подложенные конфликты
+python3 semlint_eval.py view results/semlint/main1.json --db /tmp/work/chat.sqlite > view.txt             # находки с окрестностью — разметить real / borderline / weak / wrong
+python3 semlint_eval.py score results/semlint/main1.json results/semlint/labels_main1.json
+python3 semlint_eval.py overlap results/semlint/main1.json results/semlint/main2.json results/semlint/labels_main1.json
+python3 semlint_eval.py judge results/semlint/main1.json --db /tmp/work/chat.sqlite --out results/semlint/judge_main1.json
+python3 semlint_eval.py agree results/semlint/labels_main1.json results/semlint/judge_main1.json
+# сам инструмент: python3 ../semlint.py "Capability Contract" (см. ../README.md); тесты: python3 -m unittest engine/cards/test_semlint.py
+
 | файл | что делает |
 |---|---|
 | `prepare.py` | корпуса и базы (те же 96 файлов, что в прежних опытах; чат — `attachments/ChatGPT_….md`) |
@@ -53,5 +64,6 @@ python3 synth_stats.py /tmp/out_synth                                        # �
 | `compile_notes.py` | проход «compile»: малая модель выписывает утверждения с дословными цитатами, скрипт находит цитаты в тексте и отбрасывает ненайденные, затем дайджесты реплик и страницы понятий; `--lists` добавляет дословные перечни |
 | `wiki_coverage.py` | какие якоря вопросов попали в заметки (диагностика сжатия, без агента) |
 | `wiki_faithfulness.py` | независимый судья сверяет выборку утверждений и обзоров страниц с их источниками |
+| `semlint_eval.py` | проверка смыслового lint (раздел 7): `run` — 24 понятия набора synth, `plant` — 10 подложенных противоречий, `canon` — стол с подложенными конфликтами, `view` — находки с окрестностью для ручной разметки, `score` / `overlap` — итоги и повторяемость, `judge` / `agree` — слепая вторая разметка моделью |
 | `synth_stats.py` | доли верных ответов с интервалами Уилсона и парное сравнение по вопросам (бутстрап) |
 | `common.py` | живая сессия Agent SDK, учёт токенов и денег, инструменты картотеки как SDK-инструменты |

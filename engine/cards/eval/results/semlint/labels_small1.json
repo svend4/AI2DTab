@@ -1,0 +1,183 @@
+{
+ "Open Knowledge#1": {
+  "label": "borderline",
+  "note": "два цикла в одной реплике: «Development workflow» (Discover…Fork) и «Полный цикл» (READ…UPDATE)",
+  "carried_from": "main1 Open Knowledge#2"
+ },
+ "Signpost#1": {
+  "label": "real",
+  "note": "t025: стратегия сама ускоряет/откладывает программы по signpost; t043: срабатывание только запускает review, стратегию не меняет",
+  "carried_from": "main1 Signpost#1"
+ },
+ "Signpost#2": {
+  "label": "real",
+  "note": "t046: «THEN start pilot», через 40 строк «Trigger ≠ automatic commitment»: сам текст поправляет себя (это revision, не conflict)",
+  "kind_ok": false,
+  "carried_from": "main1 Signpost#2"
+ },
+ "Research Observatory#1": {
+  "label": "weak",
+  "note": "статусы Claim (t033) и статусы после отзыва (t065): дополнение",
+  "carried_from": "main1 Research Observatory#1"
+ },
+ "Team Hypothesis#1": {
+  "label": "real",
+  "note": "схема TeamHypothesis: member_ids/missing_capabilities (t030) против resource_ids/uncovered_capabilities/status (t053)",
+  "carried_from": "main1 Team Hypothesis#1"
+ },
+ "Team Hypothesis#2": {
+  "label": "borderline",
+  "note": "status: investigate (t016) и status = HYPOTHESIS (t053)",
+  "carried_from": "main1 Team Hypothesis#2"
+ },
+ "Team Hypothesis#3": {
+  "label": "real",
+  "note": "перетаскивание кандидата создаёт «Team Proposal» (t049) и «Team Hypothesis» (t053)",
+  "carried_from": "main1 Team Hypothesis#3"
+ },
+ "Query Planner#2": {
+  "label": "weak",
+  "note": "роли Query Planner (запрос → semantic+graph, контрфакт → Scenario Patch, подзапросы резолверам) совместимы",
+  "carried_from": "main1 Query Planner#3"
+ },
+ "Entity Resolution#1": {
+  "label": "real",
+  "note": "порядок стадий: ER после LLM extraction (t053) и до Semantic Extraction (t064)",
+  "carried_from": "main1 Entity Resolution#4"
+ },
+ "Foresight#1": {
+  "label": "real",
+  "note": "t062: будущее целиком у Strategic Foresight; t063: PLANNED FUTURE → Strategy/Portfolio, «теперь добавляется ещё один слой» POSSIBLE FUTURES",
+  "carried_from": "main1 Foresight#2"
+ },
+ "Foresight#2": {
+  "label": "real",
+  "note": "порядок стадий конвейера: Mission Relevance после Trend Hypotheses (t062) и Relevance Mapping до них (t063); цитата ранней стороны указывает на соседний список критериев, а не на конвейер (t062 L5792)",
+  "anchor_ok": false,
+  "carried_from": "main1 Foresight#1"
+ },
+ "Commitment#1": {
+  "label": "real",
+  "note": "две пятиступенчатые шкалы: Commitment Levels (WATCH…SCALE, t062) и Commitment Ladder (Explore…Scale, t071)",
+  "carried_from": "main1 Commitment#2"
+ },
+ "Commitment#3": {
+  "label": "real",
+  "note": "Progressive Commitment: бюджетные Stage 0–3 (t022) и Hypothesis→Desk Research→…→Program (t070)",
+  "carried_from": "main1 Commitment#3"
+ },
+ "Handoff#2": {
+  "label": "real",
+  "note": "поля протокола handoff (t027: current state, blocker, required capability…) и Handoff Contract (t047: open questions, …); цитата ранней стороны указывает на другой «required capability» (t027 L244)",
+  "anchor_ok": false,
+  "carried_from": "main1 Handoff#1"
+ },
+ "Capability Package#2": {
+  "label": "borderline",
+  "note": "манифест CPM (t040) и модель CapabilityPackage (t054): артефакт и экземпляр, разные поля",
+  "carried_from": "main1 Capability Package#2"
+ },
+ "Capability Capital#1": {
+  "label": "real",
+  "note": "события журнала: CAPABILITY_CREATED… (t061) и «Better event sequence» DISCOVERED/ACQUIRED/VERIFIED/OPERATIONAL (t072)",
+  "carried_from": "main1 Capability Capital#1"
+ },
+ "Idempotency#1": {
+  "label": "weak",
+  "note": "поле допускает None, но должно присутствовать: согласуется"
+ },
+ "Idempotency#2": {
+  "label": "weak",
+  "note": "ключи для разных стадий; цитата ведёт на поле модели, а не на ключ",
+  "anchor_ok": false
+ },
+ "Promotion#1": {
+  "label": "weak",
+  "note": "Version Promotion и Sandbox Promotion названы по-разному: разные виды"
+ },
+ "Team Builder#1": {
+  "label": "real",
+  "note": "«он больше не ищет четыре человека, он ищет минимальный набор ресурсо-часов» (t013)"
+ },
+ "Team Builder#2": {
+  "label": "real",
+  "note": "две дорожные карты: GitHub после Team Builder (t016) и перед ним (t050)"
+ },
+ "Team Builder#3": {
+  "label": "borderline",
+  "note": "greedy team builder в стеке MVP, но в плане этапов v0.3; цитата ведёт в первую строку карточки",
+  "anchor_ok": false
+ },
+ "Open Knowledge#2": {
+  "label": "weak",
+  "note": "Portfolio и Program: текст сам различает"
+ },
+ "Procedural Graph#1": {
+  "label": "real",
+  "note": "PG как «один из backend execution formats» (t014) и «source of truth» над n8n (t041)"
+ },
+ "Signpost#3": {
+  "label": "real",
+  "note": "наборы полей Signpost: t046 и t063"
+ },
+ "Acceptance Test#1": {
+  "label": "weak",
+  "note": "десять шагов MVP и шесть тестов релиза — разные вехи"
+ },
+ "Acceptance Test#2": {
+  "label": "weak",
+  "note": "тест ожидает корневой инцидент, «candidate» из другого места — другое"
+ },
+ "Architecture Freeze#1": {
+  "label": "real",
+  "note": "t029: Capability — подтип CONCEPT, «а не отдельный фундаментальный класс» (явная смена относительно t028)"
+ },
+ "Causal Engine#1": {
+  "label": "weak",
+  "note": "две лестницы рядом описывают разное"
+ },
+ "Package Manager#1": {
+  "label": "weak",
+  "note": "«будущий компонент» и «после того как появились» — ход беседы, не противоречие"
+ },
+ "Capability Contract#1": {
+  "label": "borderline",
+  "note": "«контракт остаётся тем же» при дрейфе (t072) и «контракт меняется» в деградации (t075)"
+ },
+ "Query Planner#1": {
+  "label": "real",
+  "note": "стадии после Query Planner: базовый конвейер (t019) и схема с Federated Resolvers (t032)"
+ },
+ "Foresight#3": {
+  "label": "wrong",
+  "note": "«замена» Relevant Signal Recall на Critical Uncertainty Coverage в цитатах не видна: это два пункта разных списков"
+ },
+ "Foresight#4": {
+  "label": "real",
+  "note": "SURPRISE_EVENT «только как описательная категория», «более полезно» UNMODELED_HIGH_IMPACT_EVENT (внутри одной реплики)"
+ },
+ "Commitment#2": {
+  "label": "borderline",
+  "note": "состояния партнёров консорциума и «federated commitment»: разные контексты"
+ },
+ "Handoff#1": {
+  "label": "real",
+  "note": "поля Handoff: M2M-протокол (t067) и Handoff Contract (t080)"
+ },
+ "Handoff#3": {
+  "label": "real",
+  "note": "Handoff Package: два набора полей в соседних репликах (t039, t041)"
+ },
+ "Capability Package#1": {
+  "label": "real",
+  "note": "команда людей против устанавливаемого пакета"
+ },
+ "Funding Resolver#1": {
+  "label": "weak",
+  "note": "конвейер расширен до подачи заявки: дополнение"
+ },
+ "Funding Resolver#2": {
+  "label": "real",
+  "note": "деньги как «ещё один capability gap» (t014) и отдельный класс Funding Gaps (t056)"
+ }
+}
