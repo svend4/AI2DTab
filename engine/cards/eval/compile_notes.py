@@ -92,7 +92,15 @@ def est_usd() -> float:
     return (COST["input_tokens"] * 0.10 + COST["cache_creation_input_tokens"] * 0.20 + COST["cache_read_input_tokens"] * 0.01 + COST["output_tokens"] * 0.50) / 1e6
 
 
-async def ask(prompt: str, model: str, sem: asyncio.Semaphore, want_json: bool = True, tries: int = 2):
+async def _query_once(prompt: str, o) -> "ResultMessage | None":
+    res = None
+    async for m in query(prompt=prompt, options=o):
+        if isinstance(m, ResultMessage):
+            res = m
+    return res
+
+
+async def ask(prompt: str, model: str, sem: asyncio.Semaphore, want_json: bool = True, tries: int = 2, timeout: int = 600):
     for attempt in range(tries):
         async with sem:
             # размышление выключено: для выписок из текста оно только раздувает вывод (в пробном вызове 11 тыс. из 14 тыс. выходных токенов)
@@ -100,11 +108,12 @@ async def ask(prompt: str, model: str, sem: asyncio.Semaphore, want_json: bool =
                                    thinking={"type": "disabled"})
             res = None
             try:
-                async for m in query(prompt=prompt + ("\n\nReturn valid JSON only." if attempt else ""), options=o):
-                    if isinstance(m, ResultMessage):
-                        res = m
+                res = await asyncio.wait_for(_query_once(prompt + ("\n\nReturn valid JSON only." if attempt else ""), o), timeout)
+            except asyncio.TimeoutError:
+                print(f"тайм-аут {timeout} с", file=sys.stderr)
+                continue
             except Exception as e:  # noqa: BLE001
-                print("ошибка запроса:", type(e).__name__, e, file=sys.stderr)
+                print("ошибка запроса:", type(e).__name__, str(e)[:120], file=sys.stderr)
                 continue
         if not res or not res.result:
             continue
@@ -127,12 +136,13 @@ def turn_lines(st: cards.Store, cid: str) -> list:
     return [cards.unquote(x) for x in cards.split_lines(st._card(cid)["body"])]
 
 
-def locate(quote: str, lines: list):
-    """Номера строк (1-based) первой строки с цитатой; цитата может занимать до трёх подряд идущих строк. Не нашли — None."""
+def locate(quote: str, lines: list, norm: list | None = None):
+    """Номера строк (1-based) первой строки с цитатой; цитата может занимать до трёх подряд идущих строк. Не нашли — None.
+    norm — заранее нормализованные строки реплики (иначе на каждый вызов их пришлось бы считать заново)."""
     nq = cards.norm_quote(quote)
     if len(nq) < 6:
         return None
-    norm = [cards.norm_quote(x) for x in lines]
+    norm = norm if norm is not None else [cards.norm_quote(x) for x in lines]
     for i, ln in enumerate(norm):
         if nq in ln:
             return i + 1, i + 1
@@ -153,6 +163,7 @@ async def map_turns(st: cards.Store, model: str, limit: int, workers: int) -> di
     out = {}
     for r, res in zip(rows, results):
         lines = turn_lines(st, r["id"])
+        norm = [cards.norm_quote(x) for x in lines]
         ts = json.loads(r["meta"]).get("ts", "")
         proposed = grounded = 0
         concepts = []
@@ -162,7 +173,7 @@ async def map_turns(st: cards.Store, model: str, limit: int, workers: int) -> di
             for cl in c.get("claims", []) or []:
                 proposed += 1
                 text, quote = " ".join(str(cl.get("text", "")).split()), " ".join(str(cl.get("quote", "")).split())
-                pos = locate(quote, lines) if quote and text else None
+                pos = locate(quote, lines, norm) if quote and text else None
                 if pos:
                     grounded += 1
                     claims.append(dict(text=text, quote=quote, l1=pos[0], l2=pos[1]))
@@ -172,24 +183,61 @@ async def map_turns(st: cards.Store, model: str, limit: int, workers: int) -> di
     return out
 
 
-async def map_lists(st: cards.Store, model: str, limit: int, workers: int) -> dict:
-    """Дословные перечни по каждой реплике. Заголовок-«зацепка» ищем в тексте, каждый элемент проверяем в 150 строках после него; ненайденные элементы
-    выбрасываем, а перечень, где не нашлась половина, — целиком."""
+def chunk_ranges(lines: list, size: int = 800) -> list:
+    """Куски реплики по ~size строк; конец куска сдвигаем к ближайшей пустой строке (не дальше +120), чтобы не рвать перечни посередине."""
+    out, a, n = [], 0, len(lines)
+    while a < n:
+        b = min(n, a + size)
+        if b < n:
+            for k in range(b, min(n, b + 120)):
+                if not lines[k].strip():
+                    b = k + 1
+                    break
+        out.append((a, b))
+        a = b
+    return out
+
+
+async def map_lists(st: cards.Store, model: str, limit: int, workers: int, raw_path: Path | None = None) -> dict:
+    """Дословные перечни по каждой реплике, кусками по ~800 строк (так вывод одного вызова не упирается в потолок). Заголовок-«зацепку» ищем в тексте
+    реплики, каждый элемент проверяем в 150 строках после него; ненайденные элементы выбрасываем, а перечень, где не нашлась половина, — целиком."""
     sem = asyncio.Semaphore(workers)
     rows = st.con.execute("SELECT id FROM cards WHERE kind='turn' ORDER BY id").fetchall()
     if limit:
         rows = rows[:limit]
     texts = {r["id"]: turn_lines(st, r["id"]) for r in rows}
-    results = await asyncio.gather(*[ask(LISTS_PROMPT.format(cid=r["id"], text="\n".join(texts[r["id"]])[:260_000]), model, sem) for r in rows])
-    out, proposed, kept = {}, 0, 0
-    for r, res in zip(rows, results):
-        lines = texts[r["id"]]
-        norm = [cards.norm_quote(x) for x in lines]
-        lists = []
+    jobs = [(r["id"], a, b) for r in rows for a, b in chunk_ranges(texts[r["id"]])]
+    raw: dict = {}
+
+    async def one(j):
+        cid, a, b = j
+        res = await ask(LISTS_PROMPT.format(cid=f"{cid} (part of the exchange: lines {a + 1}-{b})", text="\n".join(texts[cid][a:b])), model, sem)
+        return j, res
+
+    done = 0
+    for fut in asyncio.as_completed([one(j) for j in jobs]):
+        j, res = await fut
+        raw[f"{j[0]}:{j[1]}-{j[2]}"] = res
+        done += 1
+        if raw_path and done % 20 == 0:
+            raw_path.write_text(json.dumps(raw, ensure_ascii=False), encoding="utf-8")
+    if raw_path:                                         # сырые ответы сохраняем до разбора: разбор можно повторить, не платя за модель
+        raw_path.write_text(json.dumps(raw, ensure_ascii=False), encoding="utf-8")
+    print(f"перечни: вызовов {len(jobs)}, без ответа {sum(1 for v in raw.values() if v is None)}; ≈${est_usd():.3f}")
+    return parse_lists(raw, texts)
+
+
+def parse_lists(raw: dict, texts: dict) -> dict:
+    out, proposed, kept = {cid: [] for cid in texts}, 0, 0
+    norms = {cid: [cards.norm_quote(x) for x in lines] for cid, lines in texts.items()}
+    for key in sorted(raw):
+        cid = key.split(":")[0]
+        res = raw[key]
+        lines, norm = texts[cid], norms[cid]
         for ls in (res or {}).get("lists", []) or []:
             items = [" ".join(str(i).split()) for i in ls.get("items", []) or [] if str(i).strip()]
             proposed += len(items)
-            pos = locate(" ".join(str(ls.get("lead", "")).split()), lines)
+            pos = locate(" ".join(str(ls.get("lead", "")).split()), lines, norm)
             if not pos or len(items) < 3:
                 continue
             region = " ".join(norm[pos[0] - 1:pos[0] + 150])
@@ -205,10 +253,9 @@ async def map_lists(st: cards.Store, model: str, limit: int, workers: int) -> di
             if len(good) < 3 or len(good) * 2 < len(items):
                 continue
             kept += len(good)
-            lists.append(dict(title=" ".join(str(ls.get("title", "")).split()), lead=" ".join(str(ls.get("lead", "")).split()), items=good, l1=pos[0], l2=last))
-        out[r["id"]] = lists
+            out[cid].append(dict(title=" ".join(str(ls.get("title", "")).split()), lead=" ".join(str(ls.get("lead", "")).split()), items=good, l1=pos[0], l2=last))
     print(f"перечни: элементов предложено {proposed}, найдено дословно {kept} ({100 * kept / max(1, proposed):.1f}%); "
-          f"перечней {sum(len(v) for v in out.values())} в {len(out)} репликах; ≈${est_usd():.3f}")
+          f"перечней {sum(len(v) for v in out.values())} в {sum(1 for v in out.values() if v)} репликах")
     return out
 
 
@@ -350,8 +397,12 @@ async def main_async(ns):
         lists_path = out / "lists.json"
         if ns.reuse and lists_path.exists():
             lists = json.loads(lists_path.read_text(encoding="utf-8"))
+        elif ns.reuse and (out / "lists_raw.json").exists():           # сырые ответы модели есть: разбор повторяем без вызовов
+            texts = {r["id"]: turn_lines(st, r["id"]) for r in st.con.execute("SELECT id FROM cards WHERE kind='turn' ORDER BY id")}
+            lists = parse_lists(json.loads((out / "lists_raw.json").read_text(encoding="utf-8")), texts)
+            lists_path.write_text(json.dumps(lists, ensure_ascii=False), encoding="utf-8")
         else:
-            lists = await map_lists(st, model, ns.limit, ns.workers)
+            lists = await map_lists(st, model, ns.limit, ns.workers, raw_path=out / "lists_raw.json")
             lists_path.write_text(json.dumps(lists, ensure_ascii=False), encoding="utf-8")
     merge = await merge_names(per_turn, model, ns.workers)
     (out / "merge.json").write_text(json.dumps(merge, ensure_ascii=False, indent=1), encoding="utf-8")
