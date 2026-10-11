@@ -26,6 +26,7 @@ import sys
 from pathlib import Path
 
 from common import MODEL, ClaudeAgentOptions, card_server, cards, need_model, run_session, summarize
+import evaluator
 import prepare
 
 DATA = Path(__file__).resolve().parent / "data"
@@ -218,7 +219,8 @@ async def main_async(ns):
         results += res["turns"]
         if res["error"]:
             errors.append(res["error"])
-    doc = dict(set=ns.set, arm=ns.arm, run=ns.run, errors=errors, ctx_chars=len(ctx), turns=results, summary=summarize(results))
+    doc = dict(set=ns.set, arm=ns.arm, run=ns.run, errors=errors, ctx_chars=len(ctx), turns=results, summary=summarize(results),
+               evaluator=evaluator.for_questions(qfile))             # чем проверяли: score.py скажет, если проверки потом менялись
     (out / f"{tag}.json").write_text(json.dumps(doc, ensure_ascii=False), encoding="utf-8")
     s = doc["summary"]
     print(f"{tag}: верно {s.get('ok')}/{s.get('n')}  вызовов/вопрос {s.get('calls', 0):.1f}  токенов на входе {s.get('tokens_in', 0):,}  ${s.get('usd', 0):.3f}  "

@@ -15,6 +15,8 @@ import re
 import statistics
 from pathlib import Path
 
+import evaluator
+
 DATA = Path(__file__).resolve().parent / "data"
 INCLUDE_INVALID = False
 QFILES = {"repo_lookup": "questions_repo_lookup.json", "repo_semantic": "questions_repo_semantic.json", "chat": "questions_chat.json", "chat_pos": "questions_chat_pos.json",
@@ -51,6 +53,31 @@ def rescore(docs_by_key) -> int:
                     t["ok"] = new
                     t["hits"] = anchor_hits(q, t.get("ans") or "")
     return changed
+
+
+def evaluator_notes(runs) -> list:
+    """Предупреждения об оценщике: у скольких прогонов нет отпечатка и у скольких проверки менялись после ответов (вердикты пересчитываются по текущим)."""
+    missing = changed = total = 0
+    parts: collections.Counter = collections.Counter()
+    for (s, _arm), docs in runs.items():
+        if s not in QFILES:
+            continue
+        now = evaluator.for_questions(QFILES[s])
+        for d in docs:
+            total += 1
+            c = evaluator.compare(d.get("evaluator"), now)
+            if c["status"] == "missing":
+                missing += 1
+            elif c["status"] == "changed":
+                changed += 1
+                parts.update(c["changed"])
+    out = []
+    if changed:
+        out.append(f"ВНИМАНИЕ: оценщик менялся после ответов у {changed} из {total} прогонов ({', '.join(sorted(parts))}): "
+                   "вердикты ниже пересчитаны по текущим проверкам, а не по тем, что были при ответе.")
+    if missing:
+        out.append(f"(у {missing} из {total} прогонов нет отпечатка оценщика: они сделаны до его появления, менялись ли проверки после ответов, неизвестно)")
+    return out
 
 
 def load(out: Path):
@@ -113,6 +140,8 @@ def main():
         for d in docs:
             for t in d["turns"]:
                 t["usd"] = (t["i"] * 2.0 + t["w"] * 4.0 + t["cr"] * ns.read_rate + t["o"] * 10.0) / 1e6
+    for line in evaluator_notes(runs):
+        print(line)
     n_changed = rescore(runs)
     if n_changed:
         print(f"(пересчитано по текущим проверкам: изменился вердикт у {n_changed} ответов)")

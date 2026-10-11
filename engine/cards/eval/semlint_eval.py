@@ -28,6 +28,7 @@ from pathlib import Path
 HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE.parent))
 import cards  # noqa: E402
+import evaluator  # noqa: E402
 import semlint  # noqa: E402
 
 QUESTIONS = HERE / "data" / "questions_synth.json"
@@ -73,6 +74,15 @@ def questions() -> list:
     return json.loads(QUESTIONS.read_text(encoding="utf-8"))
 
 
+# что здесь решает «нашёл / не нашёл»: ответ-ключ в коде (подложенные противоречия, ожидаемые пары, промпт второго разметчика) и подсчёт по нему
+EVALUATOR_PARTS = ("PLANTED", "CANON_PLANTS", "CANON_EXPECT", "CANON_DISTRACTORS", "JUDGE_PROMPT", "score_planted", "key_of")
+
+
+def evaluator_now() -> dict:
+    """Отпечаток оценщика для файла результатов: список понятий (questions_synth.json) и ответ-ключ из этого файла."""
+    return {QUESTIONS.name: evaluator.digest_file(QUESTIONS), f"semlint_eval.py#{','.join(EVALUATOR_PARTS)}": evaluator.digest_code(Path(__file__), EVALUATOR_PARTS)}
+
+
 def model_for(arm: str) -> str:
     env = {"main": "EVAL_MODEL", "small": "EVAL_MODEL_SMALL"}[arm]
     m = os.environ.get(env, "")
@@ -94,7 +104,7 @@ def usage_snapshot() -> dict:
 
 async def run_terms(store, items: list, arm: str, workers: int, out: Path, extra: dict) -> dict:
     judge = semlint.Judge(model_for(arm), workers=workers)
-    data = dict(arm=arm, results={}, **extra)
+    data = dict(arm=arm, results={}, evaluator=evaluator_now(), **extra)
 
     async def one(it):
         r = await semlint.lint_concept(store, it["term"], judge)
@@ -197,6 +207,9 @@ def cmd_view(ns) -> None:
 def cmd_score(ns) -> None:
     data = json.loads(Path(ns.results).read_text(encoding="utf-8"))
     labels = json.loads(Path(ns.labels).read_text(encoding="utf-8"))
+    for line in evaluator.describe(evaluator.compare(data.get("evaluator"), evaluator_now())):
+        print(line)
+    print(f"метки: {Path(ns.labels).name}, отпечаток {evaluator.digest_file(ns.labels)} (метки привязаны к порядку находок в этом файле результатов, не к их содержанию)")
     tot, per_kind, per_group = Counter(), {}, {}
     for term, r in data["results"].items():
         grp = "invalid" if r.get("invalid") else "control"
@@ -277,7 +290,7 @@ def cmd_canon(ns) -> None:
     pairs = {frozenset((f["a"]["id"], f["b"]["id"])) for f in planted["findings"]}
     rows = [(a, b, frozenset((a, b)) in pairs) for a, b in CANON_EXPECT]
     extra = [f for f in planted["findings"] if frozenset((f["a"]["id"], f["b"]["id"])) not in {frozenset(e) for e in CANON_EXPECT}]
-    out = dict(arm=ns.arm, baseline=base, planted=planted, expected=[dict(a=a, b=b, found=ok) for a, b, ok in rows],
+    out = dict(arm=ns.arm, evaluator=evaluator_now(), baseline=base, planted=planted, expected=[dict(a=a, b=b, found=ok) for a, b, ok in rows],
                extra=[dict(a=f["a"]["id"], b=f["b"]["id"], kind=f["kind"], summary=f["summary"]) for f in extra],
                distractor_flagged=[f["a"]["id"] + "~" + f["b"]["id"] for f in planted["findings"] if CANON_DISTRACTORS & {f["a"]["id"], f["b"]["id"]}],
                usage=usage_snapshot())
