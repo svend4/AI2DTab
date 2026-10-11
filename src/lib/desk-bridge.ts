@@ -1,15 +1,32 @@
 import type { Instr } from "@/components/instruments";
 import { dumpTsv } from "@/lib/machine";
-import { pmExec } from "@/lib/pm-api";
+import { pmRead, pmWrite } from "@/lib/pm-api";
+import { LOGIN_MESSAGE, parsePmLine, type PmReply } from "@/lib/pm-request";
 import { useDesk, type Row } from "@/lib/desk-store";
 
-export type BridgeOut = { ok: boolean; stdout: string; stderr: string };
+export type BridgeOut = PmReply;
 
-export async function bridge(line: string, extra?: { tape?: string; file?: string }): Promise<BridgeOut> {
+/** Серверная ошибка в виде ответа моста. «Unauthorized» — вход не выполнен: пишущий вызов не дошёл до стола. */
+function failure(e: unknown): BridgeOut {
+  const message = e instanceof Error ? e.message : "bridge";
+  if (message === "Unauthorized") {
+    return { ok: false, stdout: "", stderr: LOGIN_MESSAGE, code: "login_required" };
+  }
+  return { ok: false, stdout: "", stderr: message, code: "bridge" };
+}
+
+/**
+ * Команда столу. Чтение идёт открытым вызовом, остальное — вызовом с входом; сервер проверяет строку ещё раз и сам,
+ * поэтому выбор вызова здесь ничего не открывает. Ленту PLANT передаёт `extra.tape`; пути к файлу у моста нет.
+ */
+export async function bridge(line: string, extra?: { tape?: string }): Promise<BridgeOut> {
+  const parsed = parsePmLine({ line, tape: extra?.tape });
+  if (!parsed.ok) return { ok: false, stdout: "", stderr: parsed.message, code: parsed.code };
+  const call = parsed.kind === "read" ? pmRead : pmWrite;
   try {
-    return await pmExec({ data: { line, tape: extra?.tape, file: extra?.file } });
+    return await call({ data: { line, tape: extra?.tape } });
   } catch (e) {
-    return { ok: false, stdout: "", stderr: e instanceof Error ? e.message : "bridge" };
+    return failure(e);
   }
 }
 

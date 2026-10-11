@@ -30,6 +30,14 @@ export type Refusal =
   | "tape"
   | "login_required";
 export type PmRefused = { ok: false; code: Refusal; message: string };
+/** Ответ сайта на команду; `code` — причина отказа или сбоя, если она есть. */
+export type PmReply = {
+  ok: boolean;
+  stdout: string;
+  stderr: string;
+  code?: Refusal | "engine_unavailable" | "bridge";
+};
+export const LOGIN_MESSAGE = "запись в стол требует входа";
 /** `argv` — то, что идёт в `pm.py` (начиная с `exec`). Если `tape` истинно, сервер добавляет `--file <свой временный файл>`. */
 export type PmParsed = { ok: true; verb: string; kind: VerbKind; argv: string[]; tape: boolean };
 
@@ -319,8 +327,7 @@ function parseBatch(rest: string): PmParsed | PmRefused {
 export function buildPmArgs(input: PmInput, user: PmUser): PmParsed | PmRefused {
   const parsed = parsePmLine(input);
   if (!parsed.ok) return parsed;
-  if (parsed.kind !== "read" && !user)
-    return refuse("login_required", "запись в стол требует входа");
+  if (parsed.kind !== "read" && !user) return refuse("login_required", LOGIN_MESSAGE);
   return parsed;
 }
 
