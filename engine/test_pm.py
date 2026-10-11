@@ -332,5 +332,84 @@ class SupersedeUndo(Desk):
         self.assertEqual(self.links(), [("D001B", "D001", "всё-таки")])
 
 
+class RepeatsAreQuiet(Desk):
+    """Повтор команды не множит записи (FETCH) и не растит журнал отказов (ACCEPT по замещённому и по session/tape)."""
+
+    def fetch_ids(self):
+        con = self.db()
+        try:
+            return [r["id"] for r in con.execute("SELECT id FROM objects WHERE id LIKE 'Q-FETCH-%' ORDER BY id")]
+        finally:
+            con.close()
+
+    def refusals(self, oid):
+        return [detail for obj, detail in self.events("REFUSE") if obj == oid]
+
+    def test_fetch_twice_keeps_one_open_question(self):
+        first, second = self.out("FETCH"), self.out("FETCH")
+        self.assertEqual(first.strip(), "FETCH Q-FETCH-001")
+        self.assertTrue(second.startswith("skip FETCH Q-FETCH-001"), second)
+        self.assertEqual(self.fetch_ids(), ["Q-FETCH-001"])
+        self.assertEqual(len(self.events("FETCH")), 1)                           # пропуск ничего не пишет в журнал
+
+    def test_fetch_back_to_back_never_crashes(self):
+        for _ in range(5):
+            self.out("FETCH")                                                    # self.out проверяет код 0; раньше второй вызов в ту же секунду падал на PRIMARY KEY
+        self.assertEqual(self.fetch_ids(), ["Q-FETCH-001"])
+
+    def test_a_taken_or_closed_question_does_not_block_a_new_one(self):
+        self.out("FETCH")
+        self.out("TAKE", "Q-FETCH-001")                                          # человек снял вопрос
+        self.assertTrue(self.out("FETCH").startswith("FETCH Q-FETCH-002"))
+        con = self.db()
+        con.execute("UPDATE objects SET status='closed' WHERE id='Q-FETCH-002'")
+        con.commit()
+        con.close()
+        self.assertTrue(self.out("FETCH").startswith("FETCH Q-FETCH-003"))
+        self.assertEqual(self.fetch_ids(), ["Q-FETCH-001", "Q-FETCH-002", "Q-FETCH-003"])
+
+    def test_an_old_clock_numbered_question_counts_as_the_open_one(self):
+        con = self.db()
+        con.execute("INSERT INTO objects(id,cluster,layer,type,title,status,body,created_at,updated_at,owner) "
+                    "VALUES ('Q-FETCH-193145','C',2,'question','чего нет в каноне?','raw','старый','x','x','machine:exec')")
+        con.commit()
+        con.close()
+        self.assertTrue(self.out("FETCH").startswith("skip FETCH Q-FETCH-193145"))
+        self.assertEqual(self.fetch_ids(), ["Q-FETCH-193145"])
+
+    def test_fetch_inside_batch_is_quiet_too(self):
+        self.out("BATCH", "FETCH; FETCH; FETCH")
+        self.assertEqual(self.fetch_ids(), ["Q-FETCH-001"])
+
+    def test_repeated_accept_of_a_replaced_object_logs_one_refusal(self):
+        self.add("D001B", title=NEWER)
+        self.out("SUPERSEDE", "D001", "BY", "D001B")
+        answers = [self.out("ACCEPT", "D001") for _ in range(3)]
+        self.assertEqual(len(set(answers)), 1)                                   # человеку отвечаем каждый раз одинаково
+        self.assertIn("REFUSE D001 superseded", answers[0])
+        self.assertEqual(self.refusals("D001"), ["superseded"])
+
+    def test_repeated_accept_of_a_session_object_logs_one_refusal(self):
+        for _ in range(3):
+            self.assertIn("REFUSE S001 type=session", self.out("ACCEPT", "S001"))
+        self.assertEqual(self.refusals("S001"), ["session"])
+
+    def test_a_refusal_is_logged_again_when_something_else_happened_in_between(self):
+        self.add("D001B", title=NEWER)
+        self.out("SUPERSEDE", "D001", "BY", "D001B")
+        self.out("ACCEPT", "D001")                                               # отказ №1
+        self.out("SUPERSEDE", "D001", "UNDO")
+        self.out("SUPERSEDE", "D001", "BY", "D001B")
+        self.out("ACCEPT", "D001")                                               # отказ №2: между ними у объекта были другие события
+        self.assertEqual(self.refusals("D001"), ["superseded", "superseded"])
+
+    def test_refusals_of_different_objects_do_not_hide_each_other(self):
+        self.add("D001B", title=NEWER)
+        self.out("SUPERSEDE", "D001", "BY", "D001B")
+        for oid in ("D001", "S001", "D001", "S001"):
+            self.out("ACCEPT", oid)
+        self.assertEqual((self.refusals("D001"), self.refusals("S001")), (["superseded"], ["session"]))
+
+
 if __name__ == "__main__":
     unittest.main()
