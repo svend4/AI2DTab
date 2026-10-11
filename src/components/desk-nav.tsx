@@ -2,6 +2,7 @@ import { useEffect, type ReactNode } from "react";
 import { Link, useRouterState } from "@tanstack/react-router";
 import { STAGES, type Stage } from "@/lib/cycle-data";
 import { useDesk } from "@/lib/desk-store";
+import { AccessBar } from "@/components/access-bar";
 import { CommandBar } from "@/components/command-bar";
 import { refreshBook } from "@/lib/desk-bridge";
 import { InstrumentPanel, InstrumentStrip } from "@/components/instruments";
@@ -26,6 +27,7 @@ export function DeskNav() {
   return (
     <header className="border-b border-border bg-bg">
       <div className="mx-auto flex max-w-6xl flex-col gap-3 px-4 py-4 sm:px-6">
+        <AccessBar />
         <InstrumentStrip instr={instr} />
         <InstrumentPanel instr={instr} />
         <nav className="grid grid-cols-2 gap-2 sm:grid-cols-4">

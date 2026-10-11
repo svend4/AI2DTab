@@ -1,6 +1,14 @@
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
-import { LIMITS, VERBS, buildPmArgs, isSetExpr, kindOf, parsePmLine } from "./pm-request.ts";
+import {
+  LIMITS,
+  VERBS,
+  buildPmArgs,
+  isSetExpr,
+  kindOf,
+  parsePmLine,
+  verbKind,
+} from "./pm-request.ts";
 import type { PmInput, PmUser } from "./pm-request.ts";
 
 const USER: PmUser = { id: "user-1" };
@@ -296,6 +304,15 @@ describe("правила глаголов", () => {
       }
     });
   }
+
+  it("verbKind: класс по первому слову, регистр не важен, чужого слова нет", () => {
+    assert.equal(verbKind("canon"), "read");
+    assert.equal(verbKind(" Plant "), "write");
+    assert.equal(verbKind("PURGE"), "bulk");
+    for (const [name, v] of Object.entries(VERBS)) assert.equal(verbKind(name), v.kind, name);
+    for (const w of ["", "SUPERSEDE", "constructor", "__proto__", "toString", "hasOwnProperty"])
+      assert.equal(verbKind(w), null, w);
+  });
 
   it("kindOf не пускает то, что не прошло разбор", () => {
     assert.equal(kindOf({ line: "PLANT --file x" }), null);

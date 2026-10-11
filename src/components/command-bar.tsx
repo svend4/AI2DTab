@@ -2,6 +2,9 @@ import { useState, type FormEvent } from "react";
 import { acceptBoth, bridge, fetchBoth, refreshBook, runBoth, takeBoth } from "@/lib/desk-bridge";
 import { downloadText } from "@/lib/machine";
 import { useDesk } from "@/lib/desk-store";
+import { needsLogin } from "@/lib/desk-access";
+import { LOGIN_MESSAGE, verbKind } from "@/lib/pm-request";
+import { useDeskAccess } from "@/lib/use-desk-access";
 
 function tail(out: { ok: boolean; stdout: string; stderr: string }) {
   const t = (out.stdout || out.stderr).trim().split("\n").slice(0, 2).join(" · ");
@@ -14,6 +17,7 @@ const WRITE =
 export function CommandBar() {
   const [line, setLine] = useState("");
   const [echo, setEcho] = useState("");
+  const access = useDeskAccess();
 
   async function run(e: FormEvent) {
     e.preventDefault();
@@ -32,6 +36,10 @@ export function CommandBar() {
     const [cmd, ...rest] = t.split(/\s+/);
     const C = (cmd || "").toUpperCase();
     const arg = rest.join(" ");
+    if (needsLogin(verbKind(C), access)) {
+      setEcho(LOGIN_MESSAGE);
+      return;
+    }
     setLine("");
 
     if (C === "LOOK") {

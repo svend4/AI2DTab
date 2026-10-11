@@ -336,3 +336,9 @@ export function kindOf(input: PmInput): VerbKind | null {
   const parsed = parsePmLine(input);
   return parsed.ok ? parsed.kind : null;
 }
+
+/** Класс глагола по первому слову (без разбора аргументов); null — глагола нет в таблице. Нужен интерфейсу, чтобы не звать сервер зря. */
+export function verbKind(word: string): VerbKind | null {
+  const name = word.trim().toUpperCase();
+  return Object.hasOwn(VERBS, name) ? VERBS[name].kind : null;
+}
