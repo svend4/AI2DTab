@@ -3,7 +3,7 @@
 Каждый писатель картотеки и каждый глагол стола вызывается дважды подряд с одними и теми же аргументами. Второй вызов обязан оставить таблицы
 содержимого такими, какими их оставил первый, а журналы (oplog картотеки, events стола) не должны расти на пути «UNCHANGED / skip».
 Известные нарушения записывают как expectedFailure с номером находки из плана; закрыли находку — тест начинает проходить, unittest
-сообщает «unexpected success», и декоратор снимают (так в фазе 1 закрыты H8 и H11; H1 ещё красная).
+сообщает «unexpected success», и декоратор снимают (так в фазе 1 закрыты H1, H8 и H11: сейчас все строки зелёные).
 Новый писатель без строки в этой таблице не проходит ревью.
 
     python3 -m unittest engine/cards/test_idempotency.py -v
@@ -261,15 +261,13 @@ class StoreContract(Contract):
         self.repeat(lambda: self.snap(lambda: {"wiki-folder": snap_tree(out) if out.exists() else (0, "")}),
                     lambda: self.st.export_wiki(out), "export_wiki")
 
-    # H1: add_note с теми же названием, текстом и источниками заводит вторую заметку (n001, n002)
-    @unittest.expectedFailure
+    # H1 (закрыта фазой 1): add_note с теми же названием, текстом и источниками заводил вторую заметку (n001, n002)
     def test_add_note(self):
         first, second = self.repeat(self.snap, lambda: self.st.add_note(**self.note_args()), "add_note")
         self.assertTrue(first.startswith("OK n001"), first)
         self.assertTrue(second.startswith("UNCHANGED n001"), second)
 
-    # H1: то же для заметки без источников (ручной)
-    @unittest.expectedFailure
+    # H1 (закрыта фазой 1): то же для заметки без источников (ручной)
     def test_add_note_without_sources(self):
         self.repeat(self.snap, lambda: self.st.add_note("Памятка", "Ручная заметка без источников.", author="human"), "add_note")
 

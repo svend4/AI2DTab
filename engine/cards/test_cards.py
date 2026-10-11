@@ -597,6 +597,71 @@ class Notes(unittest.TestCase):
         self.assertIn("none (a manual note)", self.st.open("n001"))
         self.assertEqual(self.st.lint(), [])
 
+    # --- повтор той же записи ничего не добавляет (фаза 1 плана PLAN-LOOPS.md)
+    def counts(self):
+        q = lambda sql: self.st.con.execute(sql).fetchone()[0]  # noqa: E731
+        return (q("SELECT COUNT(*) FROM cards"), q("SELECT COUNT(*) FROM chunks"), q("SELECT COUNT(*) FROM note_sources"), q("SELECT COUNT(*) FROM oplog"),
+                q("SELECT version FROM cards WHERE id='n001'"))
+
+    def test_same_note_again_answers_unchanged_and_writes_nothing(self):
+        first = self.make_note()
+        before = self.counts()
+        again = self.make_note()
+        self.assertTrue(first.startswith("OK n001"), first)
+        self.assertEqual(again, "UNCHANGED n001 (same title, text and sources)")
+        self.assertEqual(self.counts(), before)                                       # ни карточки, ни кусков, ни источников, ни строки журнала
+
+    def test_same_note_is_recognized_through_spaces_quote_markup_and_another_group(self):
+        self.make_note()
+        for kw in (dict(title="  Technopedia "), dict(text=f"Открытая вики знаний с версиями (t001 L{self.l}).\n\n"),
+                   dict(sources=[dict(card="t001", lines=f"L{self.l}", quote="  Открытая   ВИКИ знаний ")]), dict(group="Другая группа")):
+            self.assertTrue(self.make_note(**kw).startswith("UNCHANGED n001"), kw)
+
+    def test_a_different_title_text_or_source_makes_a_new_note(self):
+        self.make_note()
+        mk = self.make_note
+        quote = "открытая вики знаний"
+        self.assertTrue(mk(text="Другой текст.").startswith("OK n002"))
+        self.assertTrue(mk(title="Другое название").startswith("OK n003"))
+        self.assertTrue(mk(sources=[dict(card="t001", lines=f"{self.l}-{self.l + 1}", quote=quote)]).startswith("OK n004"))         # другие строки
+        self.assertTrue(mk(sources=[dict(card="t001", lines=f"{self.l}-{self.l}", quote="вики знаний")]).startswith("OK n005"))      # другая цитата
+        self.assertTrue(mk(sources=[dict(card="t001", lines=f"{self.l}-{self.l}", quote=quote), dict(card="t002", lines="1-3")]).startswith("OK n006"))   # ещё источник
+
+    def test_manual_note_twice_and_archived_twin_does_not_block(self):
+        self.assertIn("manual", self.st.add_note("Мысль", "просто заметка человека"))
+        self.assertEqual(self.st.add_note("Мысль", "просто заметка человека"), "UNCHANGED n001 (same title, text and sources)")
+        self.st.con.execute("UPDATE cards SET status='archived' WHERE id='n001'")
+        self.st.con.commit()
+        self.assertTrue(self.st.add_note("Мысль", "просто заметка человека").startswith("OK n002"))      # в архиве — не двойник
+
+    def test_mcp_note_twice_answers_unchanged_and_the_tool_says_so(self):
+        args = {"title": "Т", "text": "тело", "sources": [dict(card="t001", lines=f"{self.l}-{self.l}", quote="открытая вики")]}
+        self.assertTrue(cards.call_tool(self.st, "note", args).startswith("OK n001"))
+        self.assertTrue(cards.call_tool(self.st, "note", args).startswith("UNCHANGED n001"))
+        spec = next(t for t in cards.TOOL_SPECS if t["name"] == "note")
+        self.assertIn("UNCHANGED", spec["description"])                                  # агент заранее знает, что такой ответ бывает
+
+    def test_lint_marks_twin_notes_with_different_sources(self):
+        self.make_note()
+        self.make_note(sources=[dict(card="t001", lines=f"{self.l}-{self.l + 1}", quote="открытая вики знаний")])        # тот же текст, другие строки → n002
+        f = [x for x in self.st.lint() if x["code"] == "note-duplicate-text"]
+        self.assertEqual([(x["level"], x["subject"]) for x in f], [("info", "n001")])
+        self.assertIn("n001, n002", f[0]["message"])
+        self.assertIn("different sources", f[0]["message"])
+
+    def test_lint_marks_exact_twins_made_before_notes_became_idempotent(self):
+        self.st._find_same_note = lambda *a, **k: None                                   # как раньше: проверки повтора нет
+        self.make_note()
+        self.make_note()
+        f = [x for x in self.st.lint() if x["code"] == "note-duplicate-text"]
+        self.assertEqual(len(f), 1)
+        self.assertIn("the same sources", f[0]["message"])
+
+    def test_lint_is_quiet_about_notes_with_different_text(self):
+        self.make_note()
+        self.make_note(text="Другой текст.")
+        self.assertEqual([x for x in self.st.lint() if x["code"] == "note-duplicate-text"], [])
+
     def test_lint_flags_changed_and_missing_sources(self):
         self.make_note(sources=[dict(card="t001", lines=f"{self.l}-{self.l + 1}", quote="открытая вики")])      # две строки: 13 и 14
         self.assertEqual(self.st.lint(), [])

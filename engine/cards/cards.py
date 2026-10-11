@@ -959,6 +959,9 @@ class Store:
             if quote and norm_quote(quote) not in norm_quote("\n".join(seg)):
                 return f"ERR quote not found in {card} L{l1}-{l2}; copy the exact words from those lines or widen the range"
             rows.append((card, l1, l2, c["version"], sha1("\n".join(seg)), quote))
+        same = self._find_same_note(clip(title, 100), text, rows)
+        if same:                                                  # повтор того же вызова: ничего не пишем (ни карточки, ни куска, ни строки журнала)
+            return f"UNCHANGED {same} (same title, text and sources)"
         cid = self._next_id("n")
         gid = self._group_for(group_kind, group, group_ord, group_summary)
         ls = split_lines(text)
@@ -977,6 +980,20 @@ class Store:
         self._log(op, cid, f"{title} ({len(rows)} sources)")
         self.con.commit()
         return f"OK {cid} created" + (f" with {len(rows)} verified source(s)" if rows else " (no sources: a manual note)")
+
+    def _find_same_note(self, title: str, text: str, rows: list):
+        """Действующая заметка с тем же названием, текстом и набором источников (карточка, строки, цитата без регистра и разметки) или None.
+        Без этого агент, повторивший запись, молча размножает память: n001, n002… с одним и тем же содержимым."""
+        want: dict = {}
+        for card, l1, l2, _ver, _hash, quote in rows:
+            want.setdefault((card, l1, l2), norm_quote(quote))   # как INSERT OR IGNORE при записи: на одно место остаётся первая цитата
+        want_set = {(*k, q) for k, q in want.items()}
+        for n in self.con.execute("SELECT id FROM cards WHERE kind='note' AND status='active' AND title=? AND body=? ORDER BY id", (title, text)):
+            have = {(s["card_id"], s["l1"], s["l2"], norm_quote(s["quote"])) for s in
+                    self.con.execute("SELECT card_id, l1, l2, quote FROM note_sources WHERE note_id=?", (n["id"],))}
+            if have == want_set:
+                return n["id"]
+        return None
 
     def note_sources(self, note_id: str) -> list:
         """Источники заметки с состоянием: ok | changed (слепок строк не совпал) | missing (карточки нет или она стала короче)."""
@@ -1477,7 +1494,7 @@ class Store:
     # ------------------------------------------------------------ lint: проверка здоровья памяти, без модели
     def lint(self, today=None, stale_days: int = 7) -> list:
         """Детерминированные проверки. Канон стола: дата в прошлом, условие «пока …». Журнал: факт без источника, предложение столу без ACCEPT,
-        канон отстаёт от журнала, журнал отстаёт от канона (стол заменил объект, а журнал держит старое). Заметки: нет источников, источник пропал или изменился, цитата не найдена, битая ссылка [[nNNN]], сироты.
+        канон отстаёт от журнала, журнал отстаёт от канона (стол заменил объект, а журнал держит старое). Заметки: нет источников, источник пропал или изменился, цитата не найдена, битая ссылка [[nNNN]], сироты, одинаковые название и текст.
         Возвращает список dict(level=error|warn|info, code, subject, message). Ничего не пишет."""
         from datetime import date
         if today is None:
@@ -1574,6 +1591,14 @@ class Store:
                     add("warn", "note-source-drift", n["id"], f"the text of {where} changed after the note was written: re-read it and update the note")
                 elif not s["quote_ok"]:
                     add("warn", "note-quote-missing", n["id"], f"the quote «{clip(s['quote'], 60)}» is not in {where}")
+        twins: dict = defaultdict(list)                       # одинаковые название и текст: повтор записи или дубль, заведённый до UNCHANGED
+        for n in notes:
+            twins[(n["title"], n["body"])].append(n["id"])
+        for same_ids in twins.values():
+            if len(same_ids) > 1:
+                shapes = {tuple(sorted((s["card"], s["l1"], s["l2"], norm_quote(s["quote"])) for s in self.note_sources(i))) for i in same_ids}
+                tail = "and the same sources: keep one" if len(shapes) == 1 else "but different sources: check that both are needed"
+                add("info", "note-duplicate-text", same_ids[0], f"{', '.join(same_ids)} have the same title and text, {tail}")
         if sum(inbound.values()):
             orphans = [n["id"] for n in notes if not inbound[n["id"]] and not json.loads(n["meta"]).get("manual")]
             if orphans:
@@ -1733,7 +1758,8 @@ TOOL_SPECS = [
     dict(name="note",
          description="File a finding back as a wiki note so it need not be re-derived. Give a short title, markdown text and sources: a list of "
                      "{card, lines, quote}. Every source is checked on write (the card exists, the lines are inside it, the quote is present word for word). "
-                     "Notes are derived data: when exact words or numbers matter, re-read the cited lines. Do not file guesses.",
+                     "Notes are derived data: when exact words or numbers matter, re-read the cited lines. Do not file guesses. "
+                     "Filing the same note again (same title, text and sources) answers UNCHANGED and writes nothing.",
          props={"title": {"type": "string"}, "text": {"type": "string"},
                 "sources": {"type": "array", "items": {"type": "object", "properties": {
                     "card": {"type": "string"}, "lines": {"type": "string", "description": "e.g. '317-345'"},
