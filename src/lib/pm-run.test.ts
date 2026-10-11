@@ -90,6 +90,30 @@ describe("runPm: путь и права файла ленты", () => {
     assert.notEqual(a.file, "/tmp/desk-tape.txt");
   });
 
+  it("одновременные запросы с лентой не затирают друг друга", async () => {
+    const dir = tempDir("pm-fake-");
+    const script = join(dir, "slow-read.py");
+    writeFileSync(
+      script,
+      [
+        "import sys, time",
+        "f = sys.argv[sys.argv.index('--file') + 1]",
+        "time.sleep(0.4)", // за это время остальные запросы успевают записать свои ленты
+        "print(open(f, encoding='utf-8').read())",
+      ].join("\n"),
+    );
+    const n = 6;
+    const results = await Promise.all(
+      Array.from({ length: n }, (_, i) =>
+        runPm(["exec", "PLANT"], `лента-${i}`, { script, cwd: dir }),
+      ),
+    );
+    assert.deepEqual(
+      results.map((r) => r.stdout.trim()),
+      Array.from({ length: n }, (_, i) => `лента-${i}`),
+    );
+  });
+
   it("без ленты в команду ничего не добавляется", async () => {
     const dir = tempDir("pm-fake-");
     const script = join(dir, "argv.py");
