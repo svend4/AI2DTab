@@ -651,6 +651,131 @@ class HandoffOneLinePerFact(unittest.TestCase):
         self.assertLessEqual(cards.est_tokens(self.brief()) - cards.est_tokens(self.old_style_brief()), 8)
 
 
+class HandoffLedgerCap(unittest.TestCase):
+    """Дыра паспорта 1: бюджет справки резал только список групп, а журнал фактов шёл в справку целиком (400 фактов — 10 141 токен при бюджете 4000).
+    Теперь в разделе LEDGER не больше handoff_ledger_max_lines фактов (последние записанные), строка длиннее handoff_ledger_line_chars режется,
+    а что не показано — названо строкой-указателем."""
+    LEDGER = "LEDGER (conversation facts, current):\n"
+
+    def setUp(self):
+        self.tmp = tempfile.TemporaryDirectory()
+        self.t = Path(self.tmp.name)
+        self.desk = make_desk(self.t)
+        self.st = cards.Store(self.t / "c.sqlite", project=project_for(self.t, self.desk))
+
+    def tearDown(self):
+        self.st.con.close()
+        self.tmp.cleanup()
+
+    def ledger(self, **kw):
+        """Строки раздела LEDGER справки."""
+        return self.st.handoff(catalog=False, **kw).split(self.LEDGER, 1)[1].split("\n\n", 1)[0].split("\n")
+
+    def many(self, n, prefix="k"):
+        for i in range(n):
+            self.st.fact_set(f"{prefix}.{i:03d}", "значение номер %d с хвостом из слов для объёма" % i, "t1")
+
+    def test_four_hundred_facts_fit_the_budget(self):
+        self.many(400)
+        out = self.st.handoff(catalog=False)
+        self.assertLessEqual(cards.est_tokens(out), 4000)                                   # было 10 141
+        lines = self.ledger()
+        self.assertEqual(len(lines), 41)
+        self.assertEqual(lines[-1].split(";")[0], "(+360 more active facts not shown")
+        self.assertEqual(self.st.facts().count("\n") + 1, 400)                              # сам журнал не тронут
+
+    def test_the_newest_recorded_facts_are_shown_in_key_order(self):
+        self.st.project["handoff_ledger_max_lines"] = 5
+        for k in "abcdefghij":
+            self.st.fact_set(k, k.upper(), "t1")
+        self.st.fact_set("a", "A2", "t1")                                                   # старый ключ, но запись свежая
+        lines = self.ledger()
+        self.assertEqual([l.split(" = ")[0] for l in lines[:-1]], ["a", "g", "h", "i", "j"])
+        self.assertEqual(lines[0], "a = A2  (v2)")
+        self.assertTrue(lines[-1].startswith("(+5 more active facts not shown"))
+
+    def test_exactly_at_the_cap_there_is_no_pointer_and_one_over_has_one(self):
+        self.st.project["handoff_ledger_max_lines"] = 3
+        self.many(3)
+        self.assertFalse(any(l.startswith("(+") for l in self.ledger()))
+        self.many(1, prefix="z")
+        lines = self.ledger()
+        self.assertEqual(len(lines), 4)
+        self.assertTrue(lines[-1].startswith("(+1 more active fact not shown"), lines[-1])
+
+    def test_facts_that_stand_in_the_canon_do_not_take_places(self):
+        self.st.project["handoff_ledger_max_lines"] = 3
+        for k in ("c.one", "c.two", "c.three"):
+            self.st.fact_set(k, "принято", "t1")
+            self.st.fact_promote(k, apply=True, accept=True)
+        self.many(3)
+        lines = self.ledger()
+        self.assertEqual([l.split(" = ")[0] for l in lines[:3]], ["k.000", "k.001", "k.002"])
+        self.assertEqual(lines[3], "(+3 ledger facts are already in the canon above)")
+        self.assertEqual(len(lines), 4)                                                     # указатель «ещё N» не нужен: всё влезло
+
+    def test_a_long_value_is_clipped_flat_and_counted(self):
+        self.st.project["handoff_ledger_line_chars"] = 80
+        self.st.fact_set("note", "первая строка\nвторая строка " + "слово " * 100, "t1")
+        self.st.fact_set("short", "коротко", "t1")
+        lines = self.ledger()
+        note = next(l for l in lines if l.startswith("note = "))
+        self.assertLessEqual(len(note), 80)
+        self.assertTrue(note.endswith("…  (v1)"), note)                                     # номер версии не потерян
+        self.assertIn("первая строка вторая строка", note)                                  # перенос строки стал пробелом
+        self.assertIn("short = коротко  (v1)", lines)
+        self.assertEqual(lines[-1], "(1 line clipped to 80 characters; facts() shows it whole)")
+        self.assertIn("слово слово", self.st.facts())                                       # журнал целый
+        self.assertIn("\n", self.st.facts("note").split("  (v1)")[0])                       # и с переносом строки
+
+    def test_a_value_with_line_breaks_is_one_line_in_the_brief(self):
+        self.st.fact_set("list", "один\nдва\nтри", "t1")
+        self.assertEqual(self.ledger(), ["list = один два три  (v1)"])
+
+    def test_nonsense_settings_fall_back_to_the_defaults(self):
+        self.many(45)
+        for bad in ("много", -3, 0, None):
+            self.st.project["handoff_ledger_max_lines"] = bad
+            self.assertEqual(len(self.ledger()), 41, bad)                                   # 40 фактов и указатель
+        self.st.project["handoff_ledger_line_chars"] = "x"
+        self.assertEqual(len(self.ledger()), 41)
+
+    def test_lint_says_when_the_brief_cannot_show_everything(self):
+        found = lambda: [f for f in self.st.lint() if f["code"] == "ledger-over-brief"]  # noqa: E731
+        self.many(40)
+        self.assertEqual(found(), [])
+        self.many(1, prefix="z")
+        (f,) = found()
+        self.assertEqual((f["level"], f["subject"]), ("warn", "ledger"))
+        self.assertIn("41 active facts", f["message"])
+        self.assertIn("newest 40", f["message"])
+        self.st.project["handoff_ledger_max_lines"] = 60
+        self.assertEqual(found(), [])
+        self.assertIn("LINT:", self.st.handoff(catalog=False))
+
+    def test_facts_in_the_canon_do_not_count_for_the_lint_either(self):
+        self.st.project["handoff_ledger_max_lines"] = 3
+        for k in ("c.one", "c.two"):
+            self.st.fact_set(k, "принято", "t1")
+            self.st.fact_promote(k, apply=True, accept=True)
+        self.many(2)                                                                        # всего четыре действующих, но в справке они все поместятся
+        self.assertEqual([f for f in self.st.lint() if f["code"] == "ledger-over-brief"], [])
+        self.many(2, prefix="z")
+        self.assertEqual(len([f for f in self.st.lint() if f["code"] == "ledger-over-brief"]), 1)
+
+    def test_small_ledgers_look_as_before(self):
+        self.st.fact_set("budget", "96000 EUR", "t8")
+        self.st.fact_set("deadline", "15 March")
+        self.assertEqual(self.ledger(), ["budget = 96000 EUR  (v1)", "deadline = 15 March  (v1)"])
+        self.assertEqual(self.st.facts(), "budget = 96000 EUR  (v1)\ndeadline = 15 March  (v1)")
+
+    def test_the_shipped_settings_name_the_cap(self):
+        shipped = json.loads((Path(cards.__file__).resolve().parent / "project.json").read_text(encoding="utf-8"))
+        want = {"handoff_ledger_max_lines": 40, "handoff_ledger_line_chars": 240}
+        self.assertEqual({k: shipped.get(k) for k in want}, want)
+        self.assertEqual({k: cards.PROJECT_DEFAULT[k] for k in want}, want)
+
+
 class HandoffNote(unittest.TestCase):
     """Записка предыдущей сессии: живая база в git не лежит, поэтому «на чём остановились» передаётся файлом рядом с конфигом (project.json: handoff_note),
     а handoff показывает его сразу после правил. Нет файла — справка прежняя."""

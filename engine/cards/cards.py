@@ -117,6 +117,9 @@ PROJECT_DEFAULT = {
     # записка предыдущей сессии: файл рядом с конфигом (пустое имя выключает), который handoff показывает сразу после правил; сверх handoff_note_max_tok обрезается.
     # Живая база картотеки в git не лежит, поэтому передать «на чём остановились» в новую сессию можно только файлом в репозитории
     "handoff_note": "HANDOFF.md", "handoff_note_max_tok": 700,
+    # раздел LEDGER справки: не больше стольких фактов (последние записанные; факты, уже стоящие в каноне, места не занимают) и не длиннее стольких знаков на факт.
+    # Остальное видно через facts(). Без этого журнал шёл в справку целиком: 400 фактов давали 10 141 токен при бюджете 4000
+    "handoff_ledger_max_lines": 40, "handoff_ledger_line_chars": 240,
     # пороги lint, только предупреждения (значения — предположения, не измерения; <= 0 выключает проверку):
     # churn_versions — с скольких версий у ключа журнала сообщать о частых правках; derived_raw_warn — с какого отношения токенов заметок к токенам реплик чата предупреждать
     # derived_raw_min_tok — на совсем маленьком чате отношение ничего не значит, предупреждаем только от этого числа токенов реплик
@@ -1653,6 +1656,11 @@ class Store:
         by_key: dict = defaultdict(list)
         for r in self.con.execute("SELECT * FROM facts ORDER BY key_norm, version, id"):
             by_key[r["key_norm"]].append(r)
+        keep, _ = self._ledger_split(self._canon_view()[1])
+        cap, _ = self._ledger_caps()
+        if len(keep) > cap:
+            add("warn", "ledger-over-brief", "ledger", f"{len(keep)} active facts are not in the canon and the brief lists only the newest {cap}: the rest is seen through facts() only. "
+                "Settle stable facts in the desk (promote, then ACCEPT) or retract what is stale")
         churn_from = self._setting("lint", "churn_versions", 5, int)
         same = lambda a, b: " ".join(a.split()).casefold() == " ".join(b.split()).casefold()  # noqa: E731
         for vs in by_key.values():
@@ -1849,15 +1857,50 @@ class Store:
         (out / "log.md").write_text("\n".join(log) + "\n", encoding="utf-8")
         return dict(pages=len(notes), index_chars=len("\n".join(index)))
 
-    def _ledger_section(self, shown: dict) -> str:
-        """Действующие факты журнала для справки. Факт, который предложили столу, человек принял и который стоит в показанном каноне под тем же
-        названием («ключ = значение»), не повторяется: иначе один факт выглядит подтверждённым дважды. Вместо него одна строка со счётом.
-        Не показанное в каноне (обрезано, правили название, ещё raw, канон новее/старее) остаётся в журнале."""
+    def _ledger_split(self, shown: dict) -> tuple:
+        """(факты, которых нет в показанном каноне; факты, которые там уже стоят), оба списка в порядке ключей. Факт стоит в каноне, если его предложили столу,
+        человек принял, и показанный объект называется так же («ключ = значение»). Не показанное (обрезано, правили название, ещё raw, канон новее или старее) остаётся."""
         rows = self._active_facts()
         same = lambda a, b: " ".join(a.split()) == " ".join(b.split())  # noqa: E731
-        twins = [r for r in rows if r["pm_id"] in shown and same(shown[r["pm_id"]], f"{r['key']} = {r['value']}")]
-        keep = [r for r in rows if r not in twins]
-        lines = [self._fact_line(r) for r in keep]
+        twin_ids = {r["id"] for r in rows if r["pm_id"] in shown and same(shown[r["pm_id"]], f"{r['key']} = {r['value']}")}
+        return [r for r in rows if r["id"] not in twin_ids], [r for r in rows if r["id"] in twin_ids]
+
+    def _ledger_caps(self) -> tuple:
+        """(сколько фактов, сколько знаков на факт) в справке из project.json; мусор и значения <= 0 — по умолчанию (40 и 240)."""
+        lines = self._setting("", "handoff_ledger_max_lines", 40, int)
+        chars = self._setting("", "handoff_ledger_line_chars", 240, int)
+        return (lines if lines > 0 else 40), (chars if chars > 0 else 240)
+
+    @staticmethod
+    def _brief_line(r, width: int) -> tuple:
+        """(строка факта для справки, обрезана ли она). Перенос строки в значении становится пробелом (в справке один факт — одна строка),
+        слишком длинное значение режется с «…», ключ и номер версии остаются."""
+        value = r["value"]
+        if "\n" in value or "\r" in value:
+            value = " ".join(value.split())
+        tail = f"  (v{r['version']})"
+        room = max(20, width - len(r["key"]) - 3 - len(tail))
+        clipped = len(value) > room
+        if clipped:
+            value = value[:room - 1].rstrip() + "…"
+        return f"{r['key']} = {value}{tail}", clipped
+
+    def _ledger_section(self, shown: dict) -> str:
+        """Действующие факты журнала для справки. Факт, уже стоящий в каноне, не повторяется: иначе один факт выглядит подтверждённым дважды, вместо него
+        одна строка со счётом. Остальных не больше handoff_ledger_max_lines: берутся последние записанные, выводятся в порядке ключей, а что не поместилось
+        или было обрезано, названо строкой-указателем (полный журнал — facts())."""
+        keep, twins = self._ledger_split(shown)
+        cap, width = self._ledger_caps()
+        more = max(0, len(keep) - cap)
+        if more:
+            keep = sorted(sorted(keep, key=lambda r: r["id"], reverse=True)[:cap], key=lambda r: r["key_norm"])
+        built = [self._brief_line(r, width) for r in keep]
+        lines = [line for line, _ in built]
+        if more:
+            lines.append(f"(+{more} more active fact{'' if more == 1 else 's'} not shown; the newest {cap} are listed: facts() lists all, facts(prefix) narrows)")
+        clipped = sum(1 for _, c in built if c)
+        if clipped:
+            lines.append(f"({clipped} line{'' if clipped == 1 else 's'} clipped to {width} characters; facts() shows {'it' if clipped == 1 else 'them'} whole)")
         if twins:
             n = len(twins)
             lines.append(f"(+{n} ledger {'fact is' if n == 1 else 'facts are'} already in the canon above)")
