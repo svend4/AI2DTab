@@ -651,6 +651,148 @@ class HandoffOneLinePerFact(unittest.TestCase):
         self.assertLessEqual(cards.est_tokens(self.brief()) - cards.est_tokens(self.old_style_brief()), 8)
 
 
+class PromoteQueueWarnings(unittest.TestCase):
+    """H4: у promote нет потолка, а ёмкость системы — человек, который принимает. Очередь видна и предупреждает, но записи не запрещает.
+    Пороги лежат в project.json: promote.max_waiting (по умолчанию 20) и promote.warn_ratio (0.8, то есть предупреждение с 16-го)."""
+
+    def setUp(self):
+        self.tmp = tempfile.TemporaryDirectory()
+        self.t = Path(self.tmp.name)
+        self.desk = make_desk(self.t)
+        self.st = cards.Store(self.t / "c.sqlite", project=project_for(self.t, self.desk))
+
+    def tearDown(self):
+        self.st.con.close()
+        self.tmp.cleanup()
+
+    def seed_waiting(self, n, first=0, prefix="LF-seed"):
+        """n предложений в столе в статусе raw, минуя promote (быстро: без процесса на каждое)."""
+        con = sqlite3.connect(self.desk / "project-store.sqlite")
+        for i in range(first, first + n):
+            con.execute("INSERT INTO objects (id, cluster, layer, type, title, status, body, created_at, updated_at) "
+                        "VALUES (?, 'C', 1, 'fact', ?, 'raw', '', '2026-10-01T00:00:00Z', '2026-10-01T00:00:00Z')", (f"{prefix}-{i:02d}-v1", f"seed fact {i}"))
+        con.commit()
+        con.close()
+
+    def raw_lf(self):
+        con = sqlite3.connect(self.desk / "project-store.sqlite")
+        try:
+            return con.execute("SELECT COUNT(*) FROM objects WHERE id LIKE 'LF-%' AND status='raw'").fetchone()[0]
+        finally:
+            con.close()
+
+    def promote(self, key="k", **kw):
+        self.st.fact_set(key, "v")
+        return self.st.fact_promote(key, apply=True, **kw)
+
+    def test_the_warning_starts_at_the_ratio_and_the_proposal_is_written(self):
+        self.seed_waiting(15)
+        out = self.promote()                                                              # шестнадцатое: 20 × 0.8 = 16
+        self.assertIn("created in the desk as RAW", out)
+        self.assertIn("WARNING: 16 proposals wait for ACCEPT (warning from 16, limit 20)", out)
+        self.assertIn("ask the human to ACCEPT or TAKE some", out)
+        self.assertEqual(self.raw_lf(), 16)
+
+    def test_below_the_ratio_there_is_no_warning(self):
+        self.seed_waiting(14)
+        out = self.promote()                                                              # пятнадцатое
+        self.assertIn("created in the desk as RAW", out)
+        self.assertNotIn("WARNING", out)
+
+    def test_over_the_limit_nothing_is_refused(self):
+        self.seed_waiting(24)
+        out = self.promote()
+        self.assertIn("created in the desk as RAW", out)                                  # записано, хотя ждут 25 при пределе 20
+        self.assertEqual(desk_row(self.desk, "LF-k-v1")["status"], "raw")
+        self.assertIn("WARNING: 25 proposals wait for ACCEPT, the limit is 20", out)
+        self.assertIn("stop proposing", out)
+        self.assertEqual(self.raw_lf(), 25)
+
+    def test_a_dry_run_says_what_it_would_make_and_writes_nothing(self):
+        self.seed_waiting(15)
+        self.st.fact_set("k", "v")
+        out = self.st.fact_promote("k")
+        self.assertIn("DRY RUN", out)
+        self.assertIn("WARNING: with this one 16 proposals would wait for ACCEPT", out)
+        self.assertIsNone(desk_row(self.desk, "LF-k-v1"))
+        self.assertEqual(self.raw_lf(), 15)
+
+    def test_the_count_goes_down_when_a_human_decides(self):
+        self.seed_waiting(17)
+        for oid in ("LF-seed-00-v1", "LF-seed-01-v1"):
+            desk_do(self.desk, "ACCEPT", oid)
+        desk_do(self.desk, "TAKE", "LF-seed-02-v1")
+        self.assertEqual(self.raw_lf(), 14)
+        self.assertNotIn("WARNING", self.promote())                                       # пятнадцатое: тихо
+
+    def test_accept_flag_does_not_grow_the_queue(self):
+        self.seed_waiting(19)
+        out = self.promote(accept=True)
+        self.assertEqual(self.raw_lf(), 19)                                               # принято сразу, в очередь не встало
+        self.assertIn("WARNING: 19 proposals wait for ACCEPT", out)                       # состояние стола всё равно правдиво
+
+    def test_only_the_ledger_proposals_are_counted(self):
+        self.seed_waiting(25, prefix="X-OWN")                                             # свои raw-объекты стола (в настоящем их 22) — не наша очередь
+        self.assertNotIn("WARNING", self.promote())
+        self.assertNotIn("PROPOSALS WAITING: 25", self.st.handoff(catalog=False))
+
+    def test_limits_come_from_the_project_settings(self):
+        self.st.project["promote"].update(max_waiting=4, warn_ratio=0.5)
+        self.seed_waiting(1)
+        out = self.promote()                                                              # второе: 4 × 0.5 = 2
+        self.assertIn("WARNING: 2 proposals wait for ACCEPT (warning from 2, limit 4)", out)
+        out2 = self.promote("k2")
+        self.assertIn("WARNING: 3 proposals wait for ACCEPT (warning from 2, limit 4)", out2)
+        self.assertIn("PROPOSALS WAITING: 3/4", self.st.handoff(catalog=False))
+
+    def test_the_warnings_can_be_switched_off_and_bad_settings_do_not_break_promote(self):
+        self.seed_waiting(30)
+        self.st.project["promote"]["max_waiting"] = 0
+        out = self.promote()
+        self.assertNotIn("WARNING", out)
+        self.assertIn("PROPOSALS WAITING: 31", self.st.handoff(catalog=False))            # счёт виден, но без предела
+        self.assertNotIn("proposal-backlog", {f["code"] for f in self.st.lint()})
+        self.st.project["promote"].update(max_waiting="много", warn_ratio=None)
+        self.assertIn("WARNING: 32 proposals wait for ACCEPT, the limit is 20", self.promote("k2"))   # мусор в настройках — значения по умолчанию
+
+    def test_the_thresholds_are_written_in_the_shipped_project_json(self):
+        """Значения лежат в project.json (его правит человек), а не только в коде; значения по умолчанию в коде с ними совпадают."""
+        shipped = json.loads((Path(cards.__file__).resolve().parent / "project.json").read_text(encoding="utf-8"))["promote"]
+        want = {"max_waiting": 20, "warn_ratio": 0.8}
+        self.assertEqual({k: shipped.get(k) for k in want}, want)
+        self.assertEqual({k: cards.load_project()["promote"][k] for k in want}, want)
+        self.assertEqual({k: cards.PROJECT_DEFAULT["promote"][k] for k in want}, want)
+
+    def test_handoff_shows_the_counter_only_when_something_waits(self):
+        self.assertNotIn("PROPOSALS WAITING", self.st.handoff(catalog=False))             # пусто — строки нет, справка не растёт
+        self.seed_waiting(3)
+        out = self.st.handoff(catalog=False)
+        self.assertIn("PROPOSALS WAITING: 3/20", out)
+        self.assertNotIn("WARNING", out)
+
+    def test_lint_warns_about_the_backlog_from_the_ratio(self):
+        self.seed_waiting(15)
+        codes = lambda: [f for f in self.st.lint() if f["code"] == "proposal-backlog"]  # noqa: E731
+        self.assertEqual(codes(), [])
+        self.seed_waiting(1, first=15)
+        found = codes()
+        self.assertEqual([(f["level"], f["subject"]) for f in found], [("warn", "desk")])
+        self.assertIn("16 proposals wait for ACCEPT (warning from 16, limit 20)", found[0]["message"])
+        self.assertIn("proposal-backlog", cards.Store.lint_text(self.st.lint()))
+        self.assertRegex(self.st.handoff(catalog=False), r"LINT: 0 errors, 1 warnings")
+
+    def test_the_counter_is_a_read_and_the_tool_text_tells_agents_what_to_do(self):
+        self.seed_waiting(16)
+        db = self.desk / "project-store.sqlite"
+        before = (db.stat().st_mtime_ns, db.stat().st_size)
+        self.assertEqual(self.st.waiting_proposals(), 16)
+        self.assertEqual(before, (db.stat().st_mtime_ns, db.stat().st_size))
+        spec = {s["name"]: s["description"] for s in cards.TOOL_SPECS}
+        self.assertIn("WARNING", spec["fact_promote"])
+        self.assertIn("never refuses", spec["fact_promote"])
+        self.assertIn("backlog", spec["lint"])
+
+
 class Mcp(unittest.TestCase):
     def test_stdio_roundtrip(self):
         with tempfile.TemporaryDirectory() as d:

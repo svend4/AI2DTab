@@ -110,7 +110,9 @@ PROJECT_DEFAULT = {
     "pm_dir": "..",                                      # где лежат pm.py и project-store.sqlite («стол»)
     # куда падает факт журнала при promote (всегда со статусом raw). mcp_apply=false: агент через MCP может только посмотреть, что было бы записано;
     # писать в базу стола (она лежит в репозитории) человек разрешает здесь или делает сам: cards.py promote КЛЮЧ --apply
-    "promote": {"cluster": "C", "layer": 1, "type": "fact", "mcp_apply": False},
+    # max_waiting и warn_ratio — только предупреждения, записи они не запрещают: сколько предложений (объекты LF-* в статусе raw) может ждать ACCEPT,
+    # и с какой доли предела начинать предупреждать. max_waiting <= 0 выключает предупреждения. Значения — предположение, а не измерение
+    "promote": {"cluster": "C", "layer": 1, "type": "fact", "mcp_apply": False, "max_waiting": 20, "warn_ratio": 0.8},
     "canon_types": ["fact", "decision"],                 # какие принятые объекты стола показывать как канон
     # заметки лежат только в базе картотеки (стол они не трогают): запись из MCP разрешена, но источники обязательны и проверяются при записи
     "notes": {"mcp_write": True, "require_sources": True},
@@ -1457,6 +1459,54 @@ class Store:
         finally:
             con.close()
 
+    def _promote_limits(self) -> tuple:
+        """(предел, порог предупреждения) из promote.max_waiting и promote.warn_ratio. Мусор в настройках — значения по умолчанию; предел <= 0 — предупреждений нет (порог 0)."""
+        pr = self.project.get("promote", {})
+        try:
+            limit = int(pr.get("max_waiting", 20))
+        except (TypeError, ValueError):
+            limit = 20
+        try:
+            ratio = float(pr.get("warn_ratio", 0.8))
+        except (TypeError, ValueError):
+            ratio = 0.8
+        ratio = min(max(ratio, 0.0), 1.0)
+        return limit, (max(1, math.ceil(limit * ratio)) if limit > 0 else 0)
+
+    def waiting_proposals(self):
+        """Сколько предложений журнала ждут решения человека: объекты стола LF-* в статусе raw. Только чтение; нет стола — None.
+        Свои необработанные объекты стола (PLANT и прочее) сюда не входят: это очередь, которую пополняет promote."""
+        con = self._desk_con()
+        if con is None:
+            return None
+        try:
+            return con.execute("SELECT COUNT(*) FROM objects WHERE id LIKE 'LF-%' AND status='raw'").fetchone()[0]
+        except sqlite3.Error:
+            return None
+        finally:
+            con.close()
+
+    def _waiting_note(self, extra: int = 0) -> str:
+        """Предупреждение, что у человека копятся предложения (пустая строка, пока их мало). Ничего не запрещает: пропускная способность — человек, и это сигнал агенту.
+        extra=1 для пробного запуска: считаем и предложение, которое было бы записано."""
+        limit, warn_from = self._promote_limits()
+        n = self.waiting_proposals()
+        if not warn_from or n is None or n + extra < warn_from:
+            return ""
+        n += extra
+        what = f"with this one {n} proposals would wait for ACCEPT" if extra else f"{n} proposals wait for ACCEPT"
+        if n >= limit:
+            return f"\nWARNING: {what}, the limit is {limit} (promote.max_waiting). Writing is not blocked, but stop proposing: ask the human to ACCEPT or TAKE some."
+        return f"\nWARNING: {what} (warning from {warn_from}, limit {limit}). Writing is not blocked; ask the human to ACCEPT or TAKE some before proposing more."
+
+    def waiting_line(self) -> str:
+        """Строка для справки: «PROPOSALS WAITING: 12/20». Пусто, пока ничего не ждёт или нет стола (справка не растёт зря)."""
+        n = self.waiting_proposals()
+        if not n:
+            return ""
+        limit, _ = self._promote_limits()
+        return f"PROPOSALS WAITING: {n}/{limit}" if limit > 0 else f"PROPOSALS WAITING: {n}"
+
     def canon(self, types=None, limit: int | None = None) -> str:
         """Принятые человеком (ACCEPT) факты и решения стола. Только чтение: база стола открывается в режиме ro."""
         return self._canon_view(types, limit)[0]
@@ -1528,7 +1578,7 @@ class Store:
             return f"{cur['pm_id']} was already proposed for v{cur['version']}; accept it in the desk: python3 pm.py exec ACCEPT {cur['pm_id']}"
         if not apply:
             return (f"DRY RUN, nothing written. Would create RAW object {oid} [{pr.get('cluster', 'C')}/{pr.get('type', 'fact')}] «{title}». "
-                    f"Repeat with apply=true; a human then accepts it: python3 pm.py exec ACCEPT {oid}" + note)
+                    f"Repeat with apply=true; a human then accepts it: python3 pm.py exec ACCEPT {oid}" + note + self._waiting_note(extra=1))
         r = subprocess.run(cmd, cwd=pm_py.parent, capture_output=True, text=True, encoding="utf-8", timeout=60)
         if r.returncode != 0:
             return f"ERR pm.py add failed: {(r.stderr or r.stdout).strip()[:300]}"
@@ -1541,7 +1591,7 @@ class Store:
             msg += f"; {(r2.stdout or r2.stderr).strip()}"
         else:
             msg += f"; waiting for a human: python3 pm.py exec ACCEPT {oid}"
-        return msg + note
+        return msg + note + self._waiting_note()
 
     # ------------------------------------------------------------ lint: проверка здоровья памяти, без модели
     def lint(self, today=None, stale_days: int = 7) -> list:
@@ -1618,6 +1668,12 @@ class Store:
                         f"«{clip(r['value'], 50)}» as current: bring the ledger in line (fact_set {r['key']} …) or undo the replacement (SUPERSEDE {r['pm_id']} UNDO)")
                 elif st == "rejected" and r["status"] == "active":
                     add("info", "proposal-rejected", r["pm_id"], f"the desk rejected this proposal, but the ledger still carries {r['key']} v{r['version']}: revise or retract it")
+
+        limit, warn_from = self._promote_limits()
+        waiting = self.waiting_proposals()
+        if warn_from and waiting is not None and waiting >= warn_from:
+            add("warn", "proposal-backlog", "desk", f"{waiting} proposals wait for ACCEPT (warning from {warn_from}, limit {limit}): the human is the bottleneck, "
+                "ask them to ACCEPT or TAKE some before proposing more")
 
         notes = self.con.execute("SELECT id, title, body, meta FROM cards WHERE kind='note' AND status='active' ORDER BY id").fetchall()
         ids = {n["id"] for n in notes}
@@ -1777,7 +1833,8 @@ class Store:
         canon, shown = self._canon_view()
         ledger = self._ledger_section(shown)
         groups = self.catalog(level=1) if catalog and self.con.execute("SELECT 1 FROM groups LIMIT 1").fetchone() else ""
-        parts = [head, canon, ledger, self.lint_summary(), ("MATERIAL: " + groups.replace("GROUPS ", "groups ", 1)) if groups else ""]
+        health = "\n".join(x for x in (self.lint_summary(), self.waiting_line()) if x)
+        parts = [head, canon, ledger, health, ("MATERIAL: " + groups.replace("GROUPS ", "groups ", 1)) if groups else ""]
         text = "\n\n".join(p for p in parts if p)
         while est_tokens(text) > budget_tok and groups.count("\n") > 3:      # не влезаем: режем список групп с конца
             groups = "\n".join(groups.split("\n")[:-1])
@@ -1834,7 +1891,8 @@ TOOL_SPECS = [
          props={"types": {"type": "string", "description": "comma-separated object types, default fact,decision"}}, required=[]),
     dict(name="fact_promote",
          description="Propose a ledger fact to the desk: creates a RAW object, never canon; only a human accepts it. "
-                     "Without apply=true (or when the project has switched writing off) it just shows what would be written.",
+                     "Without apply=true (or when the project has switched writing off) it just shows what would be written. "
+                     "When many proposals already wait for ACCEPT the answer carries a WARNING (it never refuses): stop proposing and tell the human.",
          props={"key": {"type": "string"}, "apply": {"type": "boolean"}}, required=["key"]),
     dict(name="note",
          description="File a finding back as a wiki note so it need not be re-derived. Give a short title, markdown text and sources: a list of "
@@ -1848,7 +1906,7 @@ TOOL_SPECS = [
                 "group": {"type": "string", "description": "optional group title, default 'notes'"}}, required=["title", "text", "sources"]),
     dict(name="lint",
          description="Health check of the memory (read-only): canon objects whose date has passed or that wait for an outside event, ledger facts without a "
-                     "source, proposals waiting for ACCEPT, canon that lags behind the ledger, notes whose sources vanished or changed.",
+                     "source, proposals waiting for ACCEPT (and a backlog of them), canon that lags behind the ledger, notes whose sources vanished or changed.",
          props={}, required=[]),
     dict(name="log",
          description="Chronological log of memory operations (facts, notes, patches, proposals) merged with the desk's events, one line each with a stable "
