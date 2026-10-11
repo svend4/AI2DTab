@@ -4,11 +4,14 @@ import archive from "@/data/archive.json";
 import { DeskShell } from "@/components/desk-nav";
 import { readKitFile } from "@/lib/kit-api";
 import { bridge, fetchBoth, refreshBook } from "@/lib/desk-bridge";
+import { writeProps } from "@/lib/desk-access";
+import { useDeskAccess } from "@/lib/use-desk-access";
 
 export const Route = createFileRoute("/l4")({ component: L4 });
 
 function L4() {
   const nav = useNavigate();
+  const { canWrite, pending } = useDeskAccess();
   const [spec, setSpec] = useState("снимаю SPEC…");
   const [port, setPort] = useState("");
   const [preview, setPreview] = useState<{ path: string; preview: string; bytes: number } | null>(
@@ -19,9 +22,14 @@ function L4() {
   const files = [{ path: "LANG-FROM-DB.md", bytes: 0, kind: "съём" as const }, ...archive];
   const shown = kind === "все" ? files : files.filter((f) => f.kind === kind);
 
-  async function loadSpec() {
-    const [a, b] = await Promise.all([bridge("SPEC"), bridge("PORT C A")]);
-    setSpec((a.stdout || a.stderr || "пусто").trim());
+  /** SPEC пересобирает файл на сервере, поэтому его зовёт только вошедший; гость читает последнюю собранную спецификацию. */
+  async function loadSpec(write: boolean) {
+    const [a, b] = await Promise.all([write ? bridge("SPEC") : null, bridge("PORT C A")]);
+    setSpec(
+      a
+        ? (a.stdout || a.stderr || "пусто").trim()
+        : "Спецификацию пересобирает вошедший пользователь (SPEC). Ниже — последняя собранная.",
+    );
     setPort((b.stdout || b.stderr || "").trim());
     const c = await bridge("CAT LANG-FROM-DB.md");
     if (c.ok && c.stdout.trim()) {
@@ -30,8 +38,9 @@ function L4() {
   }
 
   useEffect(() => {
-    void loadSpec();
-  }, []);
+    if (pending) return;
+    void loadSpec(canWrite);
+  }, [pending, canWrite]);
 
   async function openFile(p: string) {
     if (p.endsWith("LANG-FROM-DB.md") || p.endsWith("LANG.md")) {
@@ -60,19 +69,21 @@ function L4() {
         <div className="flex flex-wrap gap-2">
           <button
             type="button"
+            {...writeProps(canWrite)}
             className="h-11 rounded-md border border-border px-4 text-sm"
-            onClick={() => void loadSpec()}
+            onClick={() => void loadSpec(true)}
           >
             SPEC
           </button>
           <button
             type="button"
+            {...writeProps(canWrite)}
             className="h-11 rounded-md border border-border px-4 text-sm"
             onClick={() => {
               void (async () => {
                 await bridge("SETTLE");
                 await refreshBook();
-                await loadSpec();
+                await loadSpec(true);
               })();
             }}
           >
@@ -80,6 +91,7 @@ function L4() {
           </button>
           <button
             type="button"
+            {...writeProps(canWrite)}
             className="h-11 rounded-md bg-fg px-4 text-sm text-accent-fg"
             onClick={() => {
               void fetchBoth().then(() => nav({ to: "/" }));

@@ -3,7 +3,9 @@ import { createFileRoute } from "@tanstack/react-router";
 import ontSeed from "@/data/ont-l2.json";
 import { DeskShell } from "@/components/desk-nav";
 import { acceptBoth, bridge, plantToDb, refreshBook, takeBoth } from "@/lib/desk-bridge";
+import { writeProps } from "@/lib/desk-access";
 import { useDesk, type Row } from "@/lib/desk-store";
+import { useDeskAccess } from "@/lib/use-desk-access";
 
 function parseNeq(row: { title: string; pred?: string; obj?: string }) {
   if (row.pred && row.obj) return { pred: row.pred, obj: row.obj };
@@ -19,6 +21,7 @@ function parseNeq(row: { title: string; pred?: string; obj?: string }) {
 export const Route = createFileRoute("/l2")({ component: L2 });
 
 function L2() {
+  const { canWrite } = useDeskAccess();
   const rows = useDesk((s) => s.rows);
   const book = useDesk((s) => s.plane);
   const canon = useDesk((s) => s.canon);
@@ -80,6 +83,7 @@ function L2() {
         </div>
         <button
           type="button"
+          {...writeProps(canWrite)}
           onClick={fromKit}
           className="h-11 rounded-md border border-border bg-elevated px-4 text-sm"
         >
@@ -116,6 +120,7 @@ function L2() {
         />
         <button
           type="button"
+          {...writeProps(canWrite)}
           className="h-10 rounded-md border border-border px-3 text-xs"
           onClick={() => {
             void (async () => {
@@ -128,6 +133,7 @@ function L2() {
         </button>
         <button
           type="button"
+          {...writeProps(canWrite)}
           className="h-10 rounded-md border border-border px-3 text-xs"
           onClick={() => {
             void (async () => {
@@ -140,6 +146,7 @@ function L2() {
         </button>
         <button
           type="button"
+          {...writeProps(canWrite)}
           className="h-10 rounded-md border border-border px-3 text-xs"
           onClick={() => {
             void (async () => {
@@ -152,6 +159,7 @@ function L2() {
         </button>
         <button
           type="button"
+          {...writeProps(canWrite)}
           className="h-10 rounded-md border border-border px-3 text-xs"
           onClick={() => {
             void (async () => {
@@ -164,6 +172,7 @@ function L2() {
         </button>
         <button
           type="button"
+          {...writeProps(canWrite)}
           className="h-10 rounded-md border border-border px-3 text-xs"
           onClick={() => {
             void (async () => {
@@ -288,11 +297,17 @@ function L2() {
                   <td className="px-3 py-2 font-mono text-xs">{r.obj || r.title}</td>
                   <td className="px-3 py-2" onClick={(e) => e.stopPropagation()}>
                     <div className="flex gap-3 whitespace-nowrap">
-                      <button type="button" className="text-xs underline" onClick={() => void acceptBoth(r.id)}>
+                      <button
+                        type="button"
+                        {...writeProps(canWrite)}
+                        className="text-xs underline"
+                        onClick={() => void acceptBoth(r.id)}
+                      >
                         принять
                       </button>
                       <button
                         type="button"
+                        {...writeProps(canWrite)}
                         className="text-xs text-subtle underline"
                         onClick={() => void takeBoth(r.id)}
                       >
