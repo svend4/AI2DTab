@@ -51,9 +51,9 @@ function L4() {
     }
     try {
       const data = await readKitFile({ data: { path: p } });
-      setPreview(data);
+      setPreview(data.ok ? data : { path: p, bytes: -1, preview: data.message });
     } catch {
-      setPreview({ path: p, bytes: 0, preview: "не удалось прочитать файл" });
+      setPreview({ path: p, bytes: -1, preview: "не удалось прочитать файл" });
     }
   }
 
@@ -151,7 +151,9 @@ function L4() {
           ))}
         </ul>
         <pre className="max-h-[28rem] overflow-auto whitespace-pre-wrap rounded-lg border border-border bg-elevated p-4 font-mono text-xs leading-relaxed text-muted">
-          {preview ? `${preview.path} (${preview.bytes} байт)\n\n${preview.preview}` : "Выберите файл."}
+          {preview
+            ? `${preview.bytes >= 0 ? `${preview.path} (${preview.bytes} байт)` : preview.path}\n\n${preview.preview}`
+            : "Выберите файл."}
         </pre>
       </div>
     </DeskShell>

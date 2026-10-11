@@ -1,28 +1,22 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 
+/**
+ * Начало файла комплекта для L4. Читать можно только файлы из списка `src/data/archive.json` и только текстовые
+ * (`kit-files.ts`); база стола и бинарные файлы в списке есть, но не отдаются. Вызов открыт всем, как и чтение стола в режиме A:
+ * он показывает то, что и так лежит в репозитории. Отказ приходит как `{ ok: false, reason, message }`, а не исключением.
+ */
 export const readKitFile = createServerFn({ method: "POST" })
   .validator(z.object({ path: z.string().min(1).max(240) }))
   .handler(async ({ data }) => {
-    const { readFile, existsSync } = await import("node:fs");
-    const path = await import("node:path");
-    const kit = path.resolve("/workspace/artifacts/ai-pm-kit");
-    const engine = path.resolve("/workspace/engine");
-    const name = path.basename(data.path).replace(/\\/g, "");
-    const tries = [path.join(engine, name), path.resolve(kit, data.path)];
-    for (const abs of tries) {
-      const okRoot = abs.startsWith(engine + path.sep) || abs === path.join(engine, name) || abs.startsWith(kit + path.sep);
-      try {
-        if (!okRoot || !existsSync(abs)) continue;
-        const buf = readFile(abs);
-        return {
-          path: name,
-          bytes: buf.length,
-          preview: buf.subarray(0, 12_000).toString("utf8"),
-        };
-      } catch {
-        continue;
-      }
-    }
-    throw new Error("path");
+    const { default: archive } = await import("@/data/archive.json");
+    const { KIT_MESSAGES, planKitRead } = await import("@/lib/kit-files");
+    const { readKitPreview } = await import("@/lib/kit-read.server");
+    const plan = planKitRead(data.path, new Set(archive.map((f) => f.path)));
+    if (!plan.ok)
+      return { ok: false as const, reason: plan.reason, message: KIT_MESSAGES[plan.reason] };
+    const read = await readKitPreview(plan.rel);
+    if (!read.ok)
+      return { ok: false as const, reason: read.reason, message: KIT_MESSAGES[read.reason] };
+    return read;
   });
