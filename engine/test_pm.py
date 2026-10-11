@@ -433,6 +433,147 @@ def load_engine():
     return mod
 
 
+class SetExpressions(Desk):
+    """AUD-01: цепочки «A \\ B \\ C» читаются слева направо, неизвестное имя — ошибка, а не пустое множество."""
+
+    def setUp(self):
+        super().setUp()
+        # id, тип, статус, кластер: так выражения различают скобки слева и справа
+        for oid, typ, status, cl in [
+            ("X1", "observation", "raw", "A"), ("X2", "decision", "raw", "A"), ("X3", "observation", "raw", "B"),
+            ("X4", "decision", "raw", "B"), ("X5", "observation", "raw", "C"), ("X6", "observation", "canon", "A"),
+            ("ORG1", "observation", "raw", "D"), ("BRAND2", "decision", "raw", "D"),
+        ]:
+            self.add(oid, typ=typ, status=status, cluster=cl)
+
+    # --- помощники: множества считаем напрямую из базы, не через pm.py
+    def ids(self, where):
+        con = self.db()
+        try:
+            return {r["id"] for r in con.execute(f"SELECT id FROM objects WHERE {where}")}
+        finally:
+            con.close()
+
+    def sets(self):
+        return {
+            "RAW": self.ids("status='raw'"), "CANON": self.ids("status='canon'"), "OBS": self.ids("type='observation'"),
+            "A": self.ids("cluster='A'"), "B": self.ids("cluster='B'"), "C": self.ids("cluster='C'"), "D": self.ids("cluster='D'"),
+        }
+
+    def shown(self, expr):
+        """Что печатает SET: (первая строка, множество id)."""
+        out = self.out("SET", expr)
+        lines = out.strip().splitlines()
+        return lines[0], {ln.split("\t")[0] for ln in lines[1:]}
+
+    def state(self):
+        con = self.db()
+        try:
+            return ([tuple(r) for r in con.execute("SELECT id, status FROM objects ORDER BY id")],
+                    con.execute("SELECT COUNT(*) FROM events").fetchone()[0])
+        finally:
+            con.close()
+
+    def test_a_chain_is_read_left_to_right(self):
+        S = self.sets()
+        cases = [
+            ("RAW \\ A \\ OBS", (S["RAW"] - S["A"]) - S["OBS"], S["RAW"] - (S["A"] - S["OBS"])),
+            ("RAW ∩ A ∩ OBS", (S["RAW"] & S["A"]) & S["OBS"], None),
+            ("RAW ∪ CANON \\ A", (S["RAW"] | S["CANON"]) - S["A"], S["RAW"] | (S["CANON"] - S["A"])),
+            ("A ∪ B ∩ OBS", (S["A"] | S["B"]) & S["OBS"], S["A"] | (S["B"] & S["OBS"])),
+            ("RAW MINUS A AND OBS", (S["RAW"] - S["A"]) & S["OBS"], S["RAW"] - (S["A"] & S["OBS"])),
+            ("RAW\\A\\OBS", (S["RAW"] - S["A"]) - S["OBS"], None),
+            ("raw | canon & obs", (S["RAW"] | S["CANON"]) & S["OBS"], S["RAW"] | (S["CANON"] & S["OBS"])),
+        ]
+        for expr, want, right_to_left in cases:
+            _, got = self.shown(expr)
+            self.assertEqual(got, want, expr)
+            self.assertTrue(want, f"{expr}: пустой ответ ничего не проверяет")
+            if right_to_left is not None:
+                self.assertNotEqual(want, right_to_left, f"{expr}: данные не различают порядок")
+
+    def test_the_number_in_the_first_line_is_the_size_of_the_set(self):
+        S = self.sets()
+        head, got = self.shown("RAW \\ A \\ OBS")
+        self.assertEqual(head, f"SET RAW \\ A \\ OBS → {len((S['RAW'] - S['A']) - S['OBS'])}")
+
+    def test_operator_words_are_only_words(self):
+        """Идентификаторы с OR и AND внутри не режутся на части."""
+        self.assertEqual(self.shown("ORG1")[1], {"ORG1"})
+        self.assertEqual(self.shown("BRAND2")[1], {"BRAND2"})
+        self.assertEqual(self.shown("ORG1 ∪ BRAND2")[1], {"ORG1", "BRAND2"})
+        self.assertEqual(self.shown("RAW AND ORG1")[1], {"ORG1"})
+        self.assertEqual(self.shown("BRAND2 OR ORG1")[1], {"ORG1", "BRAND2"})
+
+    def test_an_unknown_operand_is_an_error_and_nothing_changes(self):
+        for expr in ["NEQQ", "RAW \\ NEQQ", "NOPE ∩ RAW", "RAW ∩ A ∩ NOPE", "RAW MINUS NOPE", "RAW SESSION"]:
+            before = self.state()
+            r = self.run_pm("SET", expr)
+            self.assertNotEqual(r.returncode, 0, expr)
+            self.assertIn("нет множества или объекта", r.stderr, expr)
+            self.assertEqual(self.state(), before, expr)
+
+    def test_a_typo_does_not_widen_a_destructive_command(self):
+        """Раньше «TAKE RAW \\ NEQQ» отклоняло всё сырьё: опечатка в правой части давала пустое множество."""
+        for line in [("TAKE", "RAW", "\\", "NEQQ"), ("TAKE", "RAW", "\\", "A", "\\", "NOPE"), ("ACCEPT", "RAW", "∩", "NOPE"),
+                     ("TAKE", "NOPE", "∪", "RAW")]:
+            before = self.state()
+            r = self.run_pm(*line)
+            self.assertNotEqual(r.returncode, 0, line)
+            self.assertEqual(self.state(), before, line)
+
+    def test_a_missing_operand_is_an_error(self):
+        for expr in ["RAW \\", "\\ RAW", "RAW ∩ ∩ A", "AND RAW", "RAW OR"]:
+            r = self.run_pm("SET", expr)
+            self.assertNotEqual(r.returncode, 0, repr(expr))
+            self.assertIn("пропущен операнд", r.stderr, expr)
+
+    def test_an_empty_expression_is_an_error(self):
+        for args in [(), ("",), ("   ",)]:
+            r = self.run_pm("SET", *args)
+            self.assertNotEqual(r.returncode, 0, repr(args))
+            self.assertIn("пустое выражение", r.stderr, repr(args))
+
+    def test_ids_are_operands_and_a_known_empty_set_is_fine(self):
+        self.assertEqual(self.shown("X1 ∪ X3")[1], {"X1", "X3"})
+        self.assertEqual(self.shown("X1 ∪ X3 \\ X1")[1], {"X3"})
+        head, got = self.shown("SUPERSEDED")
+        self.assertEqual(got, self.ids("status='superseded'"))
+        self.assertEqual(self.shown("RAW ∩ SUPERSEDED")[1], set())
+
+    def test_word_operators_are_capitals_only_as_before(self):
+        r = self.run_pm("SET", "raw and canon")
+        self.assertNotEqual(r.returncode, 0)
+        self.assertIn("нет множества или объекта raw and canon", r.stderr)
+
+    def test_the_cell_sign_and_its_aliases_name_a_set_even_when_it_is_empty(self):
+        for name in ["≠", "NEQ", "ne", "neq"]:
+            head, _ = self.shown(name)
+            self.assertTrue(head.startswith(f"SET {name} → "), head)
+
+    def test_rows_come_out_sorted_by_id(self):
+        out = self.out("SET", "RAW ∪ CANON").strip().splitlines()[1:]
+        ids = [ln.split("\t")[0] for ln in out]
+        self.assertEqual(ids, sorted(ids))
+        self.assertGreater(len(ids), 3)
+
+    def test_the_printed_name_is_the_one_typed_with_operators_in_symbols(self):
+        S = self.sets()
+        self.assertEqual(self.shown("RAW MINUS A")[0], f"SET RAW \\ A → {len(S['RAW'] - S['A'])}")
+        self.assertEqual(self.shown("RAW∩A")[0], f"SET RAW ∩ A → {len(S['RAW'] & S['A'])}")
+        self.assertEqual(self.shown("raw")[0], f"SET raw → {len(S['RAW'])}")
+
+    def test_take_uses_the_same_evaluation(self):
+        S = self.sets()
+        target = (S["RAW"] & S["A"]) & S["OBS"]                       # X1
+        before = dict(self.state()[0])
+        self.out("TAKE", "RAW", "∩", "A", "∩", "OBS")
+        after = dict(self.state()[0])
+        for oid, status in after.items():
+            self.assertEqual(status, "rejected" if oid in target else before[oid], oid)
+        self.assertTrue(target)
+
+
 @unittest.skipUnless(SITE_TABLE.exists(), "нет src/lib/pm-request.ts")
 class SiteVerbTable(Desk):
     """Таблица глаголов сайта (какие глаголы доступны без входа) против настоящего pm.py: у чтения нет побочных эффектов, лишних глаголов нет."""
