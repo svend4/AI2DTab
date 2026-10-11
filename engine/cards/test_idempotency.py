@@ -2,8 +2,9 @@
 
 Каждый писатель картотеки и каждый глагол стола вызывается дважды подряд с одними и теми же аргументами. Второй вызов обязан оставить таблицы
 содержимого такими, какими их оставил первый, а журналы (oplog картотеки, events стола) не должны расти на пути «UNCHANGED / skip».
-Известные нарушения записаны как expectedFailure с номером находки из плана. Закрыли находку — тест начинает проходить, unittest сообщает
-«unexpected success», и декоратор снимают. Новый писатель без строки в этой таблице не проходит ревью.
+Известные нарушения записывают как expectedFailure с номером находки из плана; закрыли находку — тест начинает проходить, unittest
+сообщает «unexpected success», и декоратор снимают (так в фазе 1 закрыты H8 и H11; H1 ещё красная).
+Новый писатель без строки в этой таблице не проходит ревью.
 
     python3 -m unittest engine/cards/test_idempotency.py -v
     PM_UNDER_TEST=/путь/к/копии/pm.py python3 -m unittest engine/cards/test_idempotency.py    # проверить копию pm.py (schema.sql и seed.sql берутся рядом с ней)
@@ -150,7 +151,7 @@ class DeskContract(Contract):
         return self.repeat(self.snap, action, " ".join(args))
 
     def test_verbs_second_call_adds_nothing(self):
-        """Глаголы стола из таблицы уже идемпотентны; нарушители (FETCH, журнал отказов REFUSE) — отдельные тесты ниже."""
+        """Глаголы стола из таблицы идемпотентны с самого начала; FETCH и журнал отказов REFUSE стали такими в фазе 1 (отдельные тесты ниже)."""
         self.add("D-OLD", status="canon", title="решение про бюджет проекта")
         self.add("D-NEW", status="raw", title="решение про бюджет проекта уточнённое")
         table = [
@@ -165,21 +166,18 @@ class DeskContract(Contract):
             with self.subTest(verb=" ".join(args)[:50]):
                 self.twice(*args)
 
-    # H8: FETCH заводит новый вопрос «чего нет в каноне?» при каждом вызове (id берётся из времени, дубликатов не ищет)
-    @unittest.expectedFailure
+    # H8 (закрыта фазой 1): FETCH заводил новый вопрос «чего нет в каноне?» при каждом вызове (id из времени, дубликатов не искал)
     def test_fetch(self):
         self.twice("FETCH", pause=1.1)           # пауза: в одну и ту же секунду второй вызов падал бы на PRIMARY KEY (это отдельная часть H8)
 
-    # H11: повторный отказ по замещённому объекту пишет в журнал событий новую строку REFUSE при каждом вызове
-    @unittest.expectedFailure
+    # H11 (закрыта фазой 1): повторный отказ по замещённому объекту писал в журнал событий новую строку REFUSE при каждом вызове
     def test_repeated_accept_of_a_replaced_object(self):
         self.add("D-OLD", status="canon", title="решение про бюджет проекта")
         self.add("D-NEW", status="raw", title="решение про бюджет проекта уточнённое")
         self.assertEqual(self.pm("SUPERSEDE", "D-OLD", "BY", "D-NEW").returncode, 0)
         self.twice("ACCEPT", "D-OLD")
 
-    # H11: то же для объектов типа session/tape, которые каноном быть не могут
-    @unittest.expectedFailure
+    # H11 (закрыта фазой 1): то же для объектов типа session/tape, которые каноном быть не могут
     def test_repeated_accept_of_a_session_object(self):
         self.twice("ACCEPT", "S001")
 

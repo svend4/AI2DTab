@@ -248,6 +248,16 @@ def log(con, action, oid=None, detail=""):
     )
 
 
+def log_once(con, action, oid=None, detail="") -> bool:
+    """Как log, но без подряд идущих повторов: если последнее событие по этому объекту — то же действие с теми же подробностями, строка не
+    нужна. Для отказов, которые человек или скрипт повторяет вслепую: журнал хранит, что отказали, а не сколько раз спросили."""
+    last = con.execute("SELECT action, detail FROM events WHERE object_id IS ? ORDER BY id DESC LIMIT 1", (oid,)).fetchone()
+    if last and last["action"] == action and (last["detail"] or "") == (detail or ""):
+        return False
+    log(con, action, oid, detail)
+    return True
+
+
 def plant_text(text: str) -> list[dict]:
     import re
     chunks = [c.strip() for c in text.split("\n\n") if len(c.strip()) > 1]
@@ -512,12 +522,12 @@ def take_row(con, row) -> str:
 def accept_row(con, row) -> str:
     oid = row["id"]
     if row["type"] in NO_CANON:
-        log(con, "REFUSE", oid, row["type"])
+        log_once(con, "REFUSE", oid, row["type"])
         return f"REFUSE {oid} type={row['type']}"
     if row["status"] == "canon":
         return f"skip {oid} already canon"
     if row["status"] == "superseded":
-        log(con, "REFUSE", oid, "superseded")
+        log_once(con, "REFUSE", oid, "superseded")
         return f"REFUSE {oid} superseded: заменён, вернуть можно только новым объектом"
     con.execute("UPDATE objects SET status='canon', updated_at=? WHERE id=?", (now(), oid))
     stamp_cell(con, oid, row["title"])
@@ -842,11 +852,21 @@ def cmd_exec(ns: argparse.Namespace) -> None:
         cmd_next(ns)
         return
     if cmd == "FETCH":
-        oid = f"Q-FETCH-{now()[11:19].replace(':','')}"
+        title = "чего нет в каноне?"
+        open_q = con.execute(                                    # тот же вопрос уже стоит (не снят, не закрыт): второй не нужен
+            "SELECT id FROM objects WHERE type='question' AND title=? AND status NOT IN ('closed','rejected','dormant','superseded') "
+            "ORDER BY id LIMIT 1", (title,)).fetchone()
+        if open_q:
+            print(f"skip FETCH {open_q['id']} уже стоит: второй такой же вопрос не заводим")
+            return
+        n = con.execute("SELECT COUNT(*) FROM objects WHERE id LIKE 'Q-FETCH-%'").fetchone()[0] + 1
+        while con.execute("SELECT 1 FROM objects WHERE id=?", (f"Q-FETCH-{n:03d}",)).fetchone():
+            n += 1                                               # номер по порядку, а не по часам: часы повторялись в ту же секунду и на следующий день
+        oid = f"Q-FETCH-{n:03d}"
         con.execute(
             "INSERT INTO objects(id,cluster,layer,type,title,status,body,created_at,updated_at,owner) "
             "VALUES (?,?,?,?,?,?,?,?,?,?)",
-            (oid, "C", 2, "question", "чего нет в каноне?", "raw", "FETCH с L4 на L1", now(), now(), "machine:exec"),
+            (oid, "C", 2, "question", title, "raw", "FETCH с L4 на L1", now(), now(), "machine:exec"),
         )
         log(con, "FETCH", oid, "new L1")
         con.commit()
