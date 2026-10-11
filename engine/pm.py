@@ -926,6 +926,9 @@ def cmd_exec(ns: argparse.Namespace) -> None:
             if b.upper().startswith("BATCH"):
                 print("skip nested BATCH")
                 continue
+            if b.split()[0].upper() == "SUPERSEDE":          # замена принятого — решение человека, отдельной командой; в BATCH её не протащить
+                print("skip SUPERSEDE in BATCH: замену запускают отдельной командой")
+                continue
             print(f"# {b}")
             sub = argparse.Namespace(line=shlex.split(b), file=None)
             cmd_exec(sub)
