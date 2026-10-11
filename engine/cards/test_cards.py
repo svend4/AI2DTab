@@ -651,6 +651,111 @@ class HandoffOneLinePerFact(unittest.TestCase):
         self.assertLessEqual(cards.est_tokens(self.brief()) - cards.est_tokens(self.old_style_brief()), 8)
 
 
+class HandoffNote(unittest.TestCase):
+    """Записка предыдущей сессии: живая база в git не лежит, поэтому «на чём остановились» передаётся файлом рядом с конфигом (project.json: handoff_note),
+    а handoff показывает его сразу после правил. Нет файла — справка прежняя."""
+    HEAD = "HAND-OVER NOTE from the previous session (HANDOFF.md; delete the file when it stops being true):\n"
+
+    def setUp(self):
+        self.tmp = tempfile.TemporaryDirectory()
+        self.t = Path(self.tmp.name)
+        self.desk = make_desk(self.t)
+        self.st = cards.Store(self.t / "c.sqlite", project=project_for(self.t, self.desk))
+
+    def tearDown(self):
+        self.st.con.close()
+        self.tmp.cleanup()
+
+    def note(self, text, name="HANDOFF.md"):
+        path = self.t / name
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(text, encoding="utf-8")
+        return path
+
+    def test_the_note_comes_right_after_the_rules(self):
+        self.note("Остановились на фазе 7.\nДальше: решение владельца по фазе 8.")
+        out = self.st.handoff(catalog=False)
+        self.assertIn(self.HEAD + "Остановились на фазе 7.\nДальше: решение владельца по фазе 8.", out)
+        self.assertLess(out.index("MEMORY BRIEF"), out.index("HAND-OVER NOTE"))
+        self.assertLess(out.index("HAND-OVER NOTE"), out.index("CANON:"))
+        self.assertLess(out.index("lint() lists what has gone stale."), out.index("HAND-OVER NOTE"))     # правила идут первыми и целиком
+
+    def test_without_a_file_the_brief_is_what_it_was(self):
+        plain = self.st.handoff(catalog=False)
+        self.assertNotIn("HAND-OVER", plain)
+        self.note("записка")
+        self.st.project["handoff_note"] = ""                                                    # выключена в настройках — как будто файла нет
+        self.assertEqual(self.st.handoff(catalog=False), plain)
+
+    def test_an_empty_or_unreadable_note_adds_nothing(self):
+        plain = self.st.handoff(catalog=False)
+        self.note("  \n \n")
+        self.assertEqual(self.st.handoff(catalog=False), plain)
+        (self.t / "HANDOFF.md").unlink()
+        (self.t / "HANDOFF.md").mkdir()                                                         # вместо файла папка
+        self.assertEqual(self.st.handoff(catalog=False), plain)
+        (self.t / "HANDOFF.md").rmdir()
+        (self.t / "HANDOFF.md").write_bytes(b"\xff\xfe\x00 not utf-8 \xc3\x28")                 # не UTF-8
+        self.assertEqual(self.st.handoff(catalog=False), plain)
+
+    def test_a_long_note_is_cut_by_lines_and_names_the_file(self):
+        self.note("\n".join(f"строка {i:03d} записки с обычным текстом" for i in range(200)))
+        self.st.project["handoff_note_max_tok"] = 100
+        text = self.st.handoff_note()
+        self.assertIn("строка 000 записки", text)
+        self.assertNotIn("строка 199", text)
+        self.assertTrue(text.endswith("(note cut to fit; read the rest in HANDOFF.md)"))
+        self.assertLessEqual(cards.est_tokens(text.split(":\n", 1)[1].rsplit("\n(note cut", 1)[0]), 100)
+
+    def test_one_endless_line_and_a_huge_file_are_cut_too(self):
+        self.st.project["handoff_note_max_tok"] = 50
+        self.note("слово " * 10000)
+        text = self.st.handoff_note()
+        self.assertLessEqual(cards.est_tokens(text), 50 + 40)                                   # сама записка в пределе, сверху заголовок и пометка
+        self.assertIn("(note cut to fit", text)
+        self.note("ab " * 400)                                                                  # короткая, влезает целиком — без пометки
+        self.st.project["handoff_note_max_tok"] = 700
+        self.assertNotIn("note cut", self.st.handoff_note())
+
+    def test_the_name_can_point_into_a_folder_and_nonsense_falls_back(self):
+        self.note("в папке", name="notes/next.md")
+        self.st.project["handoff_note"] = "notes/next.md"
+        self.assertIn("в папке", self.st.handoff_note())
+        self.assertIn("(notes/next.md;", self.st.handoff_note())
+        self.note("по умолчанию")
+        self.st.project["handoff_note"] = "HANDOFF.md"
+        self.st.project["handoff_note_max_tok"] = "много"                                       # мусор в потолке — значение по умолчанию (700)
+        self.assertIn("по умолчанию", self.st.handoff_note())
+        self.st.project["handoff_note_max_tok"] = -5
+        self.assertIn("по умолчанию", self.st.handoff_note())
+
+    def test_the_budget_trims_the_groups_and_leaves_the_note(self):
+        self.note("записка остаётся")
+        for i in range(8):                                                                      # несколько групп материала, чтобы бюджету было что резать
+            (self.t / f"d{i}").mkdir()
+            (self.t / f"d{i}" / "a.md").write_text(f"# Раздел {i}\n\n" + ("слова про тему %d " % i) * 300, encoding="utf-8")
+        self.st.index_code(self.t, files=[f"d{i}/a.md" for i in range(8)])
+        out = self.st.handoff(budget_tok=600)
+        self.assertIn("записка остаётся", out)
+        self.assertIn("(list shortened", out)
+        self.assertEqual(out.count("MATERIAL:"), 1)                                             # список групп укорочен на месте, а не продублирован
+        self.assertEqual(out.count("CANON:"), 1)
+        self.assertLess(out.index("записка остаётся"), out.index("MATERIAL:"))
+
+    def test_the_shipped_settings_name_the_note(self):
+        shipped = json.loads((Path(cards.__file__).resolve().parent / "project.json").read_text(encoding="utf-8"))
+        want = {"handoff_note": "HANDOFF.md", "handoff_note_max_tok": 700}
+        self.assertEqual({k: shipped.get(k) for k in want}, want)
+        self.assertEqual({k: cards.PROJECT_DEFAULT[k] for k in want}, want)
+
+    def test_a_note_that_is_in_the_repository_fits_whole(self):
+        """Записка, лежащая в репозитории, не должна молча обрезаться: если файл есть, он влезает в потолок."""
+        proj = cards.load_project()
+        path = cards.project_path(proj, proj["handoff_note"])
+        if path.exists():
+            self.assertLessEqual(cards.est_tokens(path.read_text(encoding="utf-8").strip()), proj["handoff_note_max_tok"], f"{path.name} длиннее потолка: handoff его обрежет")
+
+
 class PromoteQueueWarnings(unittest.TestCase):
     """H4: у promote нет потолка, а ёмкость системы — человек, который принимает. Очередь видна и предупреждает, но записи не запрещает.
     Пороги лежат в project.json: promote.max_waiting (по умолчанию 20) и promote.warn_ratio (0.8, то есть предупреждение с 16-го)."""

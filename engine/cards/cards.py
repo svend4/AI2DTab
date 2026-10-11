@@ -114,6 +114,9 @@ PROJECT_DEFAULT = {
     # и с какой доли предела начинать предупреждать. max_waiting <= 0 выключает предупреждения. Значения — предположение, а не измерение
     "promote": {"cluster": "C", "layer": 1, "type": "fact", "mcp_apply": False, "max_waiting": 20, "warn_ratio": 0.8},
     "canon_types": ["fact", "decision"],                 # какие принятые объекты стола показывать как канон
+    # записка предыдущей сессии: файл рядом с конфигом (пустое имя выключает), который handoff показывает сразу после правил; сверх handoff_note_max_tok обрезается.
+    # Живая база картотеки в git не лежит, поэтому передать «на чём остановились» в новую сессию можно только файлом в репозитории
+    "handoff_note": "HANDOFF.md", "handoff_note_max_tok": 700,
     # пороги lint, только предупреждения (значения — предположения, не измерения; <= 0 выключает проверку):
     # churn_versions — с скольких версий у ключа журнала сообщать о частых правках; derived_raw_warn — с какого отношения токенов заметок к токенам реплик чата предупреждать
     # derived_raw_min_tok — на совсем маленьком чате отношение ничего не значит, предупреждаем только от этого числа токенов реплик
@@ -1470,9 +1473,9 @@ class Store:
         return limit, (max(1, math.ceil(limit * ratio)) if limit > 0 else 0)
 
     def _setting(self, section: str, key: str, default, cast):
-        """Число из project.json; нет значения или мусор — default."""
+        """Значение из project.json (section пустая — верхний уровень); нет значения или мусор — default."""
         try:
-            return cast((self.project.get(section) or {}).get(key, default))
+            return cast((self.project.get(section) or {} if section else self.project).get(key, default))
         except (TypeError, ValueError):
             return default
 
@@ -1860,18 +1863,44 @@ class Store:
             lines.append(f"(+{n} ledger {'fact is' if n == 1 else 'facts are'} already in the canon above)")
         return "LEDGER (conversation facts, current):\n" + ("\n".join(lines) if lines else "(no active facts)")
 
+    def handoff_note(self) -> str:
+        """Записка предыдущей сессии из файла project.json:handoff_note (по умолчанию HANDOFF.md рядом с конфигом). Нет файла, он пуст или не читается — пустая строка.
+        Длиннее handoff_note_max_tok обрезается по строкам с пометкой, где читать остальное: записка не должна съедать справку."""
+        name = str(self.project.get("handoff_note") or "").strip()
+        if not name:
+            return ""
+        try:
+            text = project_path(self.project, name).read_text(encoding="utf-8").strip()
+        except (OSError, UnicodeDecodeError):
+            return ""
+        if not text:
+            return ""
+        cap = self._setting("", "handoff_note_max_tok", 700, int)
+        cap = cap if cap > 0 else 700
+        cut = len(text) > cap * 8                                      # токен весит не меньше ~2 знаков: больше cap*8 знаков заведомо не влезет
+        lines = text[:cap * 8].split("\n")
+        while est_tokens("\n".join(lines)) > cap and len(lines) > 1:
+            lines.pop()
+            cut = True
+        if est_tokens(lines[0]) > cap:                                 # одна длинная строка
+            lines[0] = lines[0][:int(cap * 2.2)]
+            cut = True
+        body = "\n".join(lines).rstrip() + (f"\n(note cut to fit; read the rest in {name})" if cut else "")
+        return f"HAND-OVER NOTE from the previous session ({name}; delete the file when it stops being true):\n{body}"
+
     def handoff(self, budget_tok: int = 4000, catalog: bool = True) -> str:
-        """Стартовая справка новой сессии: правила + канон стола + действующие факты журнала (кроме уже стоящих в каноне) + замечания lint + список групп материала."""
+        """Стартовая справка новой сессии: правила + записка предыдущей сессии (если есть) + канон стола + действующие факты журнала (кроме уже стоящих в каноне) +
+        замечания lint + список групп материала. Бюджет режет только список групп; у записки свой потолок."""
         head = "MEMORY BRIEF — start of a new session\n" + PROTOCOL
         canon, shown = self._canon_view()
         ledger = self._ledger_section(shown)
         groups = self.catalog(level=1) if catalog and self.con.execute("SELECT 1 FROM groups LIMIT 1").fetchone() else ""
         health = "\n".join(x for x in (self.lint_summary(), self.waiting_line(), self.growth_line()) if x)
-        parts = [head, canon, ledger, health, ("MATERIAL: " + groups.replace("GROUPS ", "groups ", 1)) if groups else ""]
+        parts = [head, self.handoff_note(), canon, ledger, health, ("MATERIAL: " + groups.replace("GROUPS ", "groups ", 1)) if groups else ""]
         text = "\n\n".join(p for p in parts if p)
         while est_tokens(text) > budget_tok and groups.count("\n") > 3:      # не влезаем: режем список групп с конца
             groups = "\n".join(groups.split("\n")[:-1])
-            parts[4] = "MATERIAL: " + groups.replace("GROUPS ", "groups ", 1) + "\n(list shortened; catalog() shows the rest)"
+            parts[5] = "MATERIAL: " + groups.replace("GROUPS ", "groups ", 1) + "\n(list shortened; catalog() shows the rest)"
             text = "\n\n".join(p for p in parts if p)
         return text
 
