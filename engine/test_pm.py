@@ -6,7 +6,9 @@
 """
 from __future__ import annotations
 
+import importlib.util
 import os
+import re
 import shutil
 import sqlite3
 import subprocess
@@ -409,6 +411,96 @@ class RepeatsAreQuiet(Desk):
         for oid in ("D001", "S001", "D001", "S001"):
             self.out("ACCEPT", oid)
         self.assertEqual((self.refusals("D001"), self.refusals("S001")), (["superseded"], ["session"]))
+
+
+SITE_TABLE = Path(__file__).resolve().parent.parent / "src" / "lib" / "pm-request.ts"
+
+
+def site_text() -> str:
+    return SITE_TABLE.read_text(encoding="utf-8")
+
+
+def site_verbs() -> dict:
+    """Таблица глаголов сайта из src/lib/pm-request.ts: {глагол: (класс, правило)}. Таблица записана по строке на глагол именно ради этого теста."""
+    block = site_text().split("export const VERBS", 1)[1].split("\n};", 1)[0]
+    return {m.group(1): (m.group(2), m.group(3)) for m in re.finditer(r'^\s+([A-Z]+): \{ kind: "(read|write|bulk)", rule: "(\w+)" \},$', block, re.M)}
+
+
+def load_engine():
+    spec = importlib.util.spec_from_file_location("pm_for_the_site_table", PM_SRC)
+    mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+    return mod
+
+
+@unittest.skipUnless(SITE_TABLE.exists(), "нет src/lib/pm-request.ts")
+class SiteVerbTable(Desk):
+    """Таблица глаголов сайта (какие глаголы доступны без входа) против настоящего pm.py: у чтения нет побочных эффектов, лишних глаголов нет."""
+    EXAMPLE = {
+        "STATUS": "STATUS", "LOOK": "LOOK enbek", "DUMP": "DUMP", "GRID": "GRID", "MATRIX": "MATRIX", "DIFF": "DIFF", "JSON": "JSON", "CANON": "CANON",
+        "RAW": "RAW", "NEQ": "NEQ", "CELL": "CELL", "SET": "SET RAW \\ NEQ", "VOCAB": "VOCAB A", "PACKET": "PACKET", "CONC": "CONC", "CONCORD": "CONCORD x",
+        "INSTR": "INSTR", "GAUGE": "GAUGE", "PANEL": "PANEL", "PORT": "PORT C A", "CAT": "CAT LANG-FROM-DB.md",
+        "PLANT": "PLANT проверка", "CUT": "CUT проверка", "ACCEPT": "ACCEPT F001", "TAKE": "TAKE F001", "RUN": "RUN F001", "FETCH": "FETCH",
+        "WIRE": "WIRE F001 D101 constrains", "PROBE": "PROBE C A", "FILL": "FILL", "SWEEP": "SWEEP", "PURGE": "PURGE", "REPAIR": "REPAIR",
+        "GAP": "GAP", "SETTLE": "SETTLE", "SPEC": "SPEC", "BATCH": "BATCH STATUS; RAW",
+    }
+    ALIASES = {"CONCORD": "CONC", "GAUGE": "INSTR", "PANEL": "INSTR"}      # псевдонимы: движок разбирает их тем же кодом, в списках стоит основной глагол
+
+    def setUp(self):
+        super().setUp()
+        self.table = site_verbs()
+        self.engine = load_engine()
+
+    def dump(self):
+        con = self.db()
+        try:
+            return {t: [tuple(r) for r in con.execute(f"SELECT * FROM {t} ORDER BY 1, 2, 3")] for t in ("objects", "links", "origins", "events", "packets")}
+        finally:
+            con.close()
+
+    def test_the_table_was_read_in_full(self):
+        self.assertGreaterEqual(len(self.table), 35)
+        self.assertEqual(set(self.table), set(self.EXAMPLE))                      # у каждого глагола сайта есть пример, у каждого примера — глагол
+
+    def test_every_verb_of_the_site_is_a_verb_of_the_engine(self):
+        for verb, line in self.EXAMPLE.items():
+            r = self.run_pm(*line.split())
+            self.assertNotIn("unknown", r.stderr + r.stdout, f"{verb}: движок не знает глагола")
+
+    def test_read_verbs_do_not_change_the_database(self):
+        self.out("STATUS")                                                       # первый запуск может один раз домигрировать ячейки: снимок после него
+        for verb, (kind, _) in self.table.items():
+            if kind != "read":
+                continue
+            before = self.dump()
+            self.run_pm(*self.EXAMPLE[verb].split())
+            self.assertEqual(self.dump(), before, f"глагол чтения {verb} изменил базу")
+
+    def test_a_verb_that_writes_is_not_listed_as_a_read(self):
+        reads = set(self.engine.READS) | {"CAT"}                                 # CAT читает два файла и не пишет в журнал вовсе, поэтому в READS его нет
+        for verb, (kind, _) in self.table.items():
+            if kind == "read":
+                self.assertIn(self.ALIASES.get(verb, verb), reads, f"{verb} отмечен чтением, а движок так не считает")
+            else:
+                self.assertNotIn(self.ALIASES.get(verb, verb), reads, f"{verb} отмечен записью, а движок считает его чтением")
+
+    def test_the_site_and_the_engine_agree_on_which_verbs_exist(self):
+        """Новый глагол в pm.py не попадёт на сайт сам: сначала решение, чтение это или запись, и строка в таблице."""
+        self.assertEqual(set(self.engine.VERBS) - set(self.table), {"SUPERSEDE"})   # замену принятого ставит человек в CLI
+        self.assertEqual(set(self.engine.READS) - set(self.table), {"RANGE"})
+        self.assertEqual(set(self.table) - set(self.engine.VERBS), set(self.ALIASES))
+
+    def test_the_names_of_the_sets_are_the_engines(self):
+        text = site_text().split("const SET_NAMES = new Set([", 1)[1].split("]);", 1)[0]
+        self.assertEqual(set(re.findall(r'"([A-Z]+)"', text)), set(self.engine.SET_NAMES))
+
+    def test_set_expressions_are_recognised_as_the_engine_does(self):
+        yes = ["RAW", "raw", "NEQ", "≠", "ne", "A", "d", "CANON", "SUPERSEDED", "SESSION", "OBS", "observation", "JUNK", "RAW \\ NEQ", "A∩B", "x|y", "x&y", "a ∪ b"]
+        no = ["F001", "ont-S17320", "LF-x-v1", "", "  ", "E", "RAWS", "Q-GAP-JUNK"]
+        for arg in yes:
+            self.assertTrue(self.engine.is_set_expr(arg), arg)
+        for arg in no:
+            self.assertFalse(self.engine.is_set_expr(arg), arg)
 
 
 if __name__ == "__main__":
