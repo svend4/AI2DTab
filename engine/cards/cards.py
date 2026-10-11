@@ -55,6 +55,7 @@ CHUNK_LINES = 24          # размер куска индекса: не бол�
 CHUNK_CHARS = 1400        # …и не больше символов (одна длинная строка = один кусок)
 SUMMARY_MAX = 230         # длина строки обзора в каталоге
 CODE_EXT = {".py", ".ts", ".tsx", ".js", ".mjs", ".md", ".sql", ".sh", ".css", ".html"}
+GENERATED_MARK = ".cards-generated"       # файл-метка в папке, которую картотека выгрузила сама (export-wiki): внутри ничего не индексируется
 
 SCHEMA = """
 CREATE TABLE IF NOT EXISTS meta (key TEXT PRIMARY KEY, value TEXT NOT NULL);
@@ -104,7 +105,7 @@ CREATE TABLE IF NOT EXISTS oplog (
 PROJECT_DEFAULT = {
     # что индексировать как код/документы (пути от папки конфига); чаты индексируются отдельно, поэтому attachments/ из кода исключён
     "code": {"root": "../..", "exclude": ["attachments/*", ".grok/*", "public/__grok/*", "server/*", "scripts/grok-pwa*",
-                                          "*package-lock.json", "engine/cards/*"]},
+                                          "*package-lock.json", "engine/cards/*", "*-FROM-DB.md"]},
     "chats": ["../../attachments/*.md"],                 # экспорты ChatGPT в markdown
     "pm_dir": "..",                                      # где лежат pm.py и project-store.sqlite («стол»)
     # куда падает факт журнала при promote (всегда со статусом raw). mcp_apply=false: агент через MCP может только посмотреть, что было бы записано;
@@ -515,12 +516,33 @@ def make_chunks(text: str) -> list:
     return out
 
 
+def under_generated(root: Path, rel: str, cache: dict) -> bool:
+    """Лежит ли файл в папке с меткой GENERATED_MARK (в ней самой или выше): выгруженное картотекой нельзя возвращать ей на вход.
+    Проверяется по диску, а не по списку git: страницы могли попасть в коммит без метки. cache — {папка: ответ}, одна проверка на папку."""
+    d, chain, res = os.path.dirname(rel), [], False
+    while True:
+        if d in cache:
+            res = cache[d]
+            break
+        chain.append(d)
+        if (root / d / GENERATED_MARK).exists():
+            res = True
+            break
+        if not d:
+            break
+        d = os.path.dirname(d)
+    for c in chain:
+        cache[c] = res
+    return res
+
+
 def list_files(root: Path, exclude: tuple = (), stats: Counter | None = None) -> list:
     """Файлы корня, которые стоит индексировать: git ls-files -z (имена как есть; без -z git заключает не-ASCII имена в кавычки с восьмеричными
     кодами, расширение у такого имени не распознаётся, и файл молча терялся) или обход папки, если это не git-репозиторий.
     stats (Counter), если дан, пополняется счётом отброшенного по причинам: skipped_ext (расширения нет в CODE_EXT), excluded (маска исключений),
-    skipped_name (имя не в UTF-8: в базу такое не записать)."""
+    skipped_name (имя не в UTF-8: в базу такое не записать), generated (внутри папки с меткой GENERATED_MARK)."""
     stats = stats if stats is not None else Counter()
+    root, marked = Path(root), {}
     try:
         raw = subprocess.run(["git", "-C", str(root), "ls-files", "-z"], capture_output=True, check=True).stdout
         files = [b.decode("utf-8", "surrogateescape") for b in raw.split(b"\0") if b]
@@ -538,6 +560,9 @@ def list_files(root: Path, exclude: tuple = (), stats: Counter | None = None) ->
             continue
         if Path(f).suffix.lower() not in CODE_EXT:
             stats["skipped_ext"] += 1
+            continue
+        if under_generated(root, f, marked):
+            stats["generated"] += 1
             continue
         if any(fnmatch.fnmatch(f, pat) or f.startswith(pat.rstrip("*")) for pat in exclude):
             stats["excluded"] += 1
@@ -1374,10 +1399,11 @@ class Store:
         return "\n".join(f"v{r['version']} {r['status']:<10} {r['value']}" + (f"  [{r['source']}]" if r["source"] else "") for r in rows)
 
     # ------------------------------------------------------------ обновление индекса по настройкам проекта
-    def refresh(self) -> dict:
-        """Код — инкрементально (по хэшу), объекты стола — заново, чаты — только если файл изменился (подписи «библиотекаря» не затираются)."""
+    def refresh(self, prune: bool = False) -> dict:
+        """Код — инкрементально (по хэшу), объекты стола — заново, чаты — только если файл изменился (подписи «библиотекаря» не затираются).
+        prune=True архивирует карточки файлов, которых больше нет в списке (удалены или теперь под маской исключений)."""
         proj = self.project
-        out = {"code": self.index_code(project_path(proj, proj["code"]["root"]), exclude=tuple(proj["code"].get("exclude", ())))}
+        out = {"code": self.index_code(project_path(proj, proj["code"]["root"]), exclude=tuple(proj["code"].get("exclude", ())), prune=prune)}
         pm_db = self._pm_dir() / "project-store.sqlite"
         if pm_db.exists():
             out["pm"] = self.index_pm(pm_db)
@@ -1646,11 +1672,26 @@ class Store:
         return f"LINT: {c['error']} errors, {c['warn']} warnings, {c['info']} info. Call lint() for the list."
 
     # ------------------------------------------------------------ вид «LLM Wiki»: заметки -> папка markdown (index.md, log.md, pages/)
+    @staticmethod
+    def _looks_like_wiki(out: Path) -> bool:
+        """Выгрузка прежней версии (метки ещё не было): index.md с заголовком «# Wiki index» и папка pages/."""
+        idx = out / "index.md"
+        try:
+            return (out / "pages").is_dir() and idx.is_file() and idx.read_text(encoding="utf-8").startswith("# Wiki index")
+        except OSError:
+            return False
+
     def export_wiki(self, out_dir, chat_name: str = "chat.md") -> dict:
         """База остаётся источником истины, папка — генерируемый вид (как STATUS-FROM-DB.md у стола). Ссылки вида «t026 L317-345» в страницах
         дополняются координатами исходного файла чата (chat.md:L…), чтобы страницу можно было проверить обычным Read/Grep."""
         out = Path(out_dir)
+        mark = out / GENERATED_MARK
+        if out.exists() and (not out.is_dir() or (any(out.iterdir()) and not mark.exists() and not self._looks_like_wiki(out))):
+            raise SystemExit(f"ERR {out} is not empty and was not made by export-wiki (no {GENERATED_MARK} file here): export would delete its pages/*.md. "
+                             "Give an empty or a new folder.")
         (out / "pages").mkdir(parents=True, exist_ok=True)
+        if not mark.exists():                    # метка пишется один раз: повторный экспорт не меняет файлов зря
+            mark.write_text(json.dumps({"tool": "cards.py export-wiki", "created": now(), "db": self.path.name}, ensure_ascii=False) + "\n", encoding="utf-8")
         for old in (out / "pages").glob("*.md"):
             old.unlink()
         notes = self.con.execute(
@@ -1922,7 +1963,8 @@ def main(argv=None) -> None:
     p = sub.add_parser("facts"); p.add_argument("prefix", nargs="?", default="")
     p = sub.add_parser("fact-history"); p.add_argument("key")
     sub.add_parser("stats")
-    sub.add_parser("refresh", help="обновить индекс по project.json: код, объекты стола, изменившиеся экспорты чата")
+    p = sub.add_parser("refresh", help="обновить индекс по project.json: код, объекты стола, изменившиеся экспорты чата")
+    p.add_argument("--prune", action="store_true", help="архивировать карточки файлов, которых больше нет в списке (удалены или попали под маску исключений)")
     p = sub.add_parser("canon", help="принятые человеком факты и решения стола (только чтение)"); p.add_argument("--types", default=None, help="типы через запятую")
     p = sub.add_parser("promote", help="предложить факт журнала столу: объект raw через `pm.py add`")
     p.add_argument("key"); p.add_argument("--apply", action="store_true", help="выполнить (по умолчанию пробный запуск)")
@@ -1988,7 +2030,7 @@ def main(argv=None) -> None:
     elif c == "stats":
         print(st.stats())
     elif c == "refresh":
-        print(json.dumps(st.refresh(), ensure_ascii=False))
+        print(json.dumps(st.refresh(prune=ns.prune), ensure_ascii=False))
     elif c == "canon":
         print(st.canon(types=ns.types))
     elif c == "promote":

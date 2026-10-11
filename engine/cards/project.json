@@ -1,7 +1,7 @@
 {
   "code": {
     "root": "../..",
-    "exclude": ["attachments/*", ".grok/*", "public/__grok/*", "server/*", "scripts/grok-pwa*", "*package-lock.json", "engine/cards/*"]
+    "exclude": ["attachments/*", ".grok/*", "public/__grok/*", "server/*", "scripts/grok-pwa*", "*package-lock.json", "engine/cards/*", "*-FROM-DB.md"]
   },
   "chats": ["../../attachments/*.md"],
   "pm_dir": "..",

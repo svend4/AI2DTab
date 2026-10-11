@@ -13,6 +13,7 @@ import unittest
 from collections import Counter
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
+from unittest import mock
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import cards  # noqa: E402
@@ -801,6 +802,123 @@ class Notes(unittest.TestCase):
         self.assertIn("## [", (self.t / "wiki" / "log.md").read_text(encoding="utf-8"))
         self.st.export_wiki(self.t / "wiki")                                           # повторный экспорт перезаписывает, не плодит страницы
         self.assertEqual(len(list((self.t / "wiki" / "pages").glob("*.md"))), 1)
+
+
+class GeneratedOutputIsNotInput(unittest.TestCase):
+    """Фаза 3 плана PLAN-LOOPS.md: то, что картотека сама выгрузила (папка вики, виды *-FROM-DB.md), не должно возвращаться в неё входом."""
+
+    def setUp(self):
+        self.tmp = tempfile.TemporaryDirectory()
+        self.t = Path(self.tmp.name)
+        chat = self.t / "chat.md"
+        chat.write_text(make_chat(NOTE_PAIRS), encoding="utf-8")
+        self.root = self.t / "repo"
+        (self.root / "src").mkdir(parents=True)
+        (self.root / "src" / "a.py").write_text("x = 1\n", encoding="utf-8")
+        (self.root / "engine").mkdir()
+        (self.root / "engine" / "LANG-FROM-DB.md").write_text("# Вид базы\n\nСгенерировано pm.py.\n", encoding="utf-8")
+        self.st = cards.Store(self.t / "c.sqlite", project=project_for(self.t, self.t / "nodesk", code_root=self.root))
+        self.st.index_chat(str(chat))
+        self.st.add_note("Technopedia", "Открытая вики знаний (t001 L13).", sources=[dict(card="t001", lines="13-13", quote="открытая вики")])
+
+    def tearDown(self):
+        self.st.con.close()
+        self.tmp.cleanup()
+
+    def files(self):
+        return sorted(r["src"] for r in self.st.con.execute("SELECT src FROM cards WHERE kind='file' AND status='active'"))
+
+    def commit(self, *paths):
+        git(self.root, "init", "-q")
+        git(self.root, "add", *(paths or ("-A",)))
+        git(self.root, "commit", "-qm", "init")
+
+    def test_export_marks_the_folder_and_keeps_the_mark_on_re_export(self):
+        self.st.export_wiki(self.root / "wiki")
+        mark = self.root / "wiki" / ".cards-generated"
+        self.assertEqual(json.loads(mark.read_text(encoding="utf-8"))["tool"], "cards.py export-wiki")
+        before = mark.read_bytes()
+        with mock.patch.object(cards, "now", return_value="2099-01-01T00:00:00Z"):
+            self.st.export_wiki(self.root / "wiki")
+        self.assertEqual(mark.read_bytes(), before)                                    # метка пишется один раз: повторный экспорт не меняет файлов зря
+
+    def test_a_foreign_folder_is_refused_and_left_alone(self):
+        foreign = self.t / "mine"
+        (foreign / "pages").mkdir(parents=True)
+        (foreign / "pages" / "my.md").write_text("не трогать\n", encoding="utf-8")
+        with self.assertRaises(SystemExit) as cm:
+            self.st.export_wiki(foreign)
+        self.assertIn("not empty", str(cm.exception))
+        self.assertEqual((foreign / "pages" / "my.md").read_text(encoding="utf-8"), "не трогать\n")      # раньше pages/*.md стирались
+        self.assertFalse((foreign / ".cards-generated").exists())
+
+    def test_an_empty_folder_and_an_export_of_the_previous_version_are_accepted(self):
+        empty = self.t / "empty"
+        empty.mkdir()
+        self.st.export_wiki(empty)
+        self.assertTrue((empty / ".cards-generated").exists())
+        old = self.t / "old"
+        self.st.export_wiki(old)
+        (old / ".cards-generated").unlink()                                            # выгрузка прежней версии: метки нет, но index.md и pages/ на месте
+        self.st.export_wiki(old)
+        self.assertTrue((old / ".cards-generated").exists())
+
+    def test_exported_wiki_is_not_indexed_in_a_git_root_after_commit(self):
+        self.st.export_wiki(self.root / "wiki")
+        self.commit()
+        stat = self.st.index_code(self.root)
+        self.assertEqual([f for f in self.files() if f.startswith("wiki")], [])
+        self.assertEqual(stat.get("generated"), 3)                                     # index.md, log.md, pages/n001-technopedia.md
+
+    def test_exported_wiki_is_not_indexed_in_a_plain_root(self):
+        self.st.export_wiki(self.root / "wiki")
+        stat = self.st.index_code(self.root)
+        self.assertEqual([f for f in self.files() if f.startswith("wiki")], [])
+        self.assertEqual(stat.get("generated"), 3)
+
+    def test_pages_committed_without_the_mark_are_still_skipped(self):
+        self.st.export_wiki(self.root / "wiki")
+        self.commit("src", "wiki/pages", "wiki/index.md")                              # метка осталась на диске, но в git её нет
+        self.st.index_code(self.root)
+        self.assertEqual([f for f in self.files() if f.startswith("wiki")], [])
+
+    def test_other_folders_with_the_same_file_names_are_still_indexed(self):
+        (self.root / "docs").mkdir()
+        (self.root / "docs" / "index.md").write_text("# Док\n\nтекст\n", encoding="utf-8")
+        self.st.export_wiki(self.root / "wiki")
+        self.st.index_code(self.root)
+        self.assertIn("docs/index.md", self.files())
+
+    def test_from_db_views_are_excluded_by_default_and_in_the_project_file(self):
+        self.assertIn("*-FROM-DB.md", cards.PROJECT_DEFAULT["code"]["exclude"])
+        self.assertIn("*-FROM-DB.md", cards.load_project()["code"]["exclude"])        # project.json заменяет список целиком, поэтому маска нужна и там
+        stats = Counter()
+        self.assertEqual(cards.list_files(self.root, tuple(cards.PROJECT_DEFAULT["code"]["exclude"]), stats), ["src/a.py"])
+        self.assertEqual(stats["excluded"], 1)
+
+    def test_refresh_prune_archives_the_card_of_a_file_that_is_excluded_now(self):
+        self.st.index_code(self.root)                                                  # без исключений: вид базы в индексе (так было в живом индексе)
+        self.assertIn("engine/LANG-FROM-DB.md", self.files())
+        self.st.project["code"] = {"root": str(self.root), "exclude": ["*-FROM-DB.md"]}
+        self.st.refresh()
+        self.assertIn("engine/LANG-FROM-DB.md", self.files())                          # без --prune карточка остаётся, как раньше
+        out = self.st.refresh(prune=True)
+        self.assertEqual(out["code"].get("archived"), 1)
+        self.assertEqual(self.files(), ["src/a.py"])
+
+    def test_refresh_prune_on_the_command_line(self):
+        cfg = self.t / "project.json"
+        cfg.write_text(json.dumps({"code": {"root": str(self.root), "exclude": ["*-FROM-DB.md"]}, "chats": [], "pm_dir": "nowhere"}), encoding="utf-8")
+        db = self.t / "cli.sqlite"
+
+        def run(*a):
+            r = subprocess.run([sys.executable, str(Path(cards.__file__)), "--db", str(db), "--config", str(cfg), *a], capture_output=True, text=True, timeout=60)
+            self.assertEqual(r.returncode, 0, r.stderr)
+            return r.stdout
+
+        run("index-code", str(self.root))
+        self.assertEqual(json.loads(run("refresh"))["code"].get("archived"), None)
+        self.assertEqual(json.loads(run("refresh", "--prune"))["code"].get("archived"), 1)
 
 
 class LintDesk(unittest.TestCase):

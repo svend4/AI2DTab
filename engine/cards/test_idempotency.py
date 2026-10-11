@@ -265,6 +265,14 @@ class StoreContract(Contract):
     def test_refresh(self):
         self.repeat(self.snap, self.st.refresh, "refresh")
 
+    def test_refresh_prune(self):
+        self.st.project["code"] = {"root": str(self.root), "exclude": []}
+        self.st.refresh()
+        self.st.project["code"] = {"root": str(self.root), "exclude": ["doc.md"]}          # файл попал под маску: карточка архивируется
+        first, second = self.repeat(self.snap, lambda: self.st.refresh(prune=True), "refresh --prune")
+        self.assertEqual(first["code"].get("archived"), 1)
+        self.assertNotIn("archived", second["code"])
+
     def test_export_wiki(self):
         self.st.add_note(**self.note_args())
         out = self.t / "wiki"
