@@ -3,11 +3,14 @@ import { z } from "zod";
 import { authMiddleware } from "@/lib/auth/middleware";
 
 /**
- * Серверные вызовы стола. Режим A (docs/AUDIT.md, раздел 4.3):
+ * Серверные вызовы стола. Режим A (docs/AUDIT.md, раздел 4.3) со списком допущенных (раздел 4.4):
  *  - `pmRead` открыт всем и пропускает только глаголы чтения;
- *  - `pmWrite` требует входа (`authMiddleware`: проверенный `context.userId`, отказ чужим сайтам) и пропускает всё из таблицы глаголов.
+ *  - `pmWrite` требует входа (`authMiddleware`: проверенный `context.userId`, отказ чужим сайтам); пишет только допущенный:
+ *    подтверждённый адрес пользователя должен стоять в переменной окружения `DESK_WRITERS` (`desk-writers.ts`), остальные вошедшие
+ *    получают отказ `not_writer` на всё, кроме чтения;
+ *  - `deskWho` говорит вошедшему, допущен ли он (для серых кнопок); список наружу не отдаётся.
  * Что именно разрешено, решает `buildPmArgs` в `pm-request.ts`, а не имя вызова: строка, не подходящая под вызов, получает отказ
- * (`login_required` и т. п.), и клиентская подсказка «какой вызов выбрать» ничего не открывает.
+ * (`login_required`, `not_writer` и т. п.), и клиентская подсказка «какой вызов выбрать» ничего не открывает.
  * Параметра «файл» нет; лента PLANT приходит текстом, путь к её временному файлу выбирает сервер.
  */
 const Input = z.object({
@@ -27,5 +30,14 @@ export const pmWrite = createServerFn({ method: "POST" })
   .middleware([authMiddleware])
   .handler(async ({ data, context }) => {
     const { execute } = await import("@/lib/pm-exec.server");
-    return execute(data, { id: context.userId });
+    const { isDeskWriter } = await import("@/lib/desk-writers.server");
+    const writer = await isDeskWriter(context.userId);
+    return execute(data, { id: context.userId, writer });
+  });
+
+export const deskWho = createServerFn({ method: "POST" })
+  .middleware([authMiddleware])
+  .handler(async ({ context }) => {
+    const { isDeskWriter } = await import("@/lib/desk-writers.server");
+    return { writer: await isDeskWriter(context.userId) };
   });

@@ -14,7 +14,7 @@ function L1() {
   const resetDesk = useDesk((s) => s.resetDesk);
   const plane = useDesk((s) => s.plane);
   const nav = useNavigate();
-  const { canWrite } = useDeskAccess();
+  const access = useDeskAccess();
 
   useEffect(() => {
     void refreshBook();
@@ -50,7 +50,7 @@ function L1() {
         </label>
         <button
           type="button"
-          {...writeProps(canWrite)}
+          {...writeProps(access)}
           className="h-11 rounded-md bg-fg px-4 text-sm font-medium text-accent-fg"
           onClick={() => {
             const text = useDesk.getState().tape.trim();

@@ -11,7 +11,8 @@ export const Route = createFileRoute("/l4")({ component: L4 });
 
 function L4() {
   const nav = useNavigate();
-  const { canWrite, pending } = useDeskAccess();
+  const access = useDeskAccess();
+  const { canWrite, pending } = access;
   const [spec, setSpec] = useState("снимаю SPEC…");
   const [port, setPort] = useState("");
   const [preview, setPreview] = useState<{ path: string; preview: string; bytes: number } | null>(
@@ -22,13 +23,13 @@ function L4() {
   const files = [{ path: "LANG-FROM-DB.md", bytes: 0, kind: "съём" as const }, ...archive];
   const shown = kind === "все" ? files : files.filter((f) => f.kind === kind);
 
-  /** SPEC пересобирает файл на сервере, поэтому его зовёт только вошедший; гость читает последнюю собранную спецификацию. */
+  /** SPEC пересобирает файл на сервере, поэтому его зовёт только допущенный к записи; остальные читают последнюю собранную спецификацию. */
   async function loadSpec(write: boolean) {
     const [a, b] = await Promise.all([write ? bridge("SPEC") : null, bridge("PORT C A")]);
     setSpec(
       a
         ? (a.stdout || a.stderr || "пусто").trim()
-        : "Спецификацию пересобирает вошедший пользователь (SPEC). Ниже — последняя собранная.",
+        : "Спецификацию пересобирают допущенные к записи (SPEC). Ниже — последняя собранная.",
     );
     setPort((b.stdout || b.stderr || "").trim());
     const c = await bridge("CAT LANG-FROM-DB.md");
@@ -69,7 +70,7 @@ function L4() {
         <div className="flex flex-wrap gap-2">
           <button
             type="button"
-            {...writeProps(canWrite)}
+            {...writeProps(access)}
             className="h-11 rounded-md border border-border px-4 text-sm"
             onClick={() => void loadSpec(true)}
           >
@@ -77,7 +78,7 @@ function L4() {
           </button>
           <button
             type="button"
-            {...writeProps(canWrite)}
+            {...writeProps(access)}
             className="h-11 rounded-md border border-border px-4 text-sm"
             onClick={() => {
               void (async () => {
@@ -91,7 +92,7 @@ function L4() {
           </button>
           <button
             type="button"
-            {...writeProps(canWrite)}
+            {...writeProps(access)}
             className="h-11 rounded-md bg-fg px-4 text-sm text-accent-fg"
             onClick={() => {
               void fetchBoth().then(() => nav({ to: "/" }));

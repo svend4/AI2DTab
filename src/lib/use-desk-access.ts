@@ -1,8 +1,16 @@
+import { useEffect } from "react";
 import { useCurrentUserState } from "@/lib/auth/use-current-user";
 import { deskAccess, type DeskAccess } from "@/lib/desk-access";
+import { useWriterStatus } from "@/lib/desk-writer-status";
 
-/** Режим A для интерфейса: вошёл ли посетитель. Решение в `desk-access.ts`; сервер проверяет запись сам. */
+/** Режим A для интерфейса: вошёл ли посетитель и допущен ли к записи. Решение в `desk-access.ts`; сервер проверяет запись сам. */
 export function useDeskAccess(): DeskAccess {
   const { user, isPending } = useCurrentUserState();
-  return deskAccess({ user, isPending });
+  const userId = user?.id ?? null;
+  const load = useWriterStatus((s) => s.load);
+  const writer = useWriterStatus((s) => (userId !== null && s.userId === userId ? s.writer : null));
+  useEffect(() => {
+    if (userId) load(userId);
+  }, [userId, load]);
+  return deskAccess({ user, isPending, writer });
 }

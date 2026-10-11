@@ -4,7 +4,8 @@ import { execute } from "./pm-exec.server.ts";
 import type { Engine } from "./pm-exec.server.ts";
 import type { PmRun } from "./pm-run.server.ts";
 
-const USER = { id: "user-1" };
+const USER = { id: "user-1", writer: true };
+const READER = { id: "user-2", writer: false }; // вошёл, но не допущен к записи
 
 /** Подставной движок: помнит вызовы и отвечает заданным кодом. */
 function fake(ready: boolean, answer: Partial<PmRun> = {}) {
@@ -37,6 +38,35 @@ describe("execute", () => {
       assert.equal(r.code, "login_required", line);
     }
     assert.deepEqual(calls, []);
+  });
+
+  it("вошедший без допуска: запись — not_writer, движок не трогаем", async () => {
+    const { engine, calls } = fake(true);
+    for (const line of [
+      "TAKE RAW",
+      "PURGE",
+      "BATCH TAKE RAW; PURGE; REPAIR",
+      "PLANT текст",
+      "SPEC",
+    ]) {
+      const r = await execute({ line }, READER, engine);
+      assert.equal(r.ok, false, line);
+      assert.equal(r.code, "not_writer", line);
+    }
+    const tape = await execute({ line: "PLANT", tape: "id\ttitle\nB1\tx" }, READER, engine);
+    assert.equal(tape.code, "not_writer");
+    assert.deepEqual(calls, []);
+  });
+
+  it("вошедший без допуска читает, а базу не создаёт", async () => {
+    const present = fake(true, { stdout: "канон\n" });
+    const r = await execute({ line: "CANON" }, READER, present.engine);
+    assert.deepEqual(r, { ok: true, stdout: "канон\n", stderr: "" });
+    assert.deepEqual(present.calls, [{ argv: ["exec", "CANON"], tape: undefined }]);
+    const absent = fake(false);
+    const none = await execute({ line: "CANON" }, READER, absent.engine);
+    assert.equal(none.code, "engine_unavailable");
+    assert.deepEqual(absent.calls, []);
   });
 
   it("анонимное чтение выполняется и передаёт вывод как есть", async () => {

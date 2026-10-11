@@ -21,7 +21,7 @@ function parseNeq(row: { title: string; pred?: string; obj?: string }) {
 export const Route = createFileRoute("/l2")({ component: L2 });
 
 function L2() {
-  const { canWrite } = useDeskAccess();
+  const access = useDeskAccess();
   const rows = useDesk((s) => s.rows);
   const book = useDesk((s) => s.plane);
   const canon = useDesk((s) => s.canon);
@@ -83,7 +83,7 @@ function L2() {
         </div>
         <button
           type="button"
-          {...writeProps(canWrite)}
+          {...writeProps(access)}
           onClick={fromKit}
           className="h-11 rounded-md border border-border bg-elevated px-4 text-sm"
         >
@@ -120,7 +120,7 @@ function L2() {
         />
         <button
           type="button"
-          {...writeProps(canWrite)}
+          {...writeProps(access)}
           className="h-10 rounded-md border border-border px-3 text-xs"
           onClick={() => {
             void (async () => {
@@ -133,7 +133,7 @@ function L2() {
         </button>
         <button
           type="button"
-          {...writeProps(canWrite)}
+          {...writeProps(access)}
           className="h-10 rounded-md border border-border px-3 text-xs"
           onClick={() => {
             void (async () => {
@@ -146,7 +146,7 @@ function L2() {
         </button>
         <button
           type="button"
-          {...writeProps(canWrite)}
+          {...writeProps(access)}
           className="h-10 rounded-md border border-border px-3 text-xs"
           onClick={() => {
             void (async () => {
@@ -159,7 +159,7 @@ function L2() {
         </button>
         <button
           type="button"
-          {...writeProps(canWrite)}
+          {...writeProps(access)}
           className="h-10 rounded-md border border-border px-3 text-xs"
           onClick={() => {
             void (async () => {
@@ -172,7 +172,7 @@ function L2() {
         </button>
         <button
           type="button"
-          {...writeProps(canWrite)}
+          {...writeProps(access)}
           className="h-10 rounded-md border border-border px-3 text-xs"
           onClick={() => {
             void (async () => {
@@ -299,7 +299,7 @@ function L2() {
                     <div className="flex gap-3 whitespace-nowrap">
                       <button
                         type="button"
-                        {...writeProps(canWrite)}
+                        {...writeProps(access)}
                         className="text-xs underline"
                         onClick={() => void acceptBoth(r.id)}
                       >
@@ -307,7 +307,7 @@ function L2() {
                       </button>
                       <button
                         type="button"
-                        {...writeProps(canWrite)}
+                        {...writeProps(access)}
                         className="text-xs text-subtle underline"
                         onClick={() => void takeBoth(r.id)}
                       >

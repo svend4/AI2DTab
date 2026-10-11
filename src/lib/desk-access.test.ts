@@ -1,11 +1,27 @@
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
-import { WRITE_HINT, deskAccess, needsLogin, writeProps } from "./desk-access.ts";
-import { VERBS, buildPmArgs, kindOf, verbKind } from "./pm-request.ts";
+import {
+  NOT_WRITER_HINT,
+  WRITE_HINT,
+  deniedMessage,
+  deskAccess,
+  writeProps,
+} from "./desk-access.ts";
+import {
+  LOGIN_MESSAGE,
+  NOT_WRITER_MESSAGE,
+  VERBS,
+  buildPmArgs,
+  kindOf,
+  verbKind,
+} from "./pm-request.ts";
 
-const GUEST = deskAccess({ user: null, isPending: false });
-const LOADING = deskAccess({ user: null, isPending: true });
-const MEMBER = deskAccess({ user: { id: "user-1" }, isPending: false });
+const USER = { id: "user-1" };
+const GUEST = deskAccess({ user: null, isPending: false, writer: null });
+const LOADING = deskAccess({ user: null, isPending: true, writer: null });
+const ASKING = deskAccess({ user: USER, isPending: false, writer: null }); // вошёл, ответа о допуске ещё нет
+const READER = deskAccess({ user: USER, isPending: false, writer: false }); // вошёл, но не допущен
+const WRITER = deskAccess({ user: USER, isPending: false, writer: true });
 
 /** По одной допустимой строке на правило аргументов из таблицы глаголов. */
 const ARGS: Record<string, string> = {
@@ -23,67 +39,118 @@ const ARGS: Record<string, string> = {
 };
 
 describe("deskAccess: что показать посетителю", () => {
-  it("без входа — режим просмотра, пока сессия не определилась — ни то ни другое", () => {
-    assert.deepEqual(GUEST, { canWrite: false, pending: false, readOnly: true });
-    assert.deepEqual(LOADING, { canWrite: false, pending: true, readOnly: false });
+  it("гость — режим просмотра; пока сессия не определилась — ни то ни другое", () => {
+    assert.deepEqual(GUEST, { canWrite: false, signedIn: false, pending: false, readOnly: true });
+    assert.deepEqual(LOADING, { canWrite: false, signedIn: false, pending: true, readOnly: false });
   });
 
-  it("вошедший пишет, даже если сессия обновляется в фоне", () => {
-    assert.deepEqual(MEMBER, { canWrite: true, pending: false, readOnly: false });
-    const refetch = deskAccess({ user: { id: "u" }, isPending: true });
-    assert.deepEqual(refetch, { canWrite: true, pending: false, readOnly: false });
+  it("вошёл, а допуск ещё спрашиваем — ожидание, писать пока нельзя", () => {
+    assert.deepEqual(ASKING, { canWrite: false, signedIn: true, pending: true, readOnly: false });
   });
 
-  it("пользователь undefined — то же, что его нет", () => {
-    assert.equal(deskAccess({ user: undefined, isPending: false }).canWrite, false);
+  it("вошёл без допуска — режим просмотра, но он вошёл", () => {
+    assert.deepEqual(READER, { canWrite: false, signedIn: true, pending: false, readOnly: true });
   });
 
-  it("кнопка записи: серая и с подсказкой без входа, обычная со входом", () => {
-    assert.deepEqual(writeProps(false), { disabled: true, title: WRITE_HINT });
-    assert.deepEqual(writeProps(true), { disabled: false, title: undefined });
+  it("допущенный пишет, даже если сессия обновляется в фоне", () => {
+    assert.deepEqual(WRITER, { canWrite: true, signedIn: true, pending: false, readOnly: false });
+    const refetch = deskAccess({ user: { id: "u" }, isPending: true, writer: true });
+    assert.deepEqual(refetch, { canWrite: true, signedIn: true, pending: false, readOnly: false });
+  });
+
+  it("допуск без пользователя не считается: писать нельзя", () => {
+    const stale = deskAccess({ user: null, isPending: false, writer: true });
+    assert.equal(stale.canWrite, false);
+    assert.equal(stale.signedIn, false);
+    assert.equal(deskAccess({ user: undefined, isPending: false, writer: true }).canWrite, false);
+  });
+
+  it("допуск не true — писать нельзя: ни единица, ни строка, ни объект", () => {
+    for (const writer of [1, "true", {}, []]) {
+      const a = deskAccess({ user: USER, isPending: false, writer: writer as unknown as boolean });
+      assert.equal(a.canWrite, false, JSON.stringify(writer));
+    }
   });
 });
 
-describe("needsLogin: гостю не пройдёт запись", () => {
-  it("чтение проходит всегда, запись и массовые глаголы — только со входом", () => {
-    for (const access of [GUEST, LOADING, MEMBER]) assert.equal(needsLogin("read", access), false);
-    assert.equal(needsLogin("write", GUEST), true);
-    assert.equal(needsLogin("bulk", GUEST), true);
-    assert.equal(needsLogin("write", MEMBER), false);
-    assert.equal(needsLogin("bulk", MEMBER), false);
+describe("writeProps: кнопка записи", () => {
+  it("допущенному — обычная", () => {
+    assert.deepEqual(writeProps(WRITER), { disabled: false, title: undefined });
   });
 
-  it("пока сессия определяется, решает сервер; неизвестный глагол тоже на сервере", () => {
-    assert.equal(needsLogin("write", LOADING), false);
-    assert.equal(needsLogin("bulk", LOADING), false);
-    assert.equal(needsLogin(null, GUEST), false);
+  it("гостю — серая с подсказкой про вход, вошедшему без допуска — про допуск, пока спрашиваем — серая без подсказки", () => {
+    assert.deepEqual(writeProps(GUEST), { disabled: true, title: WRITE_HINT });
+    assert.deepEqual(writeProps(READER), { disabled: true, title: NOT_WRITER_HINT });
+    assert.deepEqual(writeProps(LOADING), { disabled: true, title: undefined });
+    assert.deepEqual(writeProps(ASKING), { disabled: true, title: undefined });
+    assert.notEqual(WRITE_HINT, NOT_WRITER_HINT);
+  });
+});
+
+describe("deniedMessage: что ответит сервер, если писать нельзя", () => {
+  it("чтение проходит всегда, у допущенного ничего не отказывается", () => {
+    for (const a of [GUEST, LOADING, ASKING, READER, WRITER]) {
+      assert.equal(deniedMessage("read", a), null);
+      assert.equal(deniedMessage(null, a), null);
+    }
+    assert.equal(deniedMessage("write", WRITER), null);
+    assert.equal(deniedMessage("bulk", WRITER), null);
+  });
+
+  it("гость получает «нужен вход», вошедший без допуска — «нет допуска»; запись и массовые одинаково", () => {
+    for (const kind of ["write", "bulk"] as const) {
+      assert.equal(deniedMessage(kind, GUEST), LOGIN_MESSAGE);
+      assert.equal(deniedMessage(kind, READER), NOT_WRITER_MESSAGE);
+    }
+  });
+
+  it("пока сессия или допуск определяются, решает сервер", () => {
+    for (const kind of ["write", "bulk"] as const) {
+      assert.equal(deniedMessage(kind, LOADING), null);
+      assert.equal(deniedMessage(kind, ASKING), null);
+    }
   });
 });
 
 describe("интерфейс и сервер решают одинаково", () => {
-  it("для каждого глагола таблицы: гость получает отказ сервера login_required ровно там, где интерфейс говорит «нужен вход»", () => {
+  it("для каждого глагола таблицы: отказ сервера и сообщение интерфейса совпадают у гостя и у вошедшего без допуска", () => {
     for (const [verb, v] of Object.entries(VERBS)) {
       const line = `${verb} ${ARGS[v.rule]}`.trim();
-      const server = buildPmArgs({ line }, null);
-      const mine = needsLogin(verbKind(verb), GUEST);
-      if (v.kind === "read") {
-        assert.ok(server.ok, `${line}: ${JSON.stringify(server)}`);
-        assert.equal(mine, false, line);
-      } else {
-        assert.ok(
-          !server.ok && server.code === "login_required",
-          `${line}: ${JSON.stringify(server)}`,
-        );
-        assert.equal(mine, true, line);
-      }
-      assert.equal(buildPmArgs({ line }, { id: "u" }).ok, true, line);
+      const kind = verbKind(verb);
       assert.equal(kindOf({ line }), v.kind, line);
+      const cases = [
+        { user: null, access: GUEST, code: "login_required", text: LOGIN_MESSAGE },
+        {
+          user: { id: "u", writer: false },
+          access: READER,
+          code: "not_writer",
+          text: NOT_WRITER_MESSAGE,
+        },
+      ];
+      for (const c of cases) {
+        const server = buildPmArgs({ line }, c.user);
+        const mine = deniedMessage(kind, c.access);
+        if (v.kind === "read") {
+          assert.ok(server.ok, `${line}: ${JSON.stringify(server)}`);
+          assert.equal(mine, null, line);
+        } else {
+          assert.ok(!server.ok && server.code === c.code, `${line}: ${JSON.stringify(server)}`);
+          assert.equal(mine, c.text, line);
+          assert.equal(!server.ok && server.message, c.text, line);
+        }
+      }
+      assert.equal(buildPmArgs({ line }, { id: "u", writer: true }).ok, true, line);
+      assert.equal(deniedMessage(kind, WRITER), null, line);
     }
   });
 
-  it("лента PLANT: с лентой это запись, и гостю нужен вход", () => {
-    const server = buildPmArgs({ line: "PLANT", tape: "id\ttitle\nB1\tx" }, null);
-    assert.ok(!server.ok && server.code === "login_required");
-    assert.equal(needsLogin(verbKind("PLANT"), GUEST), true);
+  it("лента PLANT: с лентой это запись, гостю нужен вход, вошедшему без допуска — допуск", () => {
+    const tape = "id\ttitle\nB1\tx";
+    const guest = buildPmArgs({ line: "PLANT", tape }, null);
+    assert.ok(!guest.ok && guest.code === "login_required");
+    const reader = buildPmArgs({ line: "PLANT", tape }, { id: "u", writer: false });
+    assert.ok(!reader.ok && reader.code === "not_writer");
+    assert.equal(deniedMessage(verbKind("PLANT"), GUEST), LOGIN_MESSAGE);
+    assert.equal(deniedMessage(verbKind("PLANT"), READER), NOT_WRITER_MESSAGE);
   });
 });
