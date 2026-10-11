@@ -203,6 +203,17 @@ class Supersede(Desk):
         self.assertIn("SUPERSEDE", self.run_pm("NOPE").stderr)                               # новый глагол есть в алфавите
 
 
+class SupersedeBatch(Desk):
+    def test_batch_cannot_carry_a_replacement(self):
+        """Сайт проверяет только первое слово строки, а BATCH исполняет всё после него: иначе SUPERSEDE прошёл бы мимо списка глаголов сайта."""
+        self.add("D001B", title=NEWER)
+        snap = self.snapshot()
+        out = self.out("BATCH", "STATUS; SUPERSEDE D001 BY D001B; supersede D001 UNDO")
+        self.assertEqual(out.count("skip SUPERSEDE in BATCH"), 2, out)
+        self.assertEqual(self.snapshot()[:2], snap[:2])                                      # ни статусов, ни связей не тронуто
+        self.assertIn("# STATUS", out)                                                      # соседние команды пакета работают как раньше
+
+
 class SupersedeGuard(Desk):
     """Опечатка в id не должна молча снимать с канона постороннее решение."""
 
