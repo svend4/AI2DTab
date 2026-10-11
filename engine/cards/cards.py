@@ -138,6 +138,8 @@ def project_path(proj: dict, rel: str) -> Path:
     return (Path(proj["_base"]) / rel).resolve()
 
 
+CANON_LIMIT = 60          # сколько объектов канона показывают canon() и справка новой сессии; остальные видны через pm.py
+
 # Правила памяти: едут и в instructions MCP-сервера, и в справку новой сессии (handoff)
 PROTOCOL = """This project keeps its memory outside the conversation. Look things up instead of re-reading them.
 - Material (code, docs, chat exports): catalog() -> find(query) -> open(id, section|lines). Cite card ids and line numbers.
@@ -1385,12 +1387,19 @@ class Store:
         self.con.commit()
         return f"OK {key} retracted (was: {cur['value']})"
 
-    def facts(self, prefix: str = "") -> str:
+    def _active_facts(self, prefix: str = "") -> list:
         p = prefix.strip().lower()
-        rows = self.con.execute("SELECT * FROM facts WHERE status='active' AND substr(key_norm, 1, ?) = ? ORDER BY key_norm", (len(p), p)).fetchall()
+        return self.con.execute("SELECT * FROM facts WHERE status='active' AND substr(key_norm, 1, ?) = ? ORDER BY key_norm", (len(p), p)).fetchall()
+
+    @staticmethod
+    def _fact_line(r) -> str:
+        return f"{r['key']} = {r['value']}  (v{r['version']})"
+
+    def facts(self, prefix: str = "") -> str:
+        rows = self._active_facts(prefix)
         if not rows:
             return "(no active facts)"
-        return "\n".join(f"{r['key']} = {r['value']}  (v{r['version']})" for r in rows)
+        return "\n".join(self._fact_line(r) for r in rows)
 
     def fact_history(self, key: str) -> str:
         rows = self.con.execute("SELECT * FROM facts WHERE key_norm=? ORDER BY version, id", (" ".join(key.split()).lower(),)).fetchall()
@@ -1448,11 +1457,16 @@ class Store:
         finally:
             con.close()
 
-    def canon(self, types=None, limit: int = 60) -> str:
+    def canon(self, types=None, limit: int | None = None) -> str:
         """Принятые человеком (ACCEPT) факты и решения стола. Только чтение: база стола открывается в режиме ro."""
+        return self._canon_view(types, limit)[0]
+
+    def _canon_view(self, types=None, limit: int | None = None) -> tuple:
+        """(текст канона, {id объекта: его название} для объектов, которые в этом тексте показаны). Обрезанные по `limit` в словарь не попадают."""
+        limit = CANON_LIMIT if limit is None else limit
         db = self._pm_dir() / "project-store.sqlite"
         if not db.exists():
-            return "ERR no desk store (project-store.sqlite): run `python3 pm.py init` in the engine folder"
+            return "ERR no desk store (project-store.sqlite): run `python3 pm.py init` in the engine folder", {}
         if isinstance(types, str):
             types = [t.strip() for t in types.split(",") if t.strip()]
         types = list(types or self.project.get("canon_types") or ["fact", "decision"])
@@ -1465,12 +1479,12 @@ class Store:
         finally:
             src.close()
         if not rows:
-            return f"(no canon objects of types {', '.join(types)})"
+            return f"(no canon objects of types {', '.join(types)})", {}
         out = [f"CANON: {len(rows)} objects accepted in the desk (types {', '.join(types)}). Read-only; it changes only through ACCEPT in the desk."]
         for r in rows:
             b = (r["body"] or "").strip().split("\n")[0]
             out.append(f"{r['id']} [{r['cluster']}/{r['type']}] {r['title']}" + (f" — {clip(b, 100)}" if b else "") + self._replaces_text(replaced, r["id"]))
-        return "\n".join(out)
+        return "\n".join(out), {r["id"]: r["title"] for r in rows}
 
     @staticmethod
     def _replaced_by(con) -> dict:
@@ -1743,11 +1757,25 @@ class Store:
         (out / "log.md").write_text("\n".join(log) + "\n", encoding="utf-8")
         return dict(pages=len(notes), index_chars=len("\n".join(index)))
 
+    def _ledger_section(self, shown: dict) -> str:
+        """Действующие факты журнала для справки. Факт, который предложили столу, человек принял и который стоит в показанном каноне под тем же
+        названием («ключ = значение»), не повторяется: иначе один факт выглядит подтверждённым дважды. Вместо него одна строка со счётом.
+        Не показанное в каноне (обрезано, правили название, ещё raw, канон новее/старее) остаётся в журнале."""
+        rows = self._active_facts()
+        same = lambda a, b: " ".join(a.split()) == " ".join(b.split())  # noqa: E731
+        twins = [r for r in rows if r["pm_id"] in shown and same(shown[r["pm_id"]], f"{r['key']} = {r['value']}")]
+        keep = [r for r in rows if r not in twins]
+        lines = [self._fact_line(r) for r in keep]
+        if twins:
+            n = len(twins)
+            lines.append(f"(+{n} ledger {'fact is' if n == 1 else 'facts are'} already in the canon above)")
+        return "LEDGER (conversation facts, current):\n" + ("\n".join(lines) if lines else "(no active facts)")
+
     def handoff(self, budget_tok: int = 4000, catalog: bool = True) -> str:
-        """Стартовая справка новой сессии: правила + канон стола + действующие факты журнала + замечания lint + список групп материала."""
+        """Стартовая справка новой сессии: правила + канон стола + действующие факты журнала (кроме уже стоящих в каноне) + замечания lint + список групп материала."""
         head = "MEMORY BRIEF — start of a new session\n" + PROTOCOL
-        canon = self.canon()
-        ledger = "LEDGER (conversation facts, current):\n" + self.facts()
+        canon, shown = self._canon_view()
+        ledger = self._ledger_section(shown)
         groups = self.catalog(level=1) if catalog and self.con.execute("SELECT 1 FROM groups LIMIT 1").fetchone() else ""
         parts = [head, canon, ledger, self.lint_summary(), ("MATERIAL: " + groups.replace("GROUPS ", "groups ", 1)) if groups else ""]
         text = "\n\n".join(p for p in parts if p)

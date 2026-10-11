@@ -532,6 +532,125 @@ class DeskBridge(unittest.TestCase):
         other.con.close()
 
 
+class HandoffOneLinePerFact(unittest.TestCase):
+    """H3: факт, который уже стоит в каноне, не повторяется строкой журнала в справке новой сессии (иначе он выглядит подтверждённым дважды)."""
+    LEDGER = "LEDGER (conversation facts, current):\n"
+
+    def setUp(self):
+        self.tmp = tempfile.TemporaryDirectory()
+        self.t = Path(self.tmp.name)
+        self.desk = make_desk(self.t)
+        self.st = cards.Store(self.t / "c.sqlite", project=project_for(self.t, self.desk))
+
+    def tearDown(self):
+        self.st.con.close()
+        self.tmp.cleanup()
+
+    def brief(self):
+        return self.st.handoff(catalog=False)
+
+    def ledger_part(self, brief):
+        """Раздел LEDGER справки: от заголовка до пустой строки."""
+        return brief.split(self.LEDGER, 1)[1].split("\n\n", 1)[0]
+
+    def accepted(self, key, value, source=""):
+        self.st.fact_set(key, value, source)
+        self.assertIn("ACCEPT", self.st.fact_promote(key, apply=True, accept=True))
+
+    def test_an_accepted_fact_is_one_line_in_the_brief(self):
+        self.accepted("budget", "96000 EUR", "t8")
+        out = self.brief()
+        self.assertIn("LF-budget-v1 [C/fact] budget = 96000 EUR", out)                    # строка канона
+        self.assertEqual(out.count("budget = 96000 EUR"), 1)                              # а не две: канон и журнал
+        self.assertEqual(self.ledger_part(out), "(+1 ledger fact is already in the canon above)")
+
+    def test_several_hidden_facts_are_counted_and_the_rest_is_listed(self):
+        for k, v in (("a.one", "1"), ("a.two", "2"), ("a.three", "3")):
+            self.accepted(k, v)
+        self.st.fact_set("a.four", "4")                                                   # не предложен столу
+        self.st.fact_set("a.five", "5")
+        self.st.fact_promote("a.five", apply=True)                                        # предложен, но ещё raw
+        self.assertEqual(self.ledger_part(self.brief()),
+                         "a.five = 5  (v1)\na.four = 4  (v1)\n(+3 ledger facts are already in the canon above)")
+
+    def test_a_fact_that_waits_for_accept_stays_in_the_ledger(self):
+        self.st.fact_set("budget", "96000 EUR")
+        self.st.fact_promote("budget", apply=True)                                        # raw: человек ещё не решил
+        out = self.brief()
+        self.assertEqual(out.count("budget = 96000 EUR"), 1)
+        self.assertEqual(self.ledger_part(out), "budget = 96000 EUR  (v1)")
+        self.assertNotIn("already in the canon", out)
+
+    def test_a_new_version_makes_two_lines_again(self):
+        """Канон отстал от журнала: нужны обе строки, а lint об этом говорит."""
+        self.accepted("deadline", "15 March")
+        self.st.fact_set("deadline", "22 March")
+        out = self.brief()
+        self.assertIn("LF-deadline-v1 [C/fact] deadline = 15 March", out)                 # что принято
+        self.assertEqual(self.ledger_part(out).split("\n")[0], "deadline = 22 March  (v2)")  # что сказали после
+        self.assertNotIn("already in the canon", out)
+        self.assertIn("canon-behind-ledger", {f["code"] for f in self.st.lint()})
+        self.assertIn("LINT:", out)
+
+    def test_the_normal_cycle_ends_with_one_line_in_the_canon(self):
+        """v1 принят, v2 предложен и поставлен вместо него: в справке строка канона с пометкой замены и ни одной строки журнала."""
+        self.accepted("deadline", "15 March")
+        self.st.fact_set("deadline", "22 March")
+        self.st.fact_promote("deadline", apply=True)
+        desk_do(self.desk, "SUPERSEDE", "LF-deadline-v1", "BY", "LF-deadline-v2", "перенесли")
+        out = self.brief()
+        self.assertIn("LF-deadline-v2 [C/fact] deadline = 22 March", out)
+        self.assertIn("(replaces LF-deadline-v1", out)
+        self.assertEqual(out.count("deadline = 22 March"), 1)
+        self.assertEqual(self.ledger_part(out), "(+1 ledger fact is already in the canon above)")
+
+    def test_a_value_edited_in_the_desk_stays_visible(self):
+        """Название объекта в столе правили, и оно уже не равно значению журнала: расхождение показываем, а не прячем."""
+        self.accepted("budget", "96000 EUR")
+        con = sqlite3.connect(self.desk / "project-store.sqlite")
+        con.execute("UPDATE objects SET title='budget = 90000 EUR' WHERE id='LF-budget-v1'")
+        con.commit()
+        con.close()
+        out = self.brief()
+        self.assertIn("LF-budget-v1 [C/fact] budget = 90000 EUR", out)
+        self.assertEqual(self.ledger_part(out), "budget = 96000 EUR  (v1)")
+
+    def test_a_fact_the_canon_list_cut_off_is_not_hidden(self):
+        """Канон в справке обрезан по числу строк: объекта в нём нет, значит, строку журнала прятать нельзя."""
+        self.accepted("budget", "96000 EUR")
+        with mock.patch.object(cards, "CANON_LIMIT", 3):
+            out = self.brief()
+        self.assertNotIn("LF-budget-v1", out.split(self.LEDGER)[0])                       # в разделе канона его нет
+        self.assertEqual(self.ledger_part(out), "budget = 96000 EUR  (v1)")
+
+    def test_without_a_desk_nothing_is_hidden(self):
+        self.accepted("budget", "96000 EUR")
+        self.st.project["pm_dir"] = str(self.t / "nowhere")
+        out = self.brief()
+        self.assertIn("ERR no desk store", out)
+        self.assertEqual(self.ledger_part(out), "budget = 96000 EUR  (v1)")
+
+    def test_the_facts_tool_still_lists_everything(self):
+        self.accepted("budget", "96000 EUR")
+        self.assertEqual(self.st.facts(), "budget = 96000 EUR  (v1)")
+        self.assertEqual(cards.call_tool(self.st, "facts", {}), "budget = 96000 EUR  (v1)")
+
+    def old_style_brief(self):
+        """Справка прежнего вида из тех же кусков: канон и весь журнал, без сверки."""
+        return "\n\n".join(p for p in ("MEMORY BRIEF — start of a new session\n" + cards.PROTOCOL, self.st.canon(),
+                                       self.LEDGER + self.st.facts(), self.st.lint_summary()) if p)
+
+    def test_with_several_accepted_facts_the_brief_gets_shorter(self):
+        for k, v in (("budget", "96000 EUR"), ("deadline", "15 March"), ("lead.name", "Stefan")):
+            self.accepted(k, v, "t1")
+        self.assertLess(cards.est_tokens(self.brief()), cards.est_tokens(self.old_style_brief()))
+
+    def test_one_accepted_fact_costs_a_few_tokens_not_more(self):
+        """Строка-указатель стоит примерно как две короткие строки журнала: на одном принятом факте справка не короче, но и не длиннее больше чем на несколько токенов."""
+        self.accepted("budget", "96000 EUR", "t1")
+        self.assertLessEqual(cards.est_tokens(self.brief()) - cards.est_tokens(self.old_style_brief()), 8)
+
+
 class Mcp(unittest.TestCase):
     def test_stdio_roundtrip(self):
         with tempfile.TemporaryDirectory() as d:
