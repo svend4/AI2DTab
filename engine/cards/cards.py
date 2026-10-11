@@ -856,14 +856,20 @@ class Store:
         n = 0
         try:
             rows = src.execute("SELECT * FROM objects ORDER BY cluster, type, id").fetchall()
+            swaps = src.execute("SELECT from_id, to_id, note FROM links WHERE rel='supersedes' ORDER BY rowid").fetchall()
         finally:
             src.close()
         live = {"pm-" + r["id"] for r in rows}
+        chain: dict = defaultdict(list)        # замены стола (SUPERSEDE): у каждого конца своя строка, чтобы вопрос «чем заменено» находился по карточке
+        for l in swaps:
+            why = "" if l["note"] in (None, "SUPERSEDE") else f": {l['note']}"
+            chain[l["to_id"]].append(f"superseded by {l['from_id']}{why}")
+            chain[l["from_id"]].append(f"supersedes {l['to_id']}{why}")
         for r in rows:
             cid = "pm-" + r["id"]
             body = "\n".join(x for x in (
                 f"{r['title']}", f"[cluster {r['cluster']} · layer {r['layer']} · type {r['type']} · status {r['status']}]",
-                r["body"] or "", (f"{r['pred']} {r['rel']} {r['obj']}" if r["pred"] else "")) if x)
+                r["body"] or "", (f"{r['pred']} {r['rel']} {r['obj']}" if r["pred"] else ""), *chain.get(r["id"], [])) if x)
             gid = self._group_for("pm", names.get(r["cluster"], r["cluster"]), ord(r["cluster"][0]) if r["cluster"] else 0, "objects of the kit's L3 store")
             self.con.execute("DELETE FROM cards WHERE id=?", (cid,))
             self.con.execute(
@@ -1376,6 +1382,17 @@ class Store:
         con.row_factory = sqlite3.Row
         return con
 
+    def _desk_status(self, pm_id):
+        """Статус объекта в столе (только чтение); нет стола или объекта — None."""
+        con = self._desk_con()
+        if con is None:
+            return None
+        try:
+            r = con.execute("SELECT status FROM objects WHERE id=?", (pm_id,)).fetchone()
+            return r["status"] if r else None
+        finally:
+            con.close()
+
     def canon(self, types=None, limit: int = 60) -> str:
         """Принятые человеком (ACCEPT) факты и решения стола. Только чтение: база стола открывается в режиме ro."""
         db = self._pm_dir() / "project-store.sqlite"
@@ -1389,6 +1406,7 @@ class Store:
         try:
             rows = src.execute("SELECT id, cluster, layer, type, title, body FROM objects WHERE status='canon' AND type IN (%s) "
                                "ORDER BY cluster, type, id LIMIT ?" % ",".join("?" * len(types)), (*types, limit)).fetchall()
+            replaced = self._replaced_by(src)
         finally:
             src.close()
         if not rows:
@@ -1396,8 +1414,20 @@ class Store:
         out = [f"CANON: {len(rows)} objects accepted in the desk (types {', '.join(types)}). Read-only; it changes only through ACCEPT in the desk."]
         for r in rows:
             b = (r["body"] or "").strip().split("\n")[0]
-            out.append(f"{r['id']} [{r['cluster']}/{r['type']}] {r['title']}" + (f" — {clip(b, 100)}" if b else ""))
+            out.append(f"{r['id']} [{r['cluster']}/{r['type']}] {r['title']}" + (f" — {clip(b, 100)}" if b else "") + self._replaces_text(replaced, r["id"]))
         return "\n".join(out)
+
+    @staticmethod
+    def _replaced_by(con) -> dict:
+        """Замены стола (SUPERSEDE): {новый_id: [(старый_id, причина)], ...}. Старого стола без таких связей это не касается."""
+        out: dict = defaultdict(list)
+        for l in con.execute("SELECT from_id, to_id, note FROM links WHERE rel='supersedes' ORDER BY rowid"):
+            out[l["from_id"]].append((l["to_id"], "" if l["note"] in (None, "SUPERSEDE") else l["note"]))
+        return out
+
+    @staticmethod
+    def _replaces_text(replaced: dict, oid: str) -> str:
+        return "".join(f" (replaces {old}" + (f": {clip(why, 60)}" if why else "") + ")" for old, why in replaced.get(oid, []))
 
     def fact_promote(self, key: str, apply: bool = False, accept: bool = False) -> str:
         """Предложить факт журнала столу: объект со статусом raw, созданный штатной командой `pm.py add` (pm.py не меняем).
@@ -1416,8 +1446,15 @@ class Store:
         prev = self.con.execute("SELECT pm_id, version FROM facts WHERE key_norm=? AND pm_id IS NOT NULL AND id<>? ORDER BY version DESC LIMIT 1", (kn, cur["id"])).fetchone()
         cmd = [sys.executable, str(pm_py), "add", "--id", oid, "--cluster", str(pr.get("cluster", "C")), "--layer", str(pr.get("layer", 1)),
                "--type", str(pr.get("type", "fact")), "--title", title, "--status", "raw", "--body", body]
-        note = (f"\nNOTE: v{prev['version']} of this key is already in the desk as {prev['pm_id']}. The desk has no 'supersede': TAKE refuses canon objects, "
-                f"so if that one was accepted, decide in the desk which of the two stays.") if prev else ""
+        note = ""
+        if prev:
+            st = self._desk_status(prev["pm_id"])
+            note = f"\nNOTE: v{prev['version']} of this key is already in the desk as {prev['pm_id']}" + (f" (status {st})" if st else "") + "."
+            if st == "canon":      # принятое снять нельзя (TAKE откажет), его заменяют: история остаётся, в каноне новое
+                note += (f" It was accepted, so to make the new one current and keep the history, a human runs, once {oid} exists: "
+                         f"python3 pm.py exec SUPERSEDE {prev['pm_id']} BY {oid} <reason>")
+            elif st == "raw":
+                note += f" It is still RAW: decide in the desk which of the two to take (TAKE) and which to accept (ACCEPT)."
         if cur["pm_id"]:
             return f"{cur['pm_id']} was already proposed for v{cur['version']}; accept it in the desk: python3 pm.py exec ACCEPT {cur['pm_id']}"
         if not apply:
@@ -1440,7 +1477,7 @@ class Store:
     # ------------------------------------------------------------ lint: проверка здоровья памяти, без модели
     def lint(self, today=None, stale_days: int = 7) -> list:
         """Детерминированные проверки. Канон стола: дата в прошлом, условие «пока …». Журнал: факт без источника, предложение столу без ACCEPT,
-        канон отстаёт от журнала. Заметки: нет источников, источник пропал или изменился, цитата не найдена, битая ссылка [[nNNN]], сироты.
+        канон отстаёт от журнала, журнал отстаёт от канона (стол заменил объект, а журнал держит старое). Заметки: нет источников, источник пропал или изменился, цитата не найдена, битая ссылка [[nNNN]], сироты.
         Возвращает список dict(level=error|warn|info, code, subject, message). Ничего не пишет."""
         from datetime import date
         if today is None:
@@ -1453,6 +1490,8 @@ class Store:
             out.append(dict(level=level, code=code, subject=subject, message=msg))
 
         desk_status: dict = {}
+        desk_replacer: dict = {}      # {старый_id: новый_id} по связям supersedes
+        desk_title: dict = {}
         con = self._desk_con()
         if con is not None:
             try:
@@ -1462,12 +1501,14 @@ class Store:
                     past = [d for d in dates_in(text) if d < today]
                     if past:
                         add("info", "canon-date-passed", r["id"], f"«{clip(r['title'], 60)}» mentions {past[-1].isoformat()} ({(today - past[-1]).days} days ago): "
-                            "a plan that has passed? re-check it, or retire the object in the desk")
+                            f"a plan that has passed? re-check it; if it changed, a human replaces it: python3 pm.py exec SUPERSEDE {r['id']} BY <new id> <reason>")
                     m = _COND.search(text)
                     if m:
                         add("info", "canon-condition", r["id"], f"«{clip(r['title'], 60)}» has conditional wording «{m.group(0)}»: "
                             "the condition is an outside event; check whether it has happened")
                 desk_status = {r["id"]: r["status"] for r in con.execute("SELECT id, status FROM objects")}
+                desk_title = {r["id"]: r["title"] for r in con.execute("SELECT id, title FROM objects")}
+                desk_replacer = {r["to_id"]: r["from_id"] for r in con.execute("SELECT from_id, to_id FROM links WHERE rel='supersedes' ORDER BY rowid")}
             finally:
                 con.close()
 
@@ -1492,8 +1533,20 @@ class Store:
                     if latest["status"] == "retracted":
                         add("warn", "canon-retracted", r["pm_id"], f"{r['key']} was retracted in the ledger but is still canon in the desk")
                     elif latest["version"] > r["version"]:
+                        nxt = latest["pm_id"]
+                        if nxt and desk_status.get(nxt) in ("raw", "canon"):
+                            fix = f"a human replaces it, keeping the history: python3 pm.py exec SUPERSEDE {r['pm_id']} BY {nxt} <reason>"
+                        elif nxt:
+                            fix = f"the desk holds the newer proposal {nxt} as {desk_status.get(nxt, 'missing')}: decide there which value stays"
+                        else:
+                            fix = f"propose the new value (promote {r['key']} --apply), then a human replaces the old one: SUPERSEDE {r['pm_id']} BY <new id>"
                         add("warn", "canon-behind-ledger", r["pm_id"], f"canon holds {r['key']} v{r['version']} = «{clip(r['value'], 50)}», the ledger has "
-                            f"v{latest['version']} = «{clip(latest['value'], 50)}»: decide in the desk (it has no 'supersede')")
+                            f"v{latest['version']} = «{clip(latest['value'], 50)}»: {fix}")
+                elif st == "superseded" and r["status"] == "active":
+                    new_id = desk_replacer.get(r["pm_id"])
+                    by = f" by {new_id} «{clip(desk_title.get(new_id, ''), 50)}»" if new_id else ""
+                    add("warn", "ledger-behind-canon", r["pm_id"], f"the desk replaced this object{by}, but the ledger still carries {r['key']} v{r['version']} = "
+                        f"«{clip(r['value'], 50)}» as current: bring the ledger in line (fact_set {r['key']} …) or undo the replacement (SUPERSEDE {r['pm_id']} UNDO)")
                 elif st == "rejected" and r["status"] == "active":
                     add("info", "proposal-rejected", r["pm_id"], f"the desk rejected this proposal, but the ledger still carries {r['key']} v{r['version']}: revise or retract it")
 

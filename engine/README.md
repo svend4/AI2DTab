@@ -16,3 +16,7 @@ python3 pm.py exec DUMP | head
 ```
 
 `ACCEPT` пишет `status=canon` в sqlite. Session/tape — REFUSE. Это лёд: меню на сайте только показывает ход.
+
+`SUPERSEDE старый BY новый причина` заменяет принятое: старый объект уходит из канона (`superseded`), новый принимается, история остаётся
+(`python3 pm.py exec SUPERSEDE старый UNDO` откатывает). Подробности — в `LANG.md`. Тесты стола: `python3 -m unittest engine/test_pm.py`
+(на временных копиях, настоящая база не трогается). В меню сайта этого глагола нет (`src/lib/pm-api.ts` пропускает только перечисленные), а `BATCH` его пропускает.

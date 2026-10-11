@@ -286,6 +286,12 @@ def project_for(tmp: Path, desk: Path, code_root: Path | None = None, chats: lis
     return proj
 
 
+def desk_do(desk: Path, *args) -> str:
+    """Глагол стола, как его вводит человек: pm.py exec …"""
+    r = subprocess.run([sys.executable, str(desk / "pm.py"), "exec", *args], cwd=desk, check=True, capture_output=True, text=True, encoding="utf-8")
+    return r.stdout
+
+
 def desk_row(desk: Path, oid: str):
     con = sqlite3.connect(desk / "project-store.sqlite")
     con.row_factory = sqlite3.Row
@@ -342,6 +348,44 @@ class DeskBridge(unittest.TestCase):
         out = self.st.fact_promote("deadline", apply=True)
         self.assertIn("LF-deadline-v2", out)
         self.assertIn("NOTE: v1 of this key is already in the desk as LF-deadline-v1", out)
+
+    def test_promote_hint_for_an_accepted_predecessor_is_a_working_supersede(self):
+        self.st.fact_set("deadline", "15 March")
+        self.st.fact_promote("deadline", apply=True, accept=True)
+        self.st.fact_set("deadline", "22 March")
+        out = self.st.fact_promote("deadline", apply=True)
+        self.assertIn("(status canon)", out)
+        cmd = "SUPERSEDE LF-deadline-v1 BY LF-deadline-v2"
+        self.assertIn(f"python3 pm.py exec {cmd}", out)
+        self.assertNotIn("has no 'supersede'", out)
+        desk_do(self.desk, *cmd.split(), "дата")                                        # подсказку исполняет человек, настоящим pm.py
+        self.assertEqual((desk_row(self.desk, "LF-deadline-v1")["status"], desk_row(self.desk, "LF-deadline-v2")["status"]), ("superseded", "canon"))
+        canon = self.st.canon()
+        self.assertIn("LF-deadline-v2 [C/fact] deadline = 22 March", canon)
+        self.assertIn("(replaces LF-deadline-v1: дата)", canon)                          # агент видит, что решение пересмотрено, и почему
+        self.assertNotIn("LF-deadline-v1 [", canon)                                      # старое в каноне больше не числится
+
+    def test_promote_hint_for_a_raw_predecessor_and_for_none(self):
+        self.st.fact_set("risk", "high")
+        self.assertNotIn("NOTE", self.st.fact_promote("risk", apply=True))              # предшественника нет — подсказки нет
+        self.st.fact_set("risk", "medium")
+        out = self.st.fact_promote("risk", apply=True)
+        self.assertIn("(status raw)", out)
+        self.assertIn("still RAW", out)
+        self.assertNotIn("SUPERSEDE", out)                                              # сырое заменять незачем: его снимают TAKE
+
+    def test_desk_cards_tell_what_replaced_what(self):
+        self.st.fact_set("deadline", "15 March")
+        self.st.fact_promote("deadline", apply=True, accept=True)
+        self.st.fact_set("deadline", "22 March")
+        self.st.fact_promote("deadline", apply=True)
+        desk_do(self.desk, "SUPERSEDE", "LF-deadline-v1", "BY", "LF-deadline-v2", "перенесли")
+        self.st.index_pm(self.desk / "project-store.sqlite")                            # не refresh(): корень кода по умолчанию — «../..»
+        body = lambda cid: self.st.con.execute("SELECT body FROM cards WHERE id=?", (cid,)).fetchone()["body"]  # noqa: E731
+        self.assertIn("status superseded", body("pm-LF-deadline-v1"))
+        self.assertIn("superseded by LF-deadline-v2: перенесли", body("pm-LF-deadline-v1"))
+        self.assertIn("supersedes LF-deadline-v1: перенесли", body("pm-LF-deadline-v2"))
+        self.assertNotIn("supersede", body("pm-D001"))                                    # остальные карточки стола без изменений
 
     def test_mcp_promote_is_gated_by_project_setting(self):
         self.st.fact_set("risk", "high")
@@ -682,6 +726,50 @@ class LintDesk(unittest.TestCase):
         c = self.codes()
         self.assertIn(("canon-retracted", "LF-deadline-v1"), c)
         self.assertNotIn(("canon-behind-ledger", "LF-deadline-v1"), c)
+
+    def test_canon_behind_ledger_names_the_command_and_it_clears_the_finding(self):
+        self.st.fact_set("deadline", "15 March", "t1")
+        self.st.fact_promote("deadline", apply=True, accept=True)
+        self.st.fact_set("deadline", "22 March", "t2")
+        msg = lambda: next(f["message"] for f in self.st.lint() if f["code"] == "canon-behind-ledger")  # noqa: E731
+        self.assertIn("promote deadline --apply", msg())                                 # новое значение ещё не предложено
+        self.assertNotIn("has no 'supersede'", msg())
+        self.st.fact_promote("deadline", apply=True)
+        self.assertIn("SUPERSEDE LF-deadline-v1 BY LF-deadline-v2", msg())
+        desk_do(self.desk, "SUPERSEDE", "LF-deadline-v1", "BY", "LF-deadline-v2")
+        c = self.codes()
+        self.assertNotIn(("canon-behind-ledger", "LF-deadline-v1"), c)                  # человек заменил — замечание ушло
+        self.assertFalse([x for x in c if x[0] == "ledger-behind-canon"])
+
+    def test_ledger_behind_canon_when_the_desk_replaced_what_the_ledger_still_holds(self):
+        self.st.fact_set("deadline", "15 March", "t1")
+        self.st.fact_promote("deadline", apply=True, accept=True)
+        subprocess.run([sys.executable, str(self.desk / "pm.py"), "add", "--id", "D-DL", "--cluster", "C", "--layer", "1", "--type", "fact",
+                        "--title", "deadline = 1 April", "--status", "raw", "--body", "письмо"], cwd=self.desk, check=True, capture_output=True)
+        desk_do(self.desk, "SUPERSEDE", "LF-deadline-v1", "BY", "D-DL")                  # стол пересмотрел, журнал об этом не знает
+        found = [f for f in self.st.lint() if f["code"] == "ledger-behind-canon"]
+        self.assertEqual([(f["level"], f["subject"]) for f in found], [("warn", "LF-deadline-v1")])
+        self.assertIn("by D-DL «deadline = 1 April»", found[0]["message"])
+        self.assertIn("fact_set deadline", found[0]["message"])
+        self.assertIn("SUPERSEDE LF-deadline-v1 UNDO", found[0]["message"])             # и путь назад назван
+        self.st.fact_set("deadline", "1 April", "письмо")                                 # журнал догнал стол
+        self.assertFalse([x for x in self.codes() if x[0] == "ledger-behind-canon"])
+        desk_do(self.desk, "SUPERSEDE", "LF-deadline-v1", "UNDO")                        # а при откате замены прежний объект снова в каноне
+        self.assertEqual(desk_row(self.desk, "LF-deadline-v1")["status"], "canon")
+
+    def test_replaced_objects_drop_out_of_the_canon_checks(self):
+        self.assertIn(("canon-condition", "D001"), self.codes())
+        subprocess.run([sys.executable, str(self.desk / "pm.py"), "add", "--id", "D001B", "--cluster", "A", "--layer", "1", "--type", "decision",
+                        "--title", "датой выплаты считать 01.03.2027", "--status", "raw", "--body", "письмо пришло"], cwd=self.desk, check=True, capture_output=True)
+        desk_do(self.desk, "SUPERSEDE", "D001", "BY", "D001B")
+        c = self.codes()
+        self.assertNotIn(("canon-condition", "D001"), c)                                 # условие «пока нет письма» снято вместе с объектом
+        self.assertNotIn(("canon-date-passed", "D001"), c)
+        db = self.desk / "project-store.sqlite"
+        before = (db.stat().st_mtime_ns, db.stat().st_size)
+        self.st.lint()
+        self.st.canon()
+        self.assertEqual(before, (db.stat().st_mtime_ns, db.stat().st_size))            # и теперь лишь читаем
 
     def test_rejected_and_vanished_proposals(self):
         self.st.fact_set("risk", "high", "t1")
