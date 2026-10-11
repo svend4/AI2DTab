@@ -515,10 +515,15 @@ def make_chunks(text: str) -> list:
     return out
 
 
-def list_files(root: Path, exclude: tuple = ()) -> list:
+def list_files(root: Path, exclude: tuple = (), stats: Counter | None = None) -> list:
+    """Файлы корня, которые стоит индексировать: git ls-files -z (имена как есть; без -z git заключает не-ASCII имена в кавычки с восьмеричными
+    кодами, расширение у такого имени не распознаётся, и файл молча терялся) или обход папки, если это не git-репозиторий.
+    stats (Counter), если дан, пополняется счётом отброшенного по причинам: skipped_ext (расширения нет в CODE_EXT), excluded (маска исключений),
+    skipped_name (имя не в UTF-8: в базу такое не записать)."""
+    stats = stats if stats is not None else Counter()
     try:
-        raw = subprocess.run(["git", "-C", str(root), "ls-files"], capture_output=True, text=True, check=True).stdout
-        files = [f for f in raw.split("\n") if f]
+        raw = subprocess.run(["git", "-C", str(root), "ls-files", "-z"], capture_output=True, check=True).stdout
+        files = [b.decode("utf-8", "surrogateescape") for b in raw.split(b"\0") if b]
     except (OSError, subprocess.CalledProcessError):
         files = []
         for dp, dn, fn in os.walk(root):
@@ -526,9 +531,16 @@ def list_files(root: Path, exclude: tuple = ()) -> list:
             files += [os.path.relpath(os.path.join(dp, f), root) for f in fn]
     keep = []
     for f in sorted(files):
+        try:
+            f.encode("utf-8")
+        except UnicodeEncodeError:
+            stats["skipped_name"] += 1
+            continue
         if Path(f).suffix.lower() not in CODE_EXT:
+            stats["skipped_ext"] += 1
             continue
         if any(fnmatch.fnmatch(f, pat) or f.startswith(pat.rstrip("*")) for pat in exclude):
+            stats["excluded"] += 1
             continue
         keep.append(f)
     return keep
@@ -656,8 +668,8 @@ class Store:
     def index_code(self, root, files=None, exclude=(), max_bytes=400_000, prune=False) -> dict:
         root = Path(root).resolve()
         self.set_meta("root", str(root))
-        paths = files if files is not None else list_files(root, tuple(exclude))
         stat = Counter()
+        paths = files if files is not None else list_files(root, tuple(exclude), stat)      # отброшенное при выборе файлов тоже попадает в отчёт
         seen = set()
         for rel in paths:
             try:

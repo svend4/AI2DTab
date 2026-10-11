@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import json
+import os
 import random
 import shutil
 import sqlite3
@@ -9,6 +10,7 @@ import subprocess
 import sys
 import tempfile
 import unittest
+from collections import Counter
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
@@ -117,6 +119,69 @@ class IndexAndRead(Base):
         self.assertEqual(stat.get("changed"), 1)
         self.assertEqual(stat.get("same"), 2)
         self.assertIn("v2", self.st.open(self.cid("router.ts")))
+
+
+def git(root: Path, *args):
+    subprocess.run(["git", "-C", str(root), "-c", "user.email=t@t", "-c", "user.name=t", *args], check=True, capture_output=True)
+
+
+class ListFiles(unittest.TestCase):
+    """Список файлов для индекса (фаза 2 плана PLAN-LOOPS.md): git отдаёт имена не-ASCII в кавычках с восьмеричными кодами, раньше такие файлы молча терялись."""
+
+    NAMES = ["src/a.py", "docs/заметка.md", "docs/Übersicht.md", "my notes.md", "日本語.md"]
+
+    def setUp(self):
+        self.tmp = tempfile.TemporaryDirectory()
+        self.t = Path(self.tmp.name)
+        self.root = self.t / "repo"
+        for rel in self.NAMES + ["logo.png", "data.bin"]:
+            p = self.root / rel
+            p.parent.mkdir(parents=True, exist_ok=True)
+            p.write_text("# Заголовок\n\nТекст.\n" if rel.endswith(".md") else "x = 1\n", encoding="utf-8")
+
+    def tearDown(self):
+        self.tmp.cleanup()
+
+    def commit_all(self):
+        git(self.root, "init", "-q")
+        git(self.root, "add", "-A")
+        git(self.root, "commit", "-qm", "init")
+
+    def test_git_listing_keeps_non_ascii_names(self):
+        self.commit_all()
+        self.assertEqual(cards.list_files(self.root), sorted(self.NAMES))
+
+    def test_walk_without_git_gives_the_same_list(self):
+        self.assertEqual(cards.list_files(self.root), sorted(self.NAMES))
+
+    def test_index_code_indexes_them_and_counts_what_it_dropped_by_reason(self):
+        self.commit_all()
+        st = cards.Store(self.t / "c.sqlite")
+        try:
+            stat = st.index_code(self.root)
+            self.assertEqual(stat, {"new": 5, "skipped_ext": 2})                       # png и bin отброшены по расширению — и это видно в отчёте
+            self.assertEqual(sorted(r["src"] for r in st.con.execute("SELECT src FROM cards WHERE kind='file'")), sorted(self.NAMES))
+            stat2 = st.index_code(self.root, exclude=("docs/*",))
+            self.assertEqual(stat2, {"same": 3, "skipped_ext": 2, "excluded": 2})      # две заметки под маской: отброшены по ней, не по расширению
+        finally:
+            st.con.close()
+
+    def test_a_name_that_is_not_utf8_is_counted_and_does_not_break_the_rest(self):
+        bad = os.fsencode(self.root) + b"/bad\xff.md"
+        try:
+            with open(bad, "w", encoding="utf-8") as f:
+                f.write("# x\n")
+        except OSError:
+            self.skipTest("файловая система не принимает имена не в UTF-8")
+        self.commit_all()
+        stats = Counter()
+        self.assertEqual(cards.list_files(self.root, (), stats), sorted(self.NAMES))
+        self.assertEqual(dict(stats), {"skipped_ext": 2, "skipped_name": 1})
+        st = cards.Store(self.t / "c.sqlite")
+        try:
+            self.assertEqual(st.index_code(self.root), {"new": 5, "skipped_ext": 2, "skipped_name": 1})
+        finally:
+            st.con.close()
 
 
 class Grep(Base):

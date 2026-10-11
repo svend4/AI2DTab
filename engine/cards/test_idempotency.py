@@ -246,6 +246,16 @@ class StoreContract(Contract):
     def test_index_code(self):
         self.repeat(self.snap, lambda: self.st.index_code(self.root), "index_code")
 
+    def test_index_code_in_a_git_repo_with_non_ascii_names(self):
+        for args in (("init", "-q"), ("add", "-A"), ("commit", "-qm", "init")):
+            subprocess.run(["git", "-C", str(self.root), "-c", "user.email=t@t", "-c", "user.name=t", *args], check=True, capture_output=True)
+        (self.root / "docs").mkdir(exist_ok=True)
+        (self.root / "docs" / "заметка.md").write_text("# Заметка\n\nТекст.\n", encoding="utf-8")
+        subprocess.run(["git", "-C", str(self.root), "add", "-A"], check=True, capture_output=True)
+        first, second = self.repeat(self.snap, lambda: self.st.index_code(self.root), "index_code (git)")
+        self.assertEqual(first.get("new"), 3)                                 # a.py, doc.md и docs/заметка.md: имя с русскими буквами не потерялось
+        self.assertEqual(second.get("same"), 3)
+
     def test_index_chat(self):
         self.repeat(self.snap, lambda: self.st.index_chat(str(self.chat)), "index_chat")
 
