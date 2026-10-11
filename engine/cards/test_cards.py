@@ -3,6 +3,8 @@ from __future__ import annotations
 
 import json
 import random
+import shutil
+import sqlite3
 import subprocess
 import sys
 import tempfile
@@ -231,6 +233,165 @@ class Chat(unittest.TestCase):
             st.con.close()
 
 
+ENGINE = Path(cards.__file__).resolve().parent.parent
+
+
+def make_desk(tmp: Path) -> Path:
+    """Копия стола (pm.py + схема + сид) во временной папке: настоящая база комплекта в тестах не трогается."""
+    d = Path(tmp) / "engine"
+    d.mkdir()
+    for n in ("pm.py", "schema.sql", "seed.sql"):
+        shutil.copy(ENGINE / n, d / n)
+    subprocess.run([sys.executable, str(d / "pm.py"), "init"], cwd=d, check=True, capture_output=True)
+    return d
+
+
+def project_for(tmp: Path, desk: Path, code_root: Path | None = None, chats: list | None = None) -> dict:
+    proj = json.loads(json.dumps(cards.PROJECT_DEFAULT))
+    proj["_base"] = str(tmp)
+    proj["pm_dir"] = str(desk)
+    if code_root is not None:
+        proj["code"] = {"root": str(code_root), "exclude": []}
+    proj["chats"] = chats or []
+    return proj
+
+
+def desk_row(desk: Path, oid: str):
+    con = sqlite3.connect(desk / "project-store.sqlite")
+    con.row_factory = sqlite3.Row
+    try:
+        return con.execute("SELECT * FROM objects WHERE id=?", (oid,)).fetchone()
+    finally:
+        con.close()
+
+
+class DeskBridge(unittest.TestCase):
+    def setUp(self):
+        self.tmp = tempfile.TemporaryDirectory()
+        self.t = Path(self.tmp.name)
+        self.desk = make_desk(self.t)
+        self.st = cards.Store(self.t / "c.sqlite", project=project_for(self.t, self.desk))
+
+    def tearDown(self):
+        self.st.con.close()
+        self.tmp.cleanup()
+
+    def test_canon_is_read_only_and_filters_types(self):
+        db = self.desk / "project-store.sqlite"
+        before = (db.stat().st_mtime_ns, db.stat().st_size)
+        out = self.st.canon()
+        self.assertIn("F001 [A/fact]", out)
+        self.assertIn("D001 [A/decision]", out)
+        self.assertNotIn("F001", self.st.canon(types="decision"))
+        self.assertEqual(before, (db.stat().st_mtime_ns, db.stat().st_size))      # стол не изменился
+
+    def test_canon_without_desk(self):
+        self.st.project["pm_dir"] = str(self.t / "nowhere")
+        self.assertIn("ERR no desk store", self.st.canon())
+
+    def test_promote_dry_run_apply_and_human_accept(self):
+        self.st.fact_set("budget", "96000 EUR", "t8")
+        dry = self.st.fact_promote("budget")
+        self.assertIn("DRY RUN", dry)
+        self.assertIsNone(desk_row(self.desk, "LF-budget-v1"))                        # пробный запуск ничего не пишет
+        ok = self.st.fact_promote("budget", apply=True)
+        self.assertIn("created in the desk as RAW", ok)
+        row = desk_row(self.desk, "LF-budget-v1")
+        self.assertEqual((row["status"], row["type"], row["title"]), ("raw", "fact", "budget = 96000 EUR"))
+        self.assertNotIn("LF-budget-v1", self.st.canon())                            # raw — ещё не канон
+        self.assertIn("already proposed", self.st.fact_promote("budget", apply=True))  # повтор не плодит объектов
+        # решение человека: ACCEPT штатной командой стола — и объект виден в каноне
+        subprocess.run([sys.executable, str(self.desk / "pm.py"), "exec", "ACCEPT", "LF-budget-v1"], cwd=self.desk, check=True, capture_output=True)
+        self.assertIn("LF-budget-v1 [C/fact] budget = 96000 EUR", self.st.canon())
+
+    def test_promote_accept_flag_and_next_version_note(self):
+        self.st.fact_set("deadline", "15 March")
+        self.assertIn("ACCEPT LF-deadline-v1", self.st.fact_promote("deadline", apply=True, accept=True))
+        self.assertEqual(desk_row(self.desk, "LF-deadline-v1")["status"], "canon")
+        self.st.fact_set("deadline", "22 March")
+        out = self.st.fact_promote("deadline", apply=True)
+        self.assertIn("LF-deadline-v2", out)
+        self.assertIn("NOTE: v1 of this key is already in the desk as LF-deadline-v1", out)
+
+    def test_mcp_promote_is_gated_by_project_setting(self):
+        self.st.fact_set("risk", "high")
+        denied = cards.call_tool(self.st, "fact_promote", {"key": "risk", "apply": True})
+        self.assertIn("DRY RUN", denied)
+        self.assertIn("switched off for agents", denied)
+        self.assertIsNone(desk_row(self.desk, "LF-risk-v1"))                           # агент не смог записать в стол
+        self.st.project["promote"]["mcp_apply"] = True
+        allowed = cards.call_tool(self.st, "fact_promote", {"key": "risk", "apply": True})
+        self.assertIn("created in the desk as RAW", allowed)
+        self.assertEqual(desk_row(self.desk, "LF-risk-v1")["status"], "raw")           # и всё равно только raw: accept в MCP нет
+        self.assertNotIn("accept", {k for s in cards.TOOL_SPECS if s["name"] == "fact_promote" for k in s["props"]})
+
+    def test_promote_errors(self):
+        self.assertIn("ERR no active fact", self.st.fact_promote("nothing", apply=True))
+        self.st.fact_set("k", "v")
+        self.st.project["pm_dir"] = str(self.t / "nowhere")
+        self.assertIn("ERR pm.py not found", self.st.fact_promote("k", apply=True))
+
+    def test_handoff_sections_and_budget(self):
+        (self.t / "src").mkdir()
+        (self.t / "src" / "a.py").write_text(PY, encoding="utf-8")
+        self.st.project = project_for(self.t, self.desk, code_root=self.t / "src")
+        self.st.refresh()
+        self.st.fact_set("budget", "96000 EUR")
+        out = self.st.handoff()
+        for part in ("MEMORY BRIEF", "CANON:", "LEDGER", "budget = 96000 EUR", "MATERIAL:", "fact_promote"):
+            self.assertIn(part, out)
+        self.assertLessEqual(cards.est_tokens(out), 4000)
+        tiny = self.st.handoff(budget_tok=300, catalog=False)
+        self.assertNotIn("MATERIAL", tiny)
+
+    def test_refresh_is_incremental_and_keeps_chats_apart(self):
+        repo = self.t / "repo"
+        repo.mkdir()
+        (repo / "a.py").write_text(PY, encoding="utf-8")
+        chats = self.t / "chats"
+        chats.mkdir()
+        rnd = random.Random(3)
+
+        def chat(path, voc, n=14):
+            pairs = [(f"вопрос {k}", "## Раздел\n\n" + " ".join(rnd.choice(voc) for _ in range(80))) for k in range(n)]
+            path.write_text(make_chat(pairs), encoding="utf-8")
+
+        chat(chats / "one.md", [f"яблоня{i}" for i in range(40)])
+        chat(chats / "two.md", [f"turbine{i}" for i in range(40)])
+        (chats / "notes.md").write_text("# просто заметки\n\nэто не экспорт чата\n", encoding="utf-8")
+        self.st.project = project_for(self.t, self.desk, code_root=repo, chats=[str(chats / "*.md")])
+        first = self.st.refresh()
+        self.assertEqual(first["code"]["new"], 1)
+        self.assertEqual(first["chats"]["one.md"]["turns"], 14)
+        self.assertIn("skipped", first["chats"]["notes.md"])
+        groups1 = {r["id"] for r in self.st.con.execute("SELECT id FROM groups WHERE kind='thread'")}
+        self.st.set_summary("t001", "РУЧНАЯ ПОДПИСЬ")
+        second = self.st.refresh()
+        self.assertEqual(second["code"]["same"], 1)
+        self.assertEqual(second["chats"]["one.md"], "same")
+        self.assertIn("РУЧНАЯ ПОДПИСЬ", self.st.catalog())                              # подпись «библиотекаря» не затёрта
+        # изменился только первый экспорт: ветки второго остаются
+        chat(chats / "one.md", [f"груша{i}" for i in range(40)], n=10)
+        third = self.st.refresh()
+        self.assertEqual(third["chats"]["one.md"]["turns"], 10)
+        self.assertEqual(third["chats"]["two.md"], "same")
+        n_one = self.st.con.execute("SELECT COUNT(*) c FROM cards WHERE kind='turn' AND src LIKE 'one.md#%'").fetchone()["c"]
+        n_two = self.st.con.execute("SELECT COUNT(*) c FROM cards WHERE kind='turn' AND src LIKE 'two.md#%'").fetchone()["c"]
+        self.assertEqual((n_one, n_two), (10, 14))
+        orphan = self.st.con.execute("SELECT COUNT(*) c FROM groups WHERE kind='thread' AND id NOT IN (SELECT DISTINCT group_id FROM cards WHERE group_id IS NOT NULL)").fetchone()["c"]
+        self.assertEqual(orphan, 0)
+        self.assertTrue(groups1)
+
+    def test_two_stores_share_one_file(self):
+        """Два процесса (по серверу на сессию) работают с одной базой: запись одного видна другому."""
+        other = cards.Store(self.t / "c.sqlite", project=self.st.project)
+        self.st.fact_set("k", "from-first")
+        self.assertIn("k = from-first", other.facts())
+        other.fact_set("k", "from-second")
+        self.assertIn("k = from-second", self.st.facts())
+        other.con.close()
+
+
 class Mcp(unittest.TestCase):
     def test_stdio_roundtrip(self):
         with tempfile.TemporaryDirectory() as d:
@@ -249,6 +410,10 @@ class Mcp(unittest.TestCase):
             lines = [json.loads(x) for x in r.stdout.strip().split("\n")]
             self.assertEqual([x["id"] for x in lines], [1, 2, 3])
             self.assertEqual({t["name"] for t in lines[1]["result"]["tools"]}, {s["name"] for s in cards.TOOL_SPECS})
+            self.assertIn("canon", {t["name"] for t in lines[1]["result"]["tools"]})
+            self.assertIn("fact_promote", {t["name"] for t in lines[1]["result"]["tools"]})
+            self.assertIn("fact_set", lines[0]["result"]["instructions"])                  # правила памяти едут вместе с сервером
+            self.assertEqual(lines[0]["result"]["serverInfo"]["name"], "cards")
             self.assertIn("k = v", lines[2]["result"]["content"][0]["text"])
 
 

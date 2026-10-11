@@ -17,13 +17,18 @@
     python3 cards.py --db cards.sqlite patch f012 --version 1 --old "…" --new "…"
     python3 cards.py --db cards.sqlite fact budget "96000 EUR" --source "реплика 8"
     python3 cards.py --db cards.sqlite facts | history budget
-    python3 cards.py --db cards.sqlite serve        # MCP по stdio: инструменты для Claude Code
+    python3 cards.py --db cards.sqlite refresh      # обновить индекс по project.json (код, стол, чаты)
+    python3 cards.py --db cards.sqlite canon        # канон стола: принятые человеком факты и решения (только чтение)
+    python3 cards.py --db cards.sqlite promote budget [--apply]   # предложить факт журнала столу (raw; принимает человек)
+    python3 cards.py --db cards.sqlite handoff      # стартовая справка новой сессии
+    python3 cards.py --db cards.sqlite serve --refresh   # MCP по stdio: инструменты для Claude Code
 """
 from __future__ import annotations
 
 import argparse
 import ast
 import fnmatch
+import glob
 import hashlib
 import json
 import math
@@ -78,6 +83,53 @@ CREATE TABLE IF NOT EXISTS facts (
 );
 CREATE INDEX IF NOT EXISTS idx_facts_key ON facts(key_norm, status);
 """
+
+
+# ---------------------------------------------------------------- настройки проекта
+
+PROJECT_DEFAULT = {
+    # что индексировать как код/документы (пути от папки конфига); чаты индексируются отдельно, поэтому attachments/ из кода исключён
+    "code": {"root": "../..", "exclude": ["attachments/*", ".grok/*", "public/__grok/*", "server/*", "scripts/grok-pwa*",
+                                          "*package-lock.json", "engine/cards/*"]},
+    "chats": ["../../attachments/*.md"],                 # экспорты ChatGPT в markdown
+    "pm_dir": "..",                                      # где лежат pm.py и project-store.sqlite («стол»)
+    # куда падает факт журнала при promote (всегда со статусом raw). mcp_apply=false: агент через MCP может только посмотреть, что было бы записано;
+    # писать в базу стола (она лежит в репозитории) человек разрешает здесь или делает сам: cards.py promote КЛЮЧ --apply
+    "promote": {"cluster": "C", "layer": 1, "type": "fact", "mcp_apply": False},
+    "canon_types": ["fact", "decision"],                 # какие принятые объекты стола показывать как канон
+}
+
+
+def load_project(path=None) -> dict:
+    """Настройки проекта: engine/cards/project.json поверх значений по умолчанию. Пути в нём считаются от папки конфига."""
+    cfg = json.loads(json.dumps(PROJECT_DEFAULT))
+    p = Path(path) if path else HERE / "project.json"
+    base = HERE
+    if p.exists():
+        user = json.loads(p.read_text(encoding="utf-8"))
+        for k, v in user.items():
+            if isinstance(v, dict) and isinstance(cfg.get(k), dict):
+                cfg[k].update(v)
+            else:
+                cfg[k] = v
+        base = p.resolve().parent
+    cfg["_base"] = str(base)
+    return cfg
+
+
+def project_path(proj: dict, rel: str) -> Path:
+    return (Path(proj["_base"]) / rel).resolve()
+
+
+# Правила памяти: едут и в instructions MCP-сервера, и в справку новой сессии (handoff)
+PROTOCOL = """This project keeps its memory outside the conversation. Look things up instead of re-reading them.
+- Material (code, docs, chat exports): catalog() -> find(query) -> open(id, section|lines). Cite card ids and line numbers.
+- Conversation facts: when the user states or corrects a datum, or you produce something that may be asked about later (names, numbers,
+  decisions), call fact_set(key, value, source) with a short stable key (budget, deadline, lead.name). A correction overwrites the same
+  key and history is kept (fact_history). Read the current state with facts().
+- The desk's canon (facts and decisions a human accepted): canon(). It outranks the ledger. To propose a ledger fact to the desk call
+  fact_promote(key, apply=true): it creates a RAW object; only a human accepts it (ACCEPT).
+- Edits: patch(id, version, old, new); on STALE re-apply with the version shown. Chat cards are read-only history."""
 
 
 # ---------------------------------------------------------------- мелочи
@@ -474,16 +526,24 @@ def segment_vectors(vecs: list, target: int | None = None, k: int = 2, w: int = 
 # ---------------------------------------------------------------- хранилище
 
 class Store:
-    def __init__(self, db_path=DEFAULT_DB, root=None):
+    def __init__(self, db_path=DEFAULT_DB, root=None, project=None):
         self.path = Path(db_path)
         self.path.parent.mkdir(parents=True, exist_ok=True)
-        self.con = sqlite3.connect(self.path)
+        self.con = sqlite3.connect(self.path, timeout=30)
         self.con.row_factory = sqlite3.Row
+        try:
+            self.con.execute("PRAGMA busy_timeout = 30000")
+            self.con.execute("PRAGMA journal_mode = WAL")        # по серверу на сессию: несколько процессов читают и пишут одну базу
+        except sqlite3.DatabaseError:
+            pass
         try:
             self.con.executescript(SCHEMA)
         except sqlite3.OperationalError as e:  # нет FTS5 в этой сборке SQLite
             raise SystemExit(f"нужен SQLite с FTS5: {e}")
+        if "pm_id" not in {r["name"] for r in self.con.execute("PRAGMA table_info(facts)")}:
+            self.con.execute("ALTER TABLE facts ADD COLUMN pm_id TEXT")     # id объекта стола, в который факт предложили (promote)
         self._root_override = Path(root).resolve() if root else None
+        self.project = project or load_project()
 
     # --- служебное
     def get_meta(self, key, default=None):
@@ -520,11 +580,14 @@ class Store:
     def _card(self, cid: str):
         return self.con.execute("SELECT * FROM cards WHERE id=?", (cid,)).fetchone()
 
-    def _reindex_chunks(self, cid: str, title: str, text: str):
+    def _drop_chunks(self, cid: str):
         ids = [r["id"] for r in self.con.execute("SELECT id FROM chunks WHERE card_id=?", (cid,))]
         if ids:
             self.con.executemany("DELETE FROM chunks_fts WHERE rowid=?", [(i,) for i in ids])
             self.con.execute("DELETE FROM chunks WHERE card_id=?", (cid,))
+
+    def _reindex_chunks(self, cid: str, title: str, text: str):
+        self._drop_chunks(cid)
         for a, b, chunk in make_chunks(text):
             cur = self.con.execute("INSERT INTO chunks(card_id,start_line,end_line) VALUES(?,?,?)", (cid, a, b))
             extra = split_idents(chunk)
@@ -635,6 +698,8 @@ class Store:
             raise SystemExit("в файле нет заголовков «# you asked»: ожидается экспорт ChatGPT в markdown")
         bounds = starts + [len(lines)]
         made, vecs, texts = [], [], []
+        mine = (path.name + "#", len(path.name) + 1)                   # карточки этого файла: src = «имя#номер»
+        old_groups = {r[0] for r in self.con.execute("SELECT DISTINCT group_id FROM cards WHERE kind='turn' AND substr(src,1,?)=?", (mine[1], mine[0])) if r[0]}
         for k, a in enumerate(starts):
             block = lines[a:bounds[k + 1]]
             while block and not block[-1].strip():
@@ -695,7 +760,7 @@ class Store:
         surface: dict = defaultdict(Counter)
         for w in _WORD.findall(text):
             surface[term_of(w)][w.lower().replace("ё", "е")] += 1
-        self.con.execute("DELETE FROM groups WHERE kind='thread'")
+        new_gids = set()
         for gi, (a, b) in enumerate(seg_pairs):
             sc = {t: c * (math.log(G / gdf[t]) if G > 1 else 1.0) for t, c in seg_terms[gi].items()
                   if len(t) >= 4 and seg_df[gi][t] >= min(2, b - a) and (G == 1 or gdf[t] <= max(1, int(0.6 * G)))}
@@ -707,18 +772,32 @@ class Store:
             title = clip(", ".join(words) or f"turns {a + 1}-{b}", 70)
             summary = f"{b - a} turns {made[a]}..{made[b - 1]}, {t0[5:]} → {t1[5:]} | starts: {clip(hint, 80)}"
             gid = self._group_for("thread", title, gi, summary)
+            new_gids.add(gid)
             self.con.executemany("UPDATE cards SET group_id=? WHERE id=?", [(gid, cid) for cid in made[a:b]])
+        # реплики, которых в файле больше нет, и ветки, в которых не осталось карточек
+        for r in self.con.execute("SELECT id FROM cards WHERE kind='turn' AND substr(src,1,?)=?", (mine[1], mine[0])).fetchall():
+            if r["id"] not in made:
+                self._drop_chunks(r["id"])
+                self.con.execute("DELETE FROM cards WHERE id=?", (r["id"],))
+        for g in old_groups - new_gids:
+            if not self.con.execute("SELECT 1 FROM cards WHERE group_id=? LIMIT 1", (g,)).fetchone():
+                self.con.execute("DELETE FROM groups WHERE id=?", (g,))
         self.set_meta("chat_file", str(path))
         self.con.commit()
         return dict(turns=n, groups=len(edges) - 1, tokens=sum(self._card(c)["ntok"] for c in made))
 
     # --- индексация: объекты L3 комплекта (engine/project-store.sqlite), только чтение
     def index_pm(self, pm_db) -> dict:
-        src = sqlite3.connect(f"file:{pm_db}?mode=ro", uri=True)
+        src = sqlite3.connect(Path(pm_db).resolve().as_uri() + "?mode=ro", uri=True)
         src.row_factory = sqlite3.Row
         names = {"A": "A Enbek", "B": "B Technopark", "C": "C OS", "D": "D Foresight"}
         n = 0
-        for i, r in enumerate(src.execute("SELECT * FROM objects ORDER BY cluster, type, id")):
+        try:
+            rows = src.execute("SELECT * FROM objects ORDER BY cluster, type, id").fetchall()
+        finally:
+            src.close()
+        live = {"pm-" + r["id"] for r in rows}
+        for r in rows:
             cid = "pm-" + r["id"]
             body = "\n".join(x for x in (
                 f"{r['title']}", f"[cluster {r['cluster']} · layer {r['layer']} · type {r['type']} · status {r['status']}]",
@@ -732,6 +811,11 @@ class Store:
                  count_lines(body), est_tokens(body), sha1(body), json.dumps(dict(pm_status=r["status"], ro=True), ensure_ascii=False), now()))
             self._reindex_chunks(cid, r["title"], body)
             n += 1
+        # объекты, которых в столе больше нет (после init, например), из картотеки уходят
+        for r in self.con.execute("SELECT id FROM cards WHERE substr(kind,1,3)='pm:'").fetchall():
+            if r["id"] not in live:
+                self._drop_chunks(r["id"])
+                self.con.execute("DELETE FROM cards WHERE id=?", (r["id"],))
         self.con.commit()
         return dict(objects=n)
 
@@ -903,7 +987,7 @@ class Store:
         meta = json.loads(c["meta"])
         outline = json.loads(c["outline"])
         gt = self.con.execute("SELECT title FROM groups WHERE id=?", (c["group_id"],)).fetchone()
-        head = f"{cid} v{c['version']} · {c['title']} · {c['nlines']}L ~{fmt_tok(c['ntok'])} tok" + (f" · {meta['ts']}" if meta.get("ts") else "") + (f" · group {c['group_id']} {gt['title']}" if gt else "")
+        head = f"{cid} v{c['version']} · {c['title']} · {c['nlines']}L ~{fmt_tok(c['ntok'])} tok" + (f" · {meta['ts']}" if meta.get("ts") else "") + (f" · {meta['file']}" if meta.get("file") else "") + (f" · group {c['group_id']} {gt['title']}" if gt else "")
         body_lines = split_lines(c["body"])
         a, b = 1, len(body_lines)
         label = ""
@@ -1065,6 +1149,109 @@ class Store:
             return f"no such fact {key!r}"
         return "\n".join(f"v{r['version']} {r['status']:<10} {r['value']}" + (f"  [{r['source']}]" if r["source"] else "") for r in rows)
 
+    # ------------------------------------------------------------ обновление индекса по настройкам проекта
+    def refresh(self) -> dict:
+        """Код — инкрементально (по хэшу), объекты стола — заново, чаты — только если файл изменился (подписи «библиотекаря» не затираются)."""
+        proj = self.project
+        out = {"code": self.index_code(project_path(proj, proj["code"]["root"]), exclude=tuple(proj["code"].get("exclude", ())))}
+        pm_db = self._pm_dir() / "project-store.sqlite"
+        if pm_db.exists():
+            out["pm"] = self.index_pm(pm_db)
+        chats = {}
+        for pat in proj.get("chats", []):
+            for f in sorted(glob.glob(str(Path(proj["_base"]) / pat))):
+                name, h = Path(f).name, hashlib.sha1(Path(f).read_bytes()).hexdigest()
+                if self.get_meta("chat_hash:" + name) == h:
+                    chats[name] = "same"
+                    continue
+                try:
+                    chats[name] = self.index_chat(f)
+                except SystemExit as e:                  # markdown не в формате экспорта ChatGPT
+                    chats[name] = f"skipped: {e}"
+                    continue
+                self.set_meta("chat_hash:" + name, h)
+        out["chats"] = chats
+        self.con.commit()
+        return out
+
+    # ------------------------------------------------------------ мост со столом (pm.py): канон читаем, предложения кладём как raw
+    def _pm_dir(self) -> Path:
+        return project_path(self.project, self.project["pm_dir"])
+
+    def canon(self, types=None, limit: int = 60) -> str:
+        """Принятые человеком (ACCEPT) факты и решения стола. Только чтение: база стола открывается в режиме ro."""
+        db = self._pm_dir() / "project-store.sqlite"
+        if not db.exists():
+            return "ERR no desk store (project-store.sqlite): run `python3 pm.py init` in the engine folder"
+        if isinstance(types, str):
+            types = [t.strip() for t in types.split(",") if t.strip()]
+        types = list(types or self.project.get("canon_types") or ["fact", "decision"])
+        src = sqlite3.connect(db.as_uri() + "?mode=ro", uri=True)
+        src.row_factory = sqlite3.Row
+        try:
+            rows = src.execute("SELECT id, cluster, layer, type, title, body FROM objects WHERE status='canon' AND type IN (%s) "
+                               "ORDER BY cluster, type, id LIMIT ?" % ",".join("?" * len(types)), (*types, limit)).fetchall()
+        finally:
+            src.close()
+        if not rows:
+            return f"(no canon objects of types {', '.join(types)})"
+        out = [f"CANON: {len(rows)} objects accepted in the desk (types {', '.join(types)}). Read-only; it changes only through ACCEPT in the desk."]
+        for r in rows:
+            b = (r["body"] or "").strip().split("\n")[0]
+            out.append(f"{r['id']} [{r['cluster']}/{r['type']}] {r['title']}" + (f" — {clip(b, 100)}" if b else ""))
+        return "\n".join(out)
+
+    def fact_promote(self, key: str, apply: bool = False, accept: bool = False) -> str:
+        """Предложить факт журнала столу: объект со статусом raw, созданный штатной командой `pm.py add` (pm.py не меняем).
+        Принять его (ACCEPT) может только человек; accept=True — для человека в CLI, в MCP-инструмент не выставлен."""
+        kn = " ".join(key.split()).lower()
+        cur = self.con.execute("SELECT * FROM facts WHERE key_norm=? AND status='active'", (kn,)).fetchone()
+        if not cur:
+            return f"ERR no active fact {key!r}"
+        pm_py = self._pm_dir() / "pm.py"
+        if not pm_py.exists():
+            return f"ERR pm.py not found at {pm_py}"
+        pr = self.project.get("promote", {})
+        oid = f"LF-{re.sub(r'[^a-z0-9]+', '-', kn).strip('-') or 'fact'}-v{cur['version']}"
+        title = f"{cur['key']} = {cur['value']}"
+        body = f"ledger fact {cur['key']} v{cur['version']}" + (f"; source: {cur['source']}" if cur["source"] else "") + f"; recorded {cur['ts']}"
+        prev = self.con.execute("SELECT pm_id, version FROM facts WHERE key_norm=? AND pm_id IS NOT NULL AND id<>? ORDER BY version DESC LIMIT 1", (kn, cur["id"])).fetchone()
+        cmd = [sys.executable, str(pm_py), "add", "--id", oid, "--cluster", str(pr.get("cluster", "C")), "--layer", str(pr.get("layer", 1)),
+               "--type", str(pr.get("type", "fact")), "--title", title, "--status", "raw", "--body", body]
+        note = (f"\nNOTE: v{prev['version']} of this key is already in the desk as {prev['pm_id']}. The desk has no 'supersede': TAKE refuses canon objects, "
+                f"so if that one was accepted, decide in the desk which of the two stays.") if prev else ""
+        if cur["pm_id"]:
+            return f"{cur['pm_id']} was already proposed for v{cur['version']}; accept it in the desk: python3 pm.py exec ACCEPT {cur['pm_id']}"
+        if not apply:
+            return (f"DRY RUN, nothing written. Would create RAW object {oid} [{pr.get('cluster', 'C')}/{pr.get('type', 'fact')}] «{title}». "
+                    f"Repeat with apply=true; a human then accepts it: python3 pm.py exec ACCEPT {oid}" + note)
+        r = subprocess.run(cmd, cwd=pm_py.parent, capture_output=True, text=True, encoding="utf-8", timeout=60)
+        if r.returncode != 0:
+            return f"ERR pm.py add failed: {(r.stderr or r.stdout).strip()[:300]}"
+        self.con.execute("UPDATE facts SET pm_id=? WHERE id=?", (oid, cur["id"]))
+        self.con.commit()
+        msg = f"OK {oid} created in the desk as RAW"
+        if accept:
+            r2 = subprocess.run([sys.executable, str(pm_py), "exec", "ACCEPT", oid], cwd=pm_py.parent, capture_output=True, text=True, encoding="utf-8", timeout=60)
+            msg += f"; {(r2.stdout or r2.stderr).strip()}"
+        else:
+            msg += f"; waiting for a human: python3 pm.py exec ACCEPT {oid}"
+        return msg + note
+
+    def handoff(self, budget_tok: int = 4000, catalog: bool = True) -> str:
+        """Стартовая справка новой сессии: правила + канон стола + действующие факты журнала + список групп материала."""
+        head = "MEMORY BRIEF — start of a new session\n" + PROTOCOL
+        canon = self.canon()
+        ledger = "LEDGER (conversation facts, current):\n" + self.facts()
+        groups = self.catalog(level=1) if catalog and self.con.execute("SELECT 1 FROM groups LIMIT 1").fetchone() else ""
+        parts = [head, canon, ledger, ("MATERIAL: " + groups.replace("GROUPS ", "groups ", 1)) if groups else ""]
+        text = "\n\n".join(p for p in parts if p)
+        while est_tokens(text) > budget_tok and groups.count("\n") > 3:      # не влезаем: режем список групп с конца
+            groups = "\n".join(groups.split("\n")[:-1])
+            parts[3] = "MATERIAL: " + groups.replace("GROUPS ", "groups ", 1) + "\n(list shortened; catalog() shows the rest)"
+            text = "\n\n".join(p for p in parts if p)
+        return text
+
     def stats(self) -> str:
         q = lambda s: self.con.execute(s).fetchone()[0]  # noqa: E731
         return (f"cards {q('SELECT COUNT(*) FROM cards WHERE status=\"active\"')} · groups {q('SELECT COUNT(*) FROM groups')} · "
@@ -1101,6 +1288,14 @@ TOOL_SPECS = [
                      "supersedes the old one; history is kept. Record every fact the user states or corrects, and anything you produced "
                      "that may be asked about later.",
          props={"key": {"type": "string"}, "value": {"type": "string"}, "source": {"type": "string"}}, required=["key", "value"]),
+    dict(name="canon",
+         description="The desk's canon: facts and decisions that a human accepted (ACCEPT) in the project's desk store. Read-only. "
+                     "It outranks the ledger when they disagree.",
+         props={"types": {"type": "string", "description": "comma-separated object types, default fact,decision"}}, required=[]),
+    dict(name="fact_promote",
+         description="Propose a ledger fact to the desk: creates a RAW object, never canon; only a human accepts it. "
+                     "Without apply=true (or when the project has switched writing off) it just shows what would be written.",
+         props={"key": {"type": "string"}, "apply": {"type": "boolean"}}, required=["key"]),
     dict(name="facts", description="List the current (active) facts, optionally only keys starting with a prefix.",
          props={"prefix": {"type": "string"}}, required=[]),
     dict(name="fact_history", description="All versions of one fact key, oldest first (use for 'what was it before' and 'how many times did it change').",
@@ -1123,13 +1318,29 @@ def call_tool(store: Store, name: str, args: dict) -> str:
         return store.fact_set(a.get("key", ""), a.get("value", ""), a.get("source", ""))
     if name == "facts":
         return store.facts(a.get("prefix", ""))
+    if name == "canon":
+        return store.canon(types=a.get("types") or None)
+    if name == "fact_promote":
+        want = bool(a.get("apply"))
+        allowed = bool(store.project.get("promote", {}).get("mcp_apply"))
+        out = store.fact_promote(a.get("key", ""), apply=want and allowed)
+        if want and not allowed:
+            out += ("\nNOTE: writing to the desk is switched off for agents in this project (project.json: promote.mcp_apply=false). "
+                    "A human can run: python3 engine/cards/cards.py promote " + a.get("key", "KEY") + " --apply")
+        return out
     if name == "fact_history":
         return store.fact_history(a.get("key", ""))
     return f"ERR unknown tool {name!r}"
 
 
-def serve_mcp(store: Store, names=None) -> None:
-    """Минимальный MCP-сервер по stdio (JSON-RPC, по строке на сообщение): подключается к Claude Code."""
+def serve_mcp(store: Store, names=None, refresh: bool = False) -> None:
+    """Минимальный MCP-сервер по stdio (JSON-RPC, по строке на сообщение): подключается к Claude Code.
+    В stdout только протокол; диагностика — в stderr. Правила памяти едут в поле instructions."""
+    if refresh:
+        try:
+            print("cards: refresh", json.dumps(store.refresh(), ensure_ascii=False), file=sys.stderr)
+        except Exception as e:  # noqa: BLE001  сервер должен подняться, даже если индекс не обновился
+            print(f"cards: refresh failed: {type(e).__name__}: {e}", file=sys.stderr)
     specs = [s for s in TOOL_SPECS if not names or s["name"] in names]
     for line in sys.stdin:
         line = line.strip()
@@ -1144,7 +1355,7 @@ def serve_mcp(store: Store, names=None) -> None:
             continue
         if method == "initialize":
             res = {"protocolVersion": (msg.get("params") or {}).get("protocolVersion", "2024-11-05"),
-                   "capabilities": {"tools": {}}, "serverInfo": {"name": "cards", "version": "0.1"}}
+                   "capabilities": {"tools": {}}, "serverInfo": {"name": "cards", "version": "0.2"}, "instructions": PROTOCOL}
         elif method == "tools/list":
             res = {"tools": [{"name": s["name"], "description": s["description"],
                               "inputSchema": {"type": "object", "properties": s["props"], "required": s["required"]}} for s in specs]}
@@ -1171,6 +1382,7 @@ def main(argv=None) -> None:
     ap = argparse.ArgumentParser(description="Картотека: обзор-каталог, карточки по id, журнал фактов (прототип)")
     ap.add_argument("--db", default=str(DEFAULT_DB), help="файл SQLite (по умолчанию $CARDS_DB или engine/cards/cards.sqlite)")
     ap.add_argument("--root", default=None, help="корень файлов для правок (по умолчанию тот, что запомнен при индексации)")
+    ap.add_argument("--config", default=None, help="настройки проекта (по умолчанию engine/cards/project.json)")
     sub = ap.add_subparsers(dest="cmd", required=True)
 
     p = sub.add_parser("index-code", help="проиндексировать файлы репозитория как карточки")
@@ -1197,10 +1409,17 @@ def main(argv=None) -> None:
     p = sub.add_parser("facts"); p.add_argument("prefix", nargs="?", default="")
     p = sub.add_parser("fact-history"); p.add_argument("key")
     sub.add_parser("stats")
-    sub.add_parser("serve", help="MCP по stdio")
+    sub.add_parser("refresh", help="обновить индекс по project.json: код, объекты стола, изменившиеся экспорты чата")
+    p = sub.add_parser("canon", help="принятые человеком факты и решения стола (только чтение)"); p.add_argument("--types", default=None, help="типы через запятую")
+    p = sub.add_parser("promote", help="предложить факт журнала столу: объект raw через `pm.py add`")
+    p.add_argument("key"); p.add_argument("--apply", action="store_true", help="выполнить (по умолчанию пробный запуск)")
+    p.add_argument("--accept", action="store_true", help="сразу принять (ACCEPT) — решение человека, не агента")
+    p = sub.add_parser("handoff", help="стартовая справка новой сессии: правила, канон, факты, группы")
+    p.add_argument("--budget", type=int, default=4000, help="потолок в токенах (оценка)"); p.add_argument("--no-catalog", action="store_true")
+    p = sub.add_parser("serve", help="MCP по stdio"); p.add_argument("--refresh", action="store_true", help="перед запуском обновить индекс")
     ns = ap.parse_args(argv)
 
-    st = Store(ns.db, root=ns.root)
+    st = Store(ns.db, root=ns.root, project=load_project(ns.config))
     c = ns.cmd
     if c == "index-code":
         files = None
@@ -1239,8 +1458,16 @@ def main(argv=None) -> None:
         print(st.fact_history(ns.key))
     elif c == "stats":
         print(st.stats())
+    elif c == "refresh":
+        print(json.dumps(st.refresh(), ensure_ascii=False))
+    elif c == "canon":
+        print(st.canon(types=ns.types))
+    elif c == "promote":
+        print(st.fact_promote(ns.key, apply=ns.apply, accept=ns.accept))
+    elif c == "handoff":
+        print(st.handoff(budget_tok=ns.budget, catalog=not ns.no_catalog))
     elif c == "serve":
-        serve_mcp(st)
+        serve_mcp(st, refresh=ns.refresh)
 
 
 if __name__ == "__main__":

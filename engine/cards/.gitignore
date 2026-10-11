@@ -1,4 +1,6 @@
 __pycache__/
 *.sqlite
 *.sqlite-journal
+*.sqlite-wal
+*.sqlite-shm
 eval/out/
