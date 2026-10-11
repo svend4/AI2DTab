@@ -1,0 +1,325 @@
+"""Тесты стола (pm.py): глагол SUPERSEDE (замена принятого, защита от опечатки, откат UNDO) и его соседи. Без сети; настоящая база стола не
+трогается: каждый тест строит свой стол во временной папке.
+
+    python3 -m unittest engine/test_pm.py -v
+    PM_UNDER_TEST=/путь/к/копии/pm.py python3 -m unittest engine/test_pm.py     # проверить копию (рядом должны лежать schema.sql и seed.sql)
+"""
+from __future__ import annotations
+
+import os
+import shutil
+import sqlite3
+import subprocess
+import sys
+import tempfile
+import unittest
+from pathlib import Path
+
+PM_SRC = Path(os.environ.get("PM_UNDER_TEST") or Path(__file__).resolve().parent / "pm.py").resolve()
+
+
+class Desk(unittest.TestCase):
+    """Стол из семени (seed.sql) во временной папке."""
+
+    def setUp(self):
+        self.tmp = tempfile.TemporaryDirectory()
+        self.dir = Path(self.tmp.name)
+        for n in ("pm.py", "schema.sql", "seed.sql"):
+            shutil.copy(PM_SRC.parent / n if n != "pm.py" else PM_SRC, self.dir / n)
+        self.run_pm("init", plain=True)
+
+    def tearDown(self):
+        self.tmp.cleanup()
+
+    # --- помощники
+    def run_pm(self, *args, plain=False):
+        argv = [sys.executable, str(self.dir / "pm.py")] + ([a for a in args] if plain else ["exec", *args])
+        return subprocess.run(argv, cwd=self.dir, capture_output=True, text=True, encoding="utf-8", timeout=60)
+
+    def out(self, *args):
+        r = self.run_pm(*args)
+        self.assertEqual(r.returncode, 0, r.stderr)
+        return r.stdout
+
+    def add(self, oid, typ="decision", status="raw", title=None, cluster="A"):
+        r = subprocess.run([sys.executable, str(self.dir / "pm.py"), "add", "--id", oid, "--cluster", cluster, "--layer", "1", "--type", typ,
+                            "--title", title or f"объект {oid}", "--status", status, "--body", "тест"],
+                           cwd=self.dir, capture_output=True, text=True, encoding="utf-8", timeout=60)
+        self.assertEqual(r.returncode, 0, r.stderr)
+
+    def plain(self, *args):
+        """Верхнеуровневые команды pm.py (check, status…), без «exec»."""
+        return subprocess.run([sys.executable, str(self.dir / "pm.py"), *args], cwd=self.dir, capture_output=True, text=True,
+                              encoding="utf-8", timeout=60)
+
+    def db(self):
+        con = sqlite3.connect(self.dir / "project-store.sqlite")
+        con.row_factory = sqlite3.Row
+        return con
+
+    def status(self, oid):
+        con = self.db()
+        try:
+            r = con.execute("SELECT status FROM objects WHERE id=?", (oid,)).fetchone()
+            return r["status"] if r else None
+        finally:
+            con.close()
+
+    def snapshot(self):
+        """Всё, что может изменить SUPERSEDE: статусы объектов, связи, число событий."""
+        con = self.db()
+        try:
+            return ([tuple(r) for r in con.execute("SELECT id, status FROM objects ORDER BY id")],
+                    [tuple(r) for r in con.execute("SELECT from_id, to_id, rel FROM links ORDER BY 1,2,3")],
+                    con.execute("SELECT COUNT(*) FROM events").fetchone()[0])
+        finally:
+            con.close()
+
+    def links(self, rel="supersedes"):
+        con = self.db()
+        try:
+            return [tuple(r) for r in con.execute("SELECT from_id, to_id, note FROM links WHERE rel=? ORDER BY 1,2", (rel,))]
+        finally:
+            con.close()
+
+    def events(self, action):
+        con = self.db()
+        try:
+            return [tuple(r) for r in con.execute("SELECT object_id, detail FROM events WHERE action=? ORDER BY id", (action,))]
+        finally:
+            con.close()
+
+
+NEWER = "датой выплаты считать 01.03.2027"       # заменитель для D001 («датой выплаты считать 01.01.2027»): тот же тип, общие слова
+
+
+class Supersede(Desk):
+    def test_replace_canon_by_raw_accepts_new_and_retires_old(self):
+        self.assertEqual(self.status("D001"), "canon")
+        self.add("D001B", title=NEWER)
+        out = self.out("SUPERSEDE", "D001", "BY", "D001B", "пришло", "письмо", "Минтруда")
+        self.assertTrue(out.startswith("SUPERSEDE D001 by D001B; D001B принят"), out)
+        self.assertIn("было:  D001  датой выплаты считать 01.01.2027", out)                 # заголовки обоих на виду: опечатку видно сразу
+        self.assertIn(f"стало: D001B  {NEWER}", out)
+        self.assertEqual((self.status("D001"), self.status("D001B")), ("superseded", "canon"))
+        self.assertEqual(self.links(), [("D001B", "D001", "пришло письмо Минтруда")])      # новый -supersedes-> старый, причина в примечании
+        self.assertEqual(self.events("SUPERSEDE"), [("D001", "by D001B: пришло письмо Минтруда")])
+        self.assertEqual(self.events("ACCEPT")[-1][0], "D001B")                             # принятие нового записано отдельным событием
+        canon = self.out("CANON")
+        self.assertIn("D001B", canon)
+        self.assertNotIn("D001\t", canon)                                                   # в каноне старого больше нет
+        self.assertIn("D001", self.out("SET", "SUPERSEDED"))                                # а в множестве замещённых он есть
+        self.assertIn("D001B -supersedes-> D001", self.out("PACKET", "D001"))               # цепочка видна обычным PACKET
+
+    def test_two_argument_form_and_canon_by_canon(self):
+        self.add("P1", typ="fact", status="canon", title="срок сдачи отчёта 10 марта")
+        self.add("P2", typ="fact", status="canon", title="срок сдачи отчёта 15 марта")
+        before_accepts = len(self.events("ACCEPT"))
+        out = self.out("SUPERSEDE", "P1", "P2")                                              # BY можно опустить; оба уже канон
+        self.assertEqual(out.splitlines()[0], "SUPERSEDE P1 by P2")
+        self.assertEqual((self.status("P1"), self.status("P2")), ("superseded", "canon"))
+        self.assertEqual(len(self.events("ACCEPT")), before_accepts)                         # P2 уже был каноном: лишнего ACCEPT нет
+
+    def test_refusals_change_nothing(self):
+        self.add("RAWOLD", status="raw")
+        self.add("REJ", status="rejected")
+        self.add("SESS", typ="session", status="raw")
+        self.add("NEW1", title=NEWER)
+        self.out("SUPERSEDE", "D001", "BY", "NEW1")                                          # D001 заменён, NEW1 стал каноном
+        cases = [
+            (("SUPERSEDE", "RAWOLD", "BY", "NEW1"), "REFUSE RAWOLD status=raw"),            # заменяют только канон
+            (("SUPERSEDE", "REJ", "BY", "NEW1"), "REFUSE REJ status=rejected"),
+            (("SUPERSEDE", "D001", "BY", "D001"), "REFUSE D001: нельзя заменить самим собой"),
+            (("SUPERSEDE", "D003", "BY", "REJ"), "REFUSE REJ status=rejected"),              # снятое заменителем быть не может
+            (("SUPERSEDE", "D003", "BY", "SESS"), "REFUSE SESS type=session"),
+            (("SUPERSEDE", "D003", "BY", "D001"), "REFUSE D001 status=superseded"),          # уже замещённое тоже
+            (("SUPERSEDE", "D001", "BY", "F002"), "REFUSE D001 уже заменён объектом NEW1"),
+        ]
+        for args, expect in cases:
+            snap = self.snapshot()
+            out = self.out(*args)
+            self.assertIn(expect, out, (args, out))
+            self.assertTrue(out.startswith("REFUSE"), out)
+            self.assertEqual(self.snapshot(), snap, f"{args} что-то изменил")
+
+    def test_rerun_is_idempotent(self):
+        self.add("D001B", title=NEWER)
+        self.out("SUPERSEDE", "D001", "BY", "D001B")
+        snap = self.snapshot()
+        out = self.out("SUPERSEDE", "D001", "BY", "D001B")
+        self.assertIn("skip D001 уже заменён объектом D001B", out)
+        self.assertEqual(self.snapshot(), snap)
+
+    def test_take_and_accept_cannot_bring_a_replaced_object_back(self):
+        self.add("D001B", title=NEWER)
+        self.out("SUPERSEDE", "D001", "BY", "D001B")
+        self.assertIn("REFUSE D001 superseded", self.out("TAKE", "D001"))
+        self.assertIn("REFUSE D001 superseded", self.out("ACCEPT", "D001"))
+        self.assertIn("REFUSE D001 superseded", self.out("TAKE", "SUPERSEDED"))              # и через множество
+        self.out("REPAIR")
+        self.assertEqual(self.status("D001"), "superseded")
+        self.assertEqual(self.status("D001B"), "canon")
+
+    def test_usage_and_unknown_ids(self):
+        for args, text in ((("SUPERSEDE",), "SUPERSEDE старый_id"), (("SUPERSEDE", "D001"), "SUPERSEDE старый_id"),
+                           (("SUPERSEDE", "D001", "BY"), "SUPERSEDE старый_id"), (("SUPERSEDE", "NOPE", "BY", "F001"), "нет NOPE"),
+                           (("SUPERSEDE", "D001", "BY", "NOPE"), "нет NOPE"), (("SUPERSEDE", "NOPE", "UNDO"), "нет NOPE")):
+            snap = self.snapshot()
+            r = self.run_pm(*args)
+            self.assertNotEqual(r.returncode, 0, args)
+            self.assertIn(text, r.stderr, (args, r.stderr))
+            self.assertEqual(self.snapshot(), snap)
+        self.assertIn("UNDO", self.run_pm("SUPERSEDE").stderr)                               # справка называет и откат
+
+    def test_check_flags_a_replaced_object_without_a_live_replacement(self):
+        self.add("D001B", title=NEWER)
+        self.out("SUPERSEDE", "D001", "BY", "D001B")
+        self.assertNotIn("заменён, но действующего заместителя нет", self.plain("check").stdout)
+        con = self.db()
+        con.execute("UPDATE objects SET status='superseded' WHERE id='F003'")               # заменён «руками», связи нет
+        con.commit()
+        con.close()
+        r = self.plain("check")
+        self.assertIn("F003 заменён, но действующего заместителя нет", r.stdout)
+        self.assertNotIn("D001 заменён", r.stdout)
+
+    def test_failure_in_the_middle_rolls_everything_back(self):
+        self.add("D001B", title=NEWER)
+        con = self.db()
+        con.execute("CREATE TRIGGER boom BEFORE INSERT ON links WHEN NEW.rel='supersedes' BEGIN SELECT RAISE(ABORT, 'boom'); END")
+        con.commit()
+        con.close()
+        snap = self.snapshot()
+        r = self.run_pm("SUPERSEDE", "D001", "BY", "D001B")
+        self.assertNotEqual(r.returncode, 0)
+        self.assertIn("boom", r.stderr)
+        self.assertEqual(self.snapshot(), snap)                                              # D001 всё ещё канон, D001B всё ещё raw, событий нет
+
+    def test_status_and_instruments_know_the_new_status(self):
+        self.add("D001B", title=NEWER)
+        self.out("SUPERSEDE", "D001", "BY", "D001B")
+        self.assertIn("superseded", self.plain("status").stdout)
+        self.assertIn("INSTR charge=", self.out("INSTR"))
+        self.assertIn("SUPERSEDE", self.run_pm("NOPE").stderr)                               # новый глагол есть в алфавите
+
+
+class SupersedeGuard(Desk):
+    """Опечатка в id не должна молча снимать с канона постороннее решение."""
+
+    def test_unrelated_pair_is_refused_and_wire_overrides_it(self):
+        self.add("D001B", title=NEWER)
+        snap = self.snapshot()
+        out = self.out("SUPERSEDE", "D002", "BY", "D001B")                                   # D002 «ИИ не заменяет карьерные центры» — не про выплату
+        self.assertTrue(out.startswith("REFUSE D001B не похож на замену D002"), out)
+        self.assertIn("WIRE D001B D002 related", out)                                        # отказ сам подсказывает, как подтвердить намерение
+        self.assertEqual(self.snapshot(), snap)
+        self.out("WIRE", "D001B", "D002", "related")                                          # человек подтвердил связь
+        out = self.out("SUPERSEDE", "D002", "BY", "D001B")
+        self.assertTrue(out.startswith("SUPERSEDE D002 by D001B"), out)
+        self.assertEqual((self.status("D002"), self.status("D001B")), ("superseded", "canon"))
+
+    def test_a_different_type_needs_a_link(self):
+        self.add("DIFFTYPE", typ="fact", title=NEWER)                                         # те же слова, но тип другой и связи нет
+        out = self.out("SUPERSEDE", "D001", "BY", "DIFFTYPE")
+        self.assertTrue(out.startswith("REFUSE DIFFTYPE не похож на замену D001"), out)
+        # связь любого рода снимает вопрос: в семени уже есть D001 -cites-> F002, а тип у F002 другой (decision → fact)
+        out = self.out("SUPERSEDE", "D001", "BY", "F002")
+        self.assertTrue(out.startswith("SUPERSEDE D001 by F002 (тип decision → fact)"), out)
+
+    def test_wire_in_either_direction_counts(self):
+        self.add("W1", typ="fact", title="совсем другое")
+        self.out("WIRE", "D001", "W1", "related")                                             # старый → новый
+        out = self.out("SUPERSEDE", "D001", "BY", "W1")
+        self.assertTrue(out.startswith("SUPERSEDE D001 by W1"), out)
+
+
+class SupersedeUndo(Desk):
+    def replace_d001(self):
+        self.add("D001B", title=NEWER)
+        return self.out("SUPERSEDE", "D001", "BY", "D001B", "письмо")
+
+    def test_undo_restores_the_old_and_returns_the_accepted_replacement(self):
+        self.replace_d001()
+        out = self.out("SUPERSEDE", "D001", "UNDO", "письмо", "оказалось", "черновиком")
+        self.assertTrue(out.startswith("UNSUPERSEDE D001: снова canon; D001B → raw"), out)
+        self.assertIn("вернулось: D001  датой выплаты считать 01.01.2027", out)
+        self.assertIn(f"ушло:      D001B  {NEWER}", out)
+        self.assertEqual((self.status("D001"), self.status("D001B")), ("canon", "raw"))
+        self.assertEqual(self.links(), [])                                                    # связь снята
+        self.assertEqual(self.events("UNSUPERSEDE"), [("D001", "by D001B; D001B → raw: письмо оказалось черновиком")])
+        self.assertEqual(self.events("SUPERSEDE")[0][0], "D001")                              # журнал ничего не стирает: прежняя запись на месте
+        canon = self.out("CANON")
+        self.assertIn("D001\t", canon)
+        self.assertNotIn("D001B", canon)
+        self.assertNotIn("заменён, но", self.plain("check").stdout)
+
+    def test_undo_keeps_a_replacement_that_was_canon_before(self):
+        self.add("P1", typ="fact", status="canon", title="срок сдачи отчёта 10 марта")
+        self.add("P2", typ="fact", status="canon", title="срок сдачи отчёта 15 марта")
+        self.out("SUPERSEDE", "P1", "P2")
+        out = self.out("SUPERSEDE", "P1", "UNDO")
+        self.assertTrue(out.startswith("UNSUPERSEDE P1: снова canon; P2 остаётся как был (canon)"), out)
+        self.assertEqual((self.status("P1"), self.status("P2")), ("canon", "canon"))          # принимать P2 замена не принимала — и не снимает
+
+    def test_undo_does_not_demote_a_replacement_accepted_by_hand_in_between(self):
+        self.replace_d001()
+        self.out("SUPERSEDE", "D001", "UNDO")                                                 # D001B снова raw
+        self.out("ACCEPT", "D001B")                                                           # человек принял его сам
+        self.out("SUPERSEDE", "D001", "BY", "D001B")                                          # заместитель уже канон: принимать нечего
+        self.out("SUPERSEDE", "D001", "UNDO")
+        self.assertEqual((self.status("D001"), self.status("D001B")), ("canon", "canon"))     # принятое вручную откат не снимает
+
+    def test_undo_goes_from_the_end_of_a_chain(self):
+        self.replace_d001()
+        self.add("D001C", title="датой выплаты считать 01.04.2027")
+        self.out("SUPERSEDE", "D001B", "BY", "D001C")
+        self.assertEqual([self.status(x) for x in ("D001", "D001B", "D001C")], ["superseded", "superseded", "canon"])
+        snap = self.snapshot()
+        out = self.out("SUPERSEDE", "D001", "UNDO")                                           # середину цепочки не вынуть
+        self.assertTrue(out.startswith("REFUSE D001: его заместитель D001B сам заменён, сначала SUPERSEDE D001B UNDO"), out)
+        self.assertEqual(self.snapshot(), snap)
+        self.out("SUPERSEDE", "D001B", "UNDO")
+        self.assertEqual([self.status(x) for x in ("D001", "D001B", "D001C")], ["superseded", "canon", "raw"])
+        self.out("SUPERSEDE", "D001", "UNDO")
+        self.assertEqual([self.status(x) for x in ("D001", "D001B", "D001C")], ["canon", "raw", "raw"])
+        self.assertEqual(self.links(), [])
+
+    def test_undo_refusals_and_repeat_change_nothing(self):
+        self.add("RAW1")
+        self.replace_d001()
+        con = self.db()
+        con.execute("UPDATE objects SET status='superseded' WHERE id='F003'")                 # заменён «руками», связи supersedes нет
+        con.commit()
+        con.close()
+        self.out("SUPERSEDE", "D001", "UNDO")
+        for args, expect in ((("SUPERSEDE", "D001", "UNDO"), "skip D001 не заменён"),        # повтор — не ошибка и не действие
+                             (("SUPERSEDE", "D002", "UNDO"), "skip D002 не заменён"),
+                             (("SUPERSEDE", "RAW1", "UNDO"), "REFUSE RAW1 status=raw"),
+                             (("SUPERSEDE", "F003", "UNDO"), "REFUSE F003 помечен замещённым, но связи supersedes нет")):
+            snap = self.snapshot()
+            out = self.out(*args)
+            self.assertIn(expect, out, (args, out))
+            self.assertEqual(self.snapshot(), snap, f"{args} что-то изменил")
+
+    def test_undo_failure_in_the_middle_rolls_everything_back(self):
+        self.replace_d001()
+        con = self.db()
+        con.execute("CREATE TRIGGER boom BEFORE DELETE ON links BEGIN SELECT RAISE(ABORT, 'boom'); END")
+        con.commit()
+        con.close()
+        snap = self.snapshot()
+        r = self.run_pm("SUPERSEDE", "D001", "UNDO")
+        self.assertNotEqual(r.returncode, 0)
+        self.assertIn("boom", r.stderr)
+        self.assertEqual(self.snapshot(), snap)                                               # D001 всё ещё замещён, D001B всё ещё канон
+
+    def test_replace_again_after_undo_works(self):
+        self.replace_d001()
+        self.out("SUPERSEDE", "D001", "UNDO")
+        out = self.out("SUPERSEDE", "D001", "BY", "D001B", "всё-таки")
+        self.assertTrue(out.startswith("SUPERSEDE D001 by D001B; D001B принят"), out)
+        self.assertEqual(self.links(), [("D001B", "D001", "всё-таки")])
+
+
+if __name__ == "__main__":
+    unittest.main()
