@@ -27,6 +27,17 @@ python3 ledger_report.py /tmp/out_ledger --md
 python3 stale.py --work /tmp/work --arm tools|cards --run 1 --out /tmp/out_stale
 ```
 
+# вопросы на синтез и «вики» (раздел 6 в RESULTS.md)
+python3 gen_synth.py --db /tmp/work/chat.sqlite --out data/cand_synth.json   # кандидаты: вопрос, ответ которого лежит в 2–3 разных репликах
+python3 make_sets.py                                                         # отбор (SYNTH, SYNTH_INVALID) -> data/questions_synth.json
+cp /tmp/work/chat.sqlite /tmp/work/chat_notes.sqlite                        # свежая копия: заметки добавляются в неё
+python3 compile_notes.py --db /tmp/work/chat_notes.sqlite --out-dir /tmp/compile_out --wiki-dir /tmp/work/wiki_chat/wiki   # + --lists для второго сжатия
+python3 wiki_coverage.py --db /tmp/work/chat_notes.sqlite                    # какие якоря вопросов вообще попали в заметки
+python3 wiki_faithfulness.py --db /tmp/work/chat_notes.sqlite --claims /tmp/compile_out/claims.json --out /tmp/faith.json
+python3 matrix.py --work /tmp/work --out /tmp/out_synth --workers 4 synth:tools:1 synth:cards-l1:1 synth:cards-grep:1 synth:notes-l1:1 synth:wiki-files:1 synth:wiki-only:1 synth:none:1
+python3 score.py /tmp/out_synth --matrix                                     # таблица и матрица «вопрос × вариант»; вопросы с invalid исключены (--include-invalid вернёт)
+python3 synth_stats.py /tmp/out_synth                                        # доли с интервалами и парное сравнение с tools
+
 | файл | что делает |
 |---|---|
 | `prepare.py` | корпуса и базы (те же 96 файлов, что в прежних опытах; чат — `attachments/ChatGPT_….md`) |
@@ -38,4 +49,9 @@ python3 stale.py --work /tmp/work --arm tools|cards --run 1 --out /tmp/out_stale
 | `label_catalog.py` | модель-«библиотекарь» переписывает подписи каталога |
 | `ledger.py`, `ledger_report.py` | журнал фактов против ленты и сжатия |
 | `stale.py` | правка, когда файл меняют между чтением и записью |
+| `gen_synth.py`, `make_sets.py` | вопросы на синтез: кандидаты по трём отрывкам из разных реплик с якорями, проверенными по тексту; отбор и исключение неоднозначных |
+| `compile_notes.py` | проход «compile»: малая модель выписывает утверждения с дословными цитатами, скрипт находит цитаты в тексте и отбрасывает ненайденные, затем дайджесты реплик и страницы понятий; `--lists` добавляет дословные перечни |
+| `wiki_coverage.py` | какие якоря вопросов попали в заметки (диагностика сжатия, без агента) |
+| `wiki_faithfulness.py` | независимый судья сверяет выборку утверждений и обзоров страниц с их источниками |
+| `synth_stats.py` | доли верных ответов с интервалами Уилсона и парное сравнение по вопросам (бутстрап) |
 | `common.py` | живая сессия Agent SDK, учёт токенов и денег, инструменты картотеки как SDK-инструменты |

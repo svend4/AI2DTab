@@ -13,6 +13,7 @@
     python3 cards.py --db cards.sqlite index-chat attachments/ChatGPT_….md
     python3 cards.py --db cards.sqlite catalog [--group g3]
     python3 cards.py --db cards.sqlite find "слова запроса"
+    python3 cards.py --db cards.sqlite grep "Team Hypothesis" -k 60   # все совпавшие строки (find даёт лучшую строку каждой карточки)
     python3 cards.py --db cards.sqlite open f012 [--section 3 | --lines 100-160]
     python3 cards.py --db cards.sqlite patch f012 --version 1 --old "…" --new "…"
     python3 cards.py --db cards.sqlite fact budget "96000 EUR" --source "реплика 8"
@@ -139,6 +140,7 @@ def project_path(proj: dict, rel: str) -> Path:
 # Правила памяти: едут и в instructions MCP-сервера, и в справку новой сессии (handoff)
 PROTOCOL = """This project keeps its memory outside the conversation. Look things up instead of re-reading them.
 - Material (code, docs, chat exports): catalog() -> find(query) -> open(id, section|lines). Cite card ids and line numbers.
+  grep(pattern) lists every matching line when you need all occurrences (find shows one line per card).
 - Conversation facts: when the user states or corrects a datum, or you produce something that may be asked about later (names, numbers,
   decisions), call fact_set(key, value, source) with a short stable key (budget, deadline, lead.name). A correction overwrites the same
   key and history is kept (fact_history). Read the current state with facts().
@@ -1132,6 +1134,35 @@ class Store:
             lines.append(f"{rank}. {cid} {clip(c['title'], 60)} · {where}{more}\n     L{ln_no}: {text}{decl}")
         return "\n".join(lines)
 
+    def grep(self, pattern: str, k: int = 60, group=None, notes: bool = False) -> str:
+        """Все строки, где сработало регулярное выражение (без учёта регистра): «карточка Lстрока: текст». find отдаёт одну лучшую строку на карточку;
+        когда нужны ВСЕ вхождения (перечень по разным репликам, счёт упоминаний), нужен построчный поиск."""
+        try:
+            rx = re.compile(pattern, re.I)
+        except re.error as e:
+            return f"ERR bad regex: {e}"
+        k = max(1, min(int(k or 60), 200))
+        kinds = ("turn", "file", "note") if notes else ("turn", "file")
+        sql = "SELECT id, kind, body, meta, group_id FROM cards WHERE status='active' AND kind IN (%s)" % ",".join("?" * len(kinds))
+        args: list = list(kinds)
+        if group:
+            sql += " AND (group_id = ? OR group_id IN (SELECT id FROM groups WHERE title = ?))"
+            args += [group, group]
+        total, hit_cards, shown = 0, set(), []
+        for c in self.con.execute(sql + " ORDER BY id", args):
+            ro = json.loads(c["meta"]).get("ro")
+            for i, ln in enumerate(split_lines(c["body"]), 1):
+                t = unquote(ln) if ro else ln
+                if rx.search(t):
+                    total += 1
+                    hit_cards.add(c["id"])
+                    if len(shown) < k:
+                        shown.append(f"{c['id']} L{i}: {clip(t.strip(), 170)}")
+        if not total:
+            return f"no lines match {pattern!r}. Try a shorter pattern, other spelling, or find(query)."
+        head = f"{total} matching lines in {len(hit_cards)} cards" + (f"; the first {k} are shown: raise k (max 200), narrow the pattern or give group=" if total > k else "")
+        return head + "\n" + "\n".join(shown)
+
     # ------------------------------------------------------------ чтение: открыть
     def open(self, cid: str, section: int | None = None, lines: str | None = None, full: bool = False) -> str:
         c = self._card(cid)
@@ -1615,6 +1646,13 @@ TOOL_SPECS = [
                      "Cyrillic words are matched by stem. Quote a phrase to match it exactly.",
          props={"query": {"type": "string"}, "k": {"type": "integer", "description": "max cards, default 8"},
                 "group": {"type": "string", "description": "limit to a group id"}}, required=["query"]),
+    dict(name="grep",
+         description="Line-by-line regex search over all cards (case-insensitive): every matching line as 'card Lline: text', in card order, with the "
+                     "total count. Use it when you need ALL occurrences of a term (to collect a list spread over several exchanges, or to count mentions); "
+                     "find() returns only the best line of each card.",
+         props={"pattern": {"type": "string", "description": "regular expression, e.g. 'Team Hypothesis' or 'NOT_OBSERVED|PARTIAL'"},
+                "k": {"type": "integer", "description": "how many lines to show, default 60, max 200"}, "group": {"type": "string", "description": "limit to a group id"}},
+         required=["pattern"]),
     dict(name="open",
          description="Open a card by id. Small cards print whole. Large cards print an outline (sections with line ranges); then call again "
                      "with section=N or lines='a-b'. Output is capped (~3K tokens); the tail tells how to continue.",
@@ -1669,6 +1707,8 @@ def call_tool(store: Store, name: str, args: dict) -> str:
         return store.catalog(group=a.get("group") or None)
     if name == "find":
         return store.find(a.get("query", ""), k=int(a.get("k") or 8), group=a.get("group") or None)
+    if name == "grep":
+        return store.grep(a.get("pattern", ""), k=int(a.get("k") or 60), group=a.get("group") or None)
     if name == "open":
         return store.open(a.get("id", ""), section=(int(a["section"]) if a.get("section") not in (None, "") else None),
                           lines=a.get("lines") or None, full=bool(a.get("full")))
@@ -1769,6 +1809,8 @@ def main(argv=None) -> None:
     p.add_argument("path", nargs="?", default=str(HERE.parent / "project-store.sqlite"))
     p = sub.add_parser("catalog"); p.add_argument("--group"); p.add_argument("--level", type=int, choices=(1, 2))
     p = sub.add_parser("find"); p.add_argument("query"); p.add_argument("-k", type=int, default=8); p.add_argument("--group")
+    p = sub.add_parser("grep", help="построчный поиск регулярным выражением: все совпавшие строки с номерами")
+    p.add_argument("pattern"); p.add_argument("-k", type=int, default=60); p.add_argument("--group")
     p = sub.add_parser("open"); p.add_argument("id"); p.add_argument("--section", type=int); p.add_argument("--lines"); p.add_argument("--full", action="store_true")
     p = sub.add_parser("patch"); p.add_argument("id"); p.add_argument("--version", type=int, required=True)
     p.add_argument("--old"); p.add_argument("--new", default=""); p.add_argument("--old-file"); p.add_argument("--new-file")
@@ -1814,6 +1856,8 @@ def main(argv=None) -> None:
         print(st.catalog(group=ns.group, level=ns.level))
     elif c == "find":
         print(st.find(ns.query, k=ns.k, group=ns.group))
+    elif c == "grep":
+        print(st.grep(ns.pattern, k=ns.k, group=ns.group))
     elif c == "open":
         print(st.open(ns.id, section=ns.section, lines=ns.lines, full=ns.full))
     elif c == "patch":

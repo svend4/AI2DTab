@@ -13,6 +13,8 @@
     (реплика, строки, формулировка, цитата). Ссылки между страницами — [[nNNN]]. Идентификаторы заметок вычисляются заранее:
     дайджесты n001…, затем страницы понятий.
 Вопросов набора synth скрипт не видит: сжатие общее, под тест не настраивалось.
+Вариант v2 (--lists) добавлен ПОСЛЕ первых измерений, когда выяснилось, что первое сжатие теряет перечни; он тоже не видит вопросов, но придуман
+с оглядкой на результат: в отчёте так и подписан.
 """
 from __future__ import annotations
 
@@ -46,6 +48,20 @@ Return JSON only, no prose:
  ]}}
 Rules: 6 to 14 concepts, 1 to 5 claims each, the most important first. Quotes are checked automatically: a claim whose quote is not found verbatim is
 discarded. Do not invent anything that is not in the text.
+
+EXCHANGE {cid}
+{text}
+"""
+LISTS_PROMPT = """Below is one exchange from a very long design conversation (a user message, then the assistant's long reply; Russian with English terms).
+List EVERY enumeration of named elements in it: lists of fields, states, types, roles, steps, pipeline stages, thresholds, named examples with numbers,
+and the rows of tables. Prose is not needed. Copy the items exactly as written (identifiers and English terms unchanged).
+
+Return JSON only, no prose:
+{{"lists": [{{"title": "what is enumerated, in Russian, at most 12 words",
+            "lead": "the exact line under which the enumeration starts (a heading or a lead-in sentence), copied character for character",
+            "items": ["exact item", "exact item"]}}]}}
+Rules: every item is short (at most 8 words) and copied character for character; skip enumerations of fewer than 3 items; up to 60 lists; do not invent.
+Items that are not found verbatim in the text are discarded automatically.
 
 EXCHANGE {cid}
 {text}
@@ -156,6 +172,46 @@ async def map_turns(st: cards.Store, model: str, limit: int, workers: int) -> di
     return out
 
 
+async def map_lists(st: cards.Store, model: str, limit: int, workers: int) -> dict:
+    """Дословные перечни по каждой реплике. Заголовок-«зацепка» ищем в тексте, каждый элемент проверяем в 150 строках после него; ненайденные элементы
+    выбрасываем, а перечень, где не нашлась половина, — целиком."""
+    sem = asyncio.Semaphore(workers)
+    rows = st.con.execute("SELECT id FROM cards WHERE kind='turn' ORDER BY id").fetchall()
+    if limit:
+        rows = rows[:limit]
+    texts = {r["id"]: turn_lines(st, r["id"]) for r in rows}
+    results = await asyncio.gather(*[ask(LISTS_PROMPT.format(cid=r["id"], text="\n".join(texts[r["id"]])[:260_000]), model, sem) for r in rows])
+    out, proposed, kept = {}, 0, 0
+    for r, res in zip(rows, results):
+        lines = texts[r["id"]]
+        norm = [cards.norm_quote(x) for x in lines]
+        lists = []
+        for ls in (res or {}).get("lists", []) or []:
+            items = [" ".join(str(i).split()) for i in ls.get("items", []) or [] if str(i).strip()]
+            proposed += len(items)
+            pos = locate(" ".join(str(ls.get("lead", "")).split()), lines)
+            if not pos or len(items) < 3:
+                continue
+            region = " ".join(norm[pos[0] - 1:pos[0] + 150])
+            good, last = [], pos[0]
+            for it in items:
+                ni = cards.norm_quote(it)
+                if ni and ni in region:
+                    good.append(it)
+                    for k in range(pos[0] - 1, min(len(norm), pos[0] + 150)):
+                        if ni in norm[k]:
+                            last = max(last, k + 1)
+                            break
+            if len(good) < 3 or len(good) * 2 < len(items):
+                continue
+            kept += len(good)
+            lists.append(dict(title=" ".join(str(ls.get("title", "")).split()), lead=" ".join(str(ls.get("lead", "")).split()), items=good, l1=pos[0], l2=last))
+        out[r["id"]] = lists
+    print(f"перечни: элементов предложено {proposed}, найдено дословно {kept} ({100 * kept / max(1, proposed):.1f}%); "
+          f"перечней {sum(len(v) for v in out.values())} в {len(out)} репликах; ≈${est_usd():.3f}")
+    return out
+
+
 def name_key(n: str) -> str:
     return re.sub(r"\s+", " ", re.sub(r"[^\w\s/+-]", " ", n.lower().replace("ё", "е"), flags=re.UNICODE)).strip()
 
@@ -189,8 +245,9 @@ def clip_s(s: str, n: int) -> str:
     return cards.clip(s, n)
 
 
-async def build_pages(st: cards.Store, per_turn: dict, merge: dict, model: str, workers: int, min_turns: int = 2) -> dict:
+async def build_pages(st: cards.Store, per_turn: dict, merge: dict, model: str, workers: int, min_turns: int = 2, lists: dict | None = None) -> dict:
     mapping = merge["mapping"]
+    lists = lists or {}
     concept_claims: dict = defaultdict(list)           # каноническое имя -> [(реплика, ts, утверждение)]
     for cid in sorted(per_turn):
         for c in per_turn[cid]["concepts"]:
@@ -230,6 +287,12 @@ async def build_pages(st: cards.Store, per_turn: dict, merge: dict, model: str, 
                 rng = f"L{cl['l1']}" if cl["l1"] == cl["l2"] else f"L{cl['l1']}-{cl['l2']}"
                 body.append(f"- {cl['text']} ({cid} {rng})")
                 srcs.append(dict(card=cid, lines=f"{cl['l1']}-{cl['l2']}", quote=cl["quote"]))
+        if lists.get(cid):
+            body += ["", "## Enumerations"]
+            for ls in lists[cid]:
+                rng = f"L{ls['l1']}" if ls["l1"] == ls["l2"] else f"L{ls['l1']}-{ls['l2']}"
+                body.append(f"- {ls['title']} ({cid} {rng}): " + " | ".join(ls["items"]))
+                srcs.append(dict(card=cid, lines=f"{ls['l1']}-{ls['l2']}", quote=ls["lead"]))
         names = ", ".join(c for c, _ in by_concept[:8])
         title = f"Exchange {cid} ({d['ts']})"
         summ = f"[digest {cid} {d['ts'][5:16]}] {clip_s(d['summary'], 150)} | concepts: {clip_s(names, 110)}"
@@ -282,10 +345,18 @@ async def main_async(ns):
     failed = [c for c, d in per_turn.items() if d["failed"]]
     print(f"map: реплик {len(per_turn)}, утверждений предложено {prop}, подтверждено цитатой {gr} ({100 * gr / max(1, prop):.1f}%), "
           f"реплик без ответа модели: {failed or '-'}; ≈${est_usd():.3f} по ставкам малой модели (отчёт CLI: ${COST['usd']:.2f})")
+    lists = None
+    if ns.lists:
+        lists_path = out / "lists.json"
+        if ns.reuse and lists_path.exists():
+            lists = json.loads(lists_path.read_text(encoding="utf-8"))
+        else:
+            lists = await map_lists(st, model, ns.limit, ns.workers)
+            lists_path.write_text(json.dumps(lists, ensure_ascii=False), encoding="utf-8")
     merge = await merge_names(per_turn, model, ns.workers)
     (out / "merge.json").write_text(json.dumps(merge, ensure_ascii=False, indent=1), encoding="utf-8")
     print(f"имена: различных {merge['distinct_names']}, объединено в других {merge['merged']}")
-    made, n_concepts = await build_pages(st, per_turn, merge, model, ns.workers)
+    made, n_concepts = await build_pages(st, per_turn, merge, model, ns.workers, lists=lists)
     print("страницы:", made, "понятий со страницами:", n_concepts)
     findings = st.lint()
     print(st.lint_text(findings, limit=12))
@@ -309,6 +380,7 @@ def main():
     ap.add_argument("--model", default=SMALL_MODEL)
     ap.add_argument("--workers", type=int, default=6)
     ap.add_argument("--limit", type=int, default=0, help="только первые N реплик (проверка)")
+    ap.add_argument("--lists", action="store_true", help="второй проход: дословные перечни (поля, состояния, этапы) по каждой реплике, в дайджесты")
     ap.add_argument("--reuse", action="store_true", help="взять утверждения из out-dir/claims.json, не вызывая модель на шаге map")
     asyncio.run(main_async(ap.parse_args()))
 

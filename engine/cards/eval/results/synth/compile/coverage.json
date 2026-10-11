@@ -1,0 +1,1001 @@
+[
+ {
+  "id": "s_promotion_agg1",
+  "type": "aggregation",
+  "covered": false,
+  "anchors": [
+   {
+    "rx": "SHADOW",
+    "raw_turns": [
+     "t027",
+     "t035",
+     "t038",
+     "t039",
+     "t040",
+     "t041",
+     "t042",
+     "t043",
+     "t044",
+     "t045",
+     "t049",
+     "t050",
+     "t053",
+     "t058",
+     "t060",
+     "t077",
+     "t079",
+     "t080"
+    ],
+    "digest_turns": [
+     "t039",
+     "t040",
+     "t049",
+     "t079"
+    ],
+    "concept_pages": 0,
+    "captured": true
+   },
+   {
+    "rx": "Validated Pattern",
+    "raw_turns": [
+     "t044",
+     "t061"
+    ],
+    "digest_turns": [],
+    "concept_pages": 0,
+    "captured": false
+   },
+   {
+    "rx": "conformance\\s+tests?",
+    "raw_turns": [
+     "t067",
+     "t068",
+     "t073",
+     "t081"
+    ],
+    "digest_turns": [],
+    "concept_pages": 0,
+    "captured": false
+   }
+  ]
+ },
+ {
+  "id": "s_open_knowledge_evo0",
+  "type": "evolution",
+  "covered": false,
+  "anchors": [
+   {
+    "rx": "Knowledge Git",
+    "raw_turns": [
+     "t023",
+     "t044",
+     "t049"
+    ],
+    "digest_turns": [],
+    "concept_pages": 0,
+    "captured": false
+   },
+   {
+    "rx": "Knowledge View Compiler",
+    "raw_turns": [
+     "t059"
+    ],
+    "digest_turns": [
+     "t059"
+    ],
+    "concept_pages": 0,
+    "captured": true
+   },
+   {
+    "rx": "private overlays?",
+    "raw_turns": [
+     "t076"
+    ],
+    "digest_turns": [],
+    "concept_pages": 0,
+    "captured": false
+   }
+  ]
+ },
+ {
+  "id": "s_idempotency_agg1",
+  "type": "aggregation",
+  "covered": false,
+  "anchors": [
+   {
+    "rx": "matcher_version",
+    "raw_turns": [
+     "t017",
+     "t030",
+     "t031",
+     "t050",
+     "t051",
+     "t052",
+     "t053"
+    ],
+    "digest_turns": [
+     "t017",
+     "t030"
+    ],
+    "concept_pages": 1,
+    "captured": true
+   },
+   {
+    "rx": "world_revision",
+    "raw_turns": [
+     "t025",
+     "t049",
+     "t053",
+     "t058",
+     "t059"
+    ],
+    "digest_turns": [
+     "t025",
+     "t059"
+    ],
+    "concept_pages": 1,
+    "captured": true
+   },
+   {
+    "rx": "external\\s+event\\s+ID|ID\\s+внешн\\w+\\s+событ",
+    "raw_turns": [
+     "t065"
+    ],
+    "digest_turns": [],
+    "concept_pages": 0,
+    "captured": false
+   },
+   {
+    "rx": "content\\s+hash|хеш\\w*\\s+содержим",
+    "raw_turns": [
+     "t040",
+     "t051",
+     "t065",
+     "t067",
+     "t076"
+    ],
+    "digest_turns": [
+     "t040",
+     "t065"
+    ],
+    "concept_pages": 0,
+    "captured": true
+   }
+  ]
+ },
+ {
+  "id": "s_team_builder_agg0",
+  "type": "aggregation",
+  "covered": false,
+  "anchors": [
+   {
+    "rx": "MUST\\s+capabilit",
+    "raw_turns": [
+     "t015",
+     "t029",
+     "t030",
+     "t052",
+     "t053"
+    ],
+    "digest_turns": [],
+    "concept_pages": 0,
+    "captured": false
+   },
+   {
+    "rx": "Candidate Resources?",
+    "raw_turns": [
+     "t014",
+     "t032",
+     "t050",
+     "t051",
+     "t052",
+     "t053",
+     "t060",
+     "t069",
+     "t070"
+    ],
+    "digest_turns": [
+     "t014",
+     "t050",
+     "t051"
+    ],
+    "concept_pages": 2,
+    "captured": true
+   },
+   {
+    "rx": "infra\\w*\\s+engineer",
+    "raw_turns": [
+     "t006",
+     "t008",
+     "t011",
+     "t016",
+     "t021",
+     "t031",
+     "t053",
+     "t070"
+    ],
+    "digest_turns": [],
+    "concept_pages": 0,
+    "captured": false
+   },
+   {
+    "rx": "security\\s+specialist",
+    "raw_turns": [
+     "t005",
+     "t007",
+     "t008",
+     "t009",
+     "t011",
+     "t016",
+     "t020",
+     "t025",
+     "t032"
+    ],
+    "digest_turns": [
+     "t032"
+    ],
+    "concept_pages": 0,
+    "captured": true
+   }
+  ]
+ },
+ {
+  "id": "s_procedural_graph_agg1",
+  "type": "aggregation",
+  "covered": false,
+  "anchors": [
+   {
+    "rx": "how an executor performs a task|как исполнитель выполняет задачу",
+    "raw_turns": [
+     "t027"
+    ],
+    "digest_turns": [],
+    "concept_pages": 0,
+    "captured": false
+   },
+   {
+    "rx": "latest safe start|последн\\w+ безопасн\\w+ (дат\\w+ )?(старт|начал)",
+    "raw_turns": [
+     "t056"
+    ],
+    "digest_turns": [],
+    "concept_pages": 0,
+    "captured": false
+   },
+   {
+    "rx": "COMMAND_REQUEST",
+    "raw_turns": [
+     "t067"
+    ],
+    "digest_turns": [
+     "t067"
+    ],
+    "concept_pages": 0,
+    "captured": true
+   }
+  ]
+ },
+ {
+  "id": "s_acceptance_test_evo1",
+  "type": "evolution",
+  "covered": false,
+  "anchors": [
+   {
+    "rx": "Reference Implementation Project",
+    "raw_turns": [
+     "t033"
+    ],
+    "digest_turns": [],
+    "concept_pages": 0,
+    "captured": false
+   },
+   {
+    "rx": "Composite Capability Gap",
+    "raw_turns": [
+     "t057"
+    ],
+    "digest_turns": [],
+    "concept_pages": 0,
+    "captured": false
+   },
+   {
+    "rx": "Action Proposal",
+    "raw_turns": [
+     "t027",
+     "t039",
+     "t058",
+     "t064",
+     "t067",
+     "t068"
+    ],
+    "digest_turns": [
+     "t058"
+    ],
+    "concept_pages": 0,
+    "captured": true
+   }
+  ]
+ },
+ {
+  "id": "s_research_observatory_agg0",
+  "type": "aggregation",
+  "covered": false,
+  "anchors": [
+   {
+    "rx": "scientific feedback subsystem",
+    "raw_turns": [
+     "t033"
+    ],
+    "digest_turns": [],
+    "concept_pages": 0,
+    "captured": false
+   },
+   {
+    "rx": "structured epistemic state",
+    "raw_turns": [
+     "t055"
+    ],
+    "digest_turns": [],
+    "concept_pages": 0,
+    "captured": false
+   },
+   {
+    "rx": "layout algorithms?",
+    "raw_turns": [
+     "t060"
+    ],
+    "digest_turns": [],
+    "concept_pages": 0,
+    "captured": false
+   }
+  ]
+ },
+ {
+  "id": "s_signpost_evo1",
+  "type": "evolution",
+  "covered": false,
+  "anchors": [
+   {
+    "rx": "repo activity",
+    "raw_turns": [
+     "t043",
+     "t061"
+    ],
+    "digest_turns": [],
+    "concept_pages": 0,
+    "captured": false
+   },
+   {
+    "rx": "NOT_OBSERVED",
+    "raw_turns": [
+     "t063",
+     "t067",
+     "t068"
+    ],
+    "digest_turns": [],
+    "concept_pages": 0,
+    "captured": false
+   },
+   {
+    "rx": "network\\s+reliability",
+    "raw_turns": [
+     "t069"
+    ],
+    "digest_turns": [],
+    "concept_pages": 0,
+    "captured": false
+   }
+  ]
+ },
+ {
+  "id": "s_architecture_freeze_evo0",
+  "type": "evolution",
+  "covered": false,
+  "anchors": [
+   {
+    "rx": "Project IR schema",
+    "raw_turns": [
+     "t028"
+    ],
+    "digest_turns": [
+     "t028"
+    ],
+    "concept_pages": 1,
+    "captured": true
+   },
+   {
+    "rx": "ARCHITECTURE_FREEZE_v0\\.1",
+    "raw_turns": [
+     "t051",
+     "t052"
+    ],
+    "digest_turns": [],
+    "concept_pages": 0,
+    "captured": false
+   },
+   {
+    "rx": "kernel_manifest",
+    "raw_turns": [
+     "t068"
+    ],
+    "digest_turns": [],
+    "concept_pages": 0,
+    "captured": false
+   }
+  ]
+ },
+ {
+  "id": "s_kill_criteria_evo0",
+  "type": "evolution",
+  "covered": false,
+  "anchors": [
+   {
+    "rx": "GO\\s*/\\s*MODIFY\\s*/\\s*KILL",
+    "raw_turns": [
+     "t022"
+    ],
+    "digest_turns": [
+     "t022"
+    ],
+    "concept_pages": 0,
+    "captured": true
+   },
+   {
+    "rx": "safety target not met",
+    "raw_turns": [
+     "t062"
+    ],
+    "digest_turns": [],
+    "concept_pages": 0,
+    "captured": false
+   },
+   {
+    "rx": "real-time\\s+grasp|grasp-control",
+    "raw_turns": [
+     "t070"
+    ],
+    "digest_turns": [],
+    "concept_pages": 0,
+    "captured": false
+   }
+  ]
+ },
+ {
+  "id": "s_causal_engine_agg1",
+  "type": "aggregation",
+  "covered": false,
+  "anchors": [
+   {
+    "rx": "what may happen if X changes|что (может )?(произойти|случится)",
+    "raw_turns": [
+     "t046"
+    ],
+    "digest_turns": [
+     "t063"
+    ],
+    "concept_pages": 0,
+    "captured": true
+   },
+   {
+    "rx": "evaluates?\\s+(the\\s+)?explanation|оценива\\w+ объяснени",
+    "raw_turns": [
+     "t061"
+    ],
+    "digest_turns": [],
+    "concept_pages": 0,
+    "captured": false
+   },
+   {
+    "rx": "suppl(y|ies)\\s+(causal\\s+)?claims?|поставля\\w+\\s+(причинн\\w+\\s+)?(claims?|утвержден)",
+    "raw_turns": [
+     "t065"
+    ],
+    "digest_turns": [],
+    "concept_pages": 0,
+    "captured": false
+   }
+  ]
+ },
+ {
+  "id": "s_package_manager_agg0",
+  "type": "aggregation",
+  "covered": false,
+  "anchors": [
+   {
+    "rx": "Tool Binding Package",
+    "raw_turns": [
+     "t039",
+     "t040"
+    ],
+    "digest_turns": [
+     "t039"
+    ],
+    "concept_pages": 0,
+    "captured": true
+   },
+   {
+    "rx": "Ontology Package",
+    "raw_turns": [
+     "t039",
+     "t040",
+     "t059"
+    ],
+    "digest_turns": [
+     "t039",
+     "t040"
+    ],
+    "concept_pages": 0,
+    "captured": true
+   },
+   {
+    "rx": "how capabilities can be implemented",
+    "raw_turns": [
+     "t041"
+    ],
+    "digest_turns": [],
+    "concept_pages": 0,
+    "captured": false
+   }
+  ]
+ },
+ {
+  "id": "s_team_hypothesis_agg0",
+  "type": "aggregation",
+  "covered": false,
+  "anchors": [
+   {
+    "rx": "Latent Team Hypothesis",
+    "raw_turns": [
+     "t031",
+     "t070"
+    ],
+    "digest_turns": [],
+    "concept_pages": 0,
+    "captured": false
+   },
+   {
+    "rx": "Composite Team Hypothesis",
+    "raw_turns": [
+     "t053"
+    ],
+    "digest_turns": [],
+    "concept_pages": 0,
+    "captured": false
+   }
+  ]
+ },
+ {
+  "id": "s_capability_contract_agg0",
+  "type": "aggregation",
+  "covered": false,
+  "anchors": [
+   {
+    "rx": "what it does",
+    "raw_turns": [
+     "t040",
+     "t060"
+    ],
+    "digest_turns": [],
+    "concept_pages": 0,
+    "captured": false
+   },
+   {
+    "rx": "compatible_with",
+    "raw_turns": [
+     "t067",
+     "t079"
+    ],
+    "digest_turns": [
+     "t067"
+    ],
+    "concept_pages": 0,
+    "captured": true
+   },
+   {
+    "rx": "supersedes",
+    "raw_turns": [
+     "t029",
+     "t044",
+     "t052",
+     "t053",
+     "t066",
+     "t072",
+     "t076",
+     "t079"
+    ],
+    "digest_turns": [
+     "t052"
+    ],
+    "concept_pages": 1,
+    "captured": true
+   },
+   {
+    "rx": "\\bextends\\b",
+    "raw_turns": [
+     "t027",
+     "t033",
+     "t057",
+     "t075",
+     "t076",
+     "t078",
+     "t079"
+    ],
+    "digest_turns": [],
+    "concept_pages": 0,
+    "captured": false
+   }
+  ]
+ },
+ {
+  "id": "s_entity_resolution_agg0",
+  "type": "aggregation",
+  "covered": false,
+  "anchors": [
+   {
+    "rx": "email hash|хеш\\w* (e-?mail|почт)",
+    "raw_turns": [
+     "t019"
+    ],
+    "digest_turns": [
+     "t019"
+    ],
+    "concept_pages": 1,
+    "captured": true
+   },
+   {
+    "rx": "ORCID",
+    "raw_turns": [
+     "t052",
+     "t055",
+     "t068",
+     "t076"
+    ],
+    "digest_turns": [],
+    "concept_pages": 0,
+    "captured": false
+   },
+   {
+    "rx": "company registry",
+    "raw_turns": [
+     "t076"
+    ],
+    "digest_turns": [],
+    "concept_pages": 0,
+    "captured": false
+   }
+  ]
+ },
+ {
+  "id": "s_foresight_evo1",
+  "type": "evolution",
+  "covered": false,
+  "anchors": [
+   {
+    "rx": "Weak Signals",
+    "raw_turns": [
+     "t062",
+     "t063"
+    ],
+    "digest_turns": [],
+    "concept_pages": 0,
+    "captured": false
+   },
+   {
+    "rx": "Foresight State",
+    "raw_turns": [
+     "t064"
+    ],
+    "digest_turns": [
+     "t064"
+    ],
+    "concept_pages": 0,
+    "captured": true
+   },
+   {
+    "rx": "new vocabulary frequency",
+    "raw_turns": [
+     "t065"
+    ],
+    "digest_turns": [],
+    "concept_pages": 0,
+    "captured": false
+   }
+  ]
+ },
+ {
+  "id": "s_query_planner_agg0",
+  "type": "aggregation",
+  "covered": false,
+  "anchors": [
+   {
+    "rx": "negative-result terms",
+    "raw_turns": [
+     "t055"
+    ],
+    "digest_turns": [
+     "t055"
+    ],
+    "concept_pages": 0,
+    "captured": true
+   },
+   {
+    "rx": "program types",
+    "raw_turns": [
+     "t056"
+    ],
+    "digest_turns": [],
+    "concept_pages": 0,
+    "captured": false
+   },
+   {
+    "rx": "exact terminology",
+    "raw_turns": [
+     "t055"
+    ],
+    "digest_turns": [
+     "t055"
+    ],
+    "concept_pages": 0,
+    "captured": true
+   }
+  ]
+ },
+ {
+  "id": "s_commitment_agg1",
+  "type": "aggregation",
+  "covered": false,
+  "anchors": [
+   {
+    "rx": "test_report_required",
+    "raw_turns": [
+     "t039"
+    ],
+    "digest_turns": [],
+    "concept_pages": 0,
+    "captured": false
+   },
+   {
+    "rx": "approved budgets?",
+    "raw_turns": [
+     "t076",
+     "t080"
+    ],
+    "digest_turns": [],
+    "concept_pages": 0,
+    "captured": false
+   }
+  ]
+ },
+ {
+  "id": "s_handoff_evo0",
+  "type": "evolution",
+  "covered": false,
+  "anchors": [
+   {
+    "rx": "remaining work",
+    "raw_turns": [
+     "t027",
+     "t047",
+     "t067"
+    ],
+    "digest_turns": [],
+    "concept_pages": 0,
+    "captured": false
+   },
+   {
+    "rx": "personal inbox",
+    "raw_turns": [
+     "t049"
+    ],
+    "digest_turns": [],
+    "concept_pages": 0,
+    "captured": false
+   },
+   {
+    "rx": "Context Capsule",
+    "raw_turns": [
+     "t067",
+     "t072",
+     "t075",
+     "t080"
+    ],
+    "digest_turns": [],
+    "concept_pages": 0,
+    "captured": false
+   }
+  ]
+ },
+ {
+  "id": "s_technopedia_evo0",
+  "type": "evolution",
+  "covered": false,
+  "anchors": [
+   {
+    "rx": "Open Knowledge Infrastructure",
+    "raw_turns": [
+     "t023"
+    ],
+    "digest_turns": [],
+    "concept_pages": 0,
+    "captured": false
+   },
+   {
+    "rx": "human-readable projection",
+    "raw_turns": [
+     "t068"
+    ],
+    "digest_turns": [],
+    "concept_pages": 0,
+    "captured": false
+   }
+  ]
+ },
+ {
+  "id": "s_capability_capital_evo0",
+  "type": "evolution",
+  "covered": false,
+  "anchors": [
+   {
+    "rx": "структурирован\\w+ карт|structured map",
+    "raw_turns": [
+     "t007",
+     "t012",
+     "t038",
+     "t049"
+    ],
+    "digest_turns": [
+     "t012"
+    ],
+    "concept_pages": 0,
+    "captured": true
+   },
+   {
+    "rx": "INSTITUTIONALIZED",
+    "raw_turns": [
+     "t071",
+     "t072",
+     "t073"
+    ],
+    "digest_turns": [
+     "t071",
+     "t072"
+    ],
+    "concept_pages": 1,
+    "captured": true
+   },
+   {
+    "rx": "provider coverage",
+    "raw_turns": [
+     "t080"
+    ],
+    "digest_turns": [],
+    "concept_pages": 0,
+    "captured": false
+   }
+  ]
+ },
+ {
+  "id": "s_strategy_engine_agg0",
+  "type": "aggregation",
+  "covered": false,
+  "anchors": [
+   {
+    "rx": "Literature review",
+    "raw_turns": [
+     "t002",
+     "t013",
+     "t033",
+     "t040",
+     "t046",
+     "t055",
+     "t059"
+    ],
+    "digest_turns": [
+     "t002"
+    ],
+    "concept_pages": 0,
+    "captured": true
+   },
+   {
+    "rx": "university facility",
+    "raw_turns": [
+     "t057"
+    ],
+    "digest_turns": [],
+    "concept_pages": 0,
+    "captured": false
+   },
+   {
+    "rx": "Partial Deployment",
+    "raw_turns": [
+     "t069"
+    ],
+    "digest_turns": [],
+    "concept_pages": 0,
+    "captured": false
+   }
+  ]
+ },
+ {
+  "id": "s_funding_resolver_agg0",
+  "type": "aggregation",
+  "covered": false,
+  "anchors": [
+   {
+    "rx": "corporate sponsor",
+    "raw_turns": [
+     "t014",
+     "t034",
+     "t056"
+    ],
+    "digest_turns": [],
+    "concept_pages": 0,
+    "captured": false
+   },
+   {
+    "rx": "open-source infrastructure grants?",
+    "raw_turns": [
+     "t034"
+    ],
+    "digest_turns": [],
+    "concept_pages": 0,
+    "captured": false
+   },
+   {
+    "rx": "bount",
+    "raw_turns": [
+     "t002",
+     "t013",
+     "t033",
+     "t034",
+     "t040",
+     "t070",
+     "t080"
+    ],
+    "digest_turns": [
+     "t034"
+    ],
+    "concept_pages": 1,
+    "captured": true
+   }
+  ]
+ },
+ {
+  "id": "s_capability_package_evo0",
+  "type": "evolution",
+  "covered": false,
+  "anchors": [
+   {
+    "rx": "Package #174",
+    "raw_turns": [
+     "t011"
+    ],
+    "digest_turns": [
+     "t011"
+    ],
+    "concept_pages": 1,
+    "captured": true
+   },
+   {
+    "rx": "verification_contract_id",
+    "raw_turns": [
+     "t054"
+    ],
+    "digest_turns": [
+     "t054"
+    ],
+    "concept_pages": 1,
+    "captured": true
+   },
+   {
+    "rx": "upstream contributions?",
+    "raw_turns": [
+     "t080"
+    ],
+    "digest_turns": [],
+    "concept_pages": 0,
+    "captured": false
+   }
+  ]
+ }
+]

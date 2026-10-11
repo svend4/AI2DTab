@@ -112,8 +112,8 @@ SYNTH = {
     "s_research_observatory_agg0": (0, [r"scientific feedback subsystem", r"structured epistemic state", r"layout algorithms?"]),
     "s_foresight_evo1": (1, [r"Weak Signals", r"Foresight State", r"new vocabulary frequency"]),
     "s_kill_criteria_evo0": (1, [r"GO\s*/\s*MODIFY\s*/\s*KILL", r"safety target not met", r"real-time\s+grasp|grasp-control"]),
-    "s_causal_engine_agg1": (1, [r"what may happen if X changes|что (может )?(произойти|случится)", r"evaluates?\s+(the\s+)?explanation|оценива\w+ объяснени",
-                                 r"suppl(y|ies)\s+(causal\s+)?claims?|поставля\w+\s+(причинн\w+\s+)?(claims?|утвержден)"]),
+    "s_causal_engine_agg1": (1, [r"what may happen if X changes|что (может )?(произойти|случится)", r"evaluates?\s+(the\s+)?explanation|оценива\w+\s+(\w+\s+)?объяснени",
+                                 r"causal\s+claims?|причинн\w+\s+(claims?|утвержден\w+)"]),   # расширено после первых прогонов: все ответы называли «causal Claims»
     "s_entity_resolution_agg0": (1, [r"email hash|хеш\w* (e-?mail|почт)", r"ORCID", r"company registry"]),
     "s_package_manager_agg0": (1, [r"Tool Binding Package", r"Ontology Package", r"how capabilities can be implemented"]),
     "s_architecture_freeze_evo0": (1, [r"Project IR schema", r"ARCHITECTURE_FREEZE_v0\.1", r"kernel_manifest"]),
@@ -128,12 +128,26 @@ SYNTH = {
     "s_query_planner_agg0": (2, [r"negative-result terms", r"program types", r"exact terminology"]),
     "s_technopedia_evo0": (2, [r"Open Knowledge Infrastructure", r"human-readable projection"]),
 }
+# Неоднозначные вопросы: в чате одно и то же понятие переописано несколько раз разными списками или примерами, и верный ответ по любому из них не содержит
+# якоря. Помечены по ответам базовых вариантов (tools, cards-l1) до прогона вариантов с заметками; у ВСЕХ вариантов исключаются из подсчёта.
+SYNTH_INVALID = {
+    "s_capability_contract_agg0": "в чате несколько разных наборов полей контракта (input/output schema, quality profile, side effects; inputs, outputs, constraints, verification…)",
+    "s_entity_resolution_agg0": "несколько верных списков сигналов и внешних идентификаторов в t019, t030, t051, t068, t076",
+    "s_foresight_evo1": "в чате два разных конвейера Foresight; «какой сигнал добавляется позже» не определён",
+    "s_kill_criteria_evo0": "примеров условий остановки много на разных уровнях (генератор, программа, финансирование, гипотеза); перечень не определён",
+    "s_signpost_evo1": "«ранняя версия» не определена: источники сигналов описаны и в t025, и в t043",
+    "s_capability_capital_evo0": "«сначала предлагали описывать» не определено: в t038 есть и структурированная карта, и вектор роста (Capability Growth Vector)",
+    "s_architecture_freeze_evo0": "первоначальный план v0.1 описан дважды (t028 — перечень схем, t029 — 12 канонических типов); якорь взят из одного описания",
+}
 synth = []
 _cand_synth = {c["id"]: c for c in json.loads((D / "cand_synth.json").read_text(encoding="utf-8"))}
 for qid, (sess, rxs) in SYNTH.items():
     c = _cand_synth[qid]
-    synth.append(dict(id=qid, type=c["type"], term=c["term"], text=c["text"], session=sess, check=rxs, reference=c["reference"],
-                      anchors=[dict(turn=p["turn"], span=p["span"]) for p in c["parts"]]))
+    q = dict(id=qid, type=c["type"], term=c["term"], text=c["text"], session=sess, check=rxs, reference=c["reference"],
+             anchors=[dict(turn=p["turn"], span=p["span"]) for p in c["parts"]])
+    if qid in SYNTH_INVALID:
+        q["invalid"] = SYNTH_INVALID[qid]
+    synth.append(q)
 rnd_s = random.Random(5)
 rnd_s.shuffle(synth)
 synth.sort(key=lambda q: q["session"])

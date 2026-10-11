@@ -8,8 +8,11 @@
   tools+cat  то же + обзор-каталог в первом сообщении (для чата с диапазонами строк файла)
   cards      инструменты картотеки catalog/find/open (+ patch) + полный каталог в первом сообщении
   cards-l1   то же, но в первом сообщении только список групп; строки групп — инструментом catalog(group)
+  cards-grep как cards-l1, плюс инструмент grep(шаблон): все совпавшие строки с номерами (у find — одна лучшая строка на карточку)
   none       контроль для набора synth: ни текста, ни инструментов, ответ «по памяти»
   notes-l1   как cards-l1, но в картотеке есть и заметки-«вики» (дайджест реплики, страница понятия; compile_notes.py), база chat_notes.sqlite
+  wiki-only2 то же для второго сжатия (с дословными перечнями), папка wiki_only2
+  wiki-only  только вики-папка, сырого чата нет вообще: что можно ответить, выбросив исходный текст и оставив одно сжатие
   wiki-files те же заметки папкой markdown (wiki/index.md, wiki/pages/) рядом с chat.md, инструменты Read/Grep/Glob — вид «LLM Wiki» Карпати
 """
 from __future__ import annotations
@@ -51,6 +54,10 @@ NOTES_INTRO = ("The transcript is stored as cards: one card per exchange (ids t0
                "as note cards (ids n001…): one digest per exchange and one page per concept that recurs in several exchanges. Every note cites its sources "
                "as 'tNNN L<a>-<b>' (line ranges inside the exchange card). Notes are derived summaries written by a model: they can be incomplete or wrong, "
                "so check exact wording and numbers by opening the cited lines. Tools: catalog(group), find(query), open(id, section | lines). ")
+WIKI_ONLY_INTRO = ("The only material you have is a wiki in the folder wiki/ that was compiled from a long chat transcript; the transcript itself is NOT available. "
+                   "wiki/index.md lists every page with a one-line summary (digests of single exchanges and pages for concepts that recur in several exchanges); "
+                   "the pages are in wiki/pages/. Pages cite their sources as 'tNNN L<a>-<b>'. Explore with Grep and Read (use offset and limit). "
+                   "If the wiki does not contain an answer, give your best answer from what it does say.")
 WIKI_INTRO = ("The transcript is the file chat.md in the current directory (344K lines, 4.7 MB; every exchange starts with the line '# you asked'). "
               "A wiki compiled from it is in the folder wiki/: wiki/index.md lists every page with a one-line summary (digests of single exchanges and "
               "pages for concepts that recur in several exchanges); the pages are in wiki/pages/. Pages cite their sources as 'tNNN L<a>-<b>' with the "
@@ -68,6 +75,8 @@ def context_text(domain: str, arm: str, work: Path, st: cards.Store, edit: bool,
     patch_note = " Use patch(id, version, old, new) to edit (it writes the file)." if edit else ""
     if arm == "none":
         return head + "\n\nThe transcript is NOT available in this run and you have no tools: give your best guess in the same format."
+    if arm in ("wiki-only", "wiki-only2"):
+        return head + "\n\n" + WIKI_ONLY_INTRO
     if arm == "wiki-files":
         return head + "\n\n" + WIKI_INTRO
     if arm == "notes-l1":
@@ -93,6 +102,9 @@ def context_text(domain: str, arm: str, work: Path, st: cards.Store, edit: bool,
                 + (work / raw_cat).read_text(encoding="utf-8")
         intro = ("The transcript is stored as cards: one card per exchange (ids t001…), grouped into threads. Tools: catalog(group), find(query), "
                  "open(id, section | lines). ")
+    if arm == "cards-grep":
+        intro = intro.replace("Tools: catalog(group), find(query), open(id, section | lines). ",
+                              "Tools: catalog(group), find(query) (best line of each card), grep(pattern) (EVERY matching line), open(id, section | lines). ")
     if arm == "cards":
         return head + "\n\n" + intro + "Below is the full catalog (groups, then one line per card).\n\nCATALOG\n" + st.catalog()
     return head + "\n\n" + intro + "Below is the list of groups; use catalog(group=id) to list the cards of a group.\n\nCATALOG\n" + st.catalog(level=1)
@@ -102,16 +114,16 @@ def make_options(arm: str, domain: str, work: Path, run_repo: Path, st: cards.St
     kw = dict(model=need_model(MODEL, "EVAL_MODEL"), setting_sources=[], max_turns=30, max_budget_usd=8, extra_args={"no-session-persistence": None})
     if arm in ("flat", "none"):
         kw.update(cwd=str(work / "neutral"), tools=[])
-    elif arm == "wiki-files":
+    elif arm in ("wiki-files", "wiki-only", "wiki-only2"):
         names = ["Read", "Grep", "Glob"]
-        kw.update(cwd=str(work / "wiki_chat"), tools=names, allowed_tools=names)
+        kw.update(cwd=str(work / {"wiki-files": "wiki_chat", "wiki-only": "wiki_only", "wiki-only2": "wiki_only2"}[arm]), tools=names, allowed_tools=names)
     elif arm in ("tools", "tools+cat"):
         names = ["Read", "Grep", "Glob"] + (["Edit"] if edit else [])
         kw.update(cwd=str(run_repo if domain == "repo" else work / "chat"), tools=names, allowed_tools=names)
         if edit:
             kw["permission_mode"] = "acceptEdits"
     else:
-        keep = {"catalog", "find", "open"} | ({"patch"} if edit else set())
+        keep = {"catalog", "find", "open"} | ({"patch"} if edit else set()) | ({"grep"} if arm == "cards-grep" else set())
         srv = card_server(st, names=keep)
         kw.update(cwd=str(work / "neutral"), tools=[], mcp_servers={"cards": srv}, allowed_tools=["mcp__cards__" + n for n in sorted(keep)])
     return ClaudeAgentOptions(**kw)
@@ -217,7 +229,7 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--work", required=True)
     ap.add_argument("--set", required=True, choices=list(SETS))
-    ap.add_argument("--arm", required=True, choices=("flat", "tools", "tools+cat", "cards", "cards-l1", "cards-llm", "tools+cat-llm", "none", "notes-l1", "wiki-files"))
+    ap.add_argument("--arm", required=True, choices=("flat", "tools", "tools+cat", "cards", "cards-l1", "cards-llm", "tools+cat-llm", "none", "notes-l1", "wiki-files", "wiki-only", "wiki-only2", "cards-grep"))
     ap.add_argument("--run", type=int, default=1)
     ap.add_argument("--out", required=True)
     ap.add_argument("--sessions", default="0,1,2,3", help="для чата: какие сессии (по 8 вопросов) прогонять")

@@ -119,6 +119,35 @@ class IndexAndRead(Base):
         self.assertIn("v2", self.st.open(self.cid("router.ts")))
 
 
+class Grep(Base):
+    def test_grep_lists_every_matching_line_with_count(self):
+        out = self.st.grep("return")
+        self.assertTrue(out.startswith("4 matching lines in 2 cards"), out)          # find дал бы по одной строке на карточку
+        self.assertIn(f"{self.cid('router.ts')} L3: export function getRouter() {{", self.st.grep("getrouter"))     # без учёта регистра, с номером строки
+        self.assertIn("no lines match", self.st.grep("zzzzqqq"))
+        self.assertIn("ERR bad regex", self.st.grep("(unclosed"))
+
+    def test_grep_limit_group_and_turn_cards(self):
+        many = "\n".join(f"x = {i}  # marker" for i in range(80))
+        (self.root / "many.py").write_text(many, encoding="utf-8")
+        self.st.index_code(self.root, files=["many.py"])
+        out = self.st.grep("marker", k=5)
+        self.assertIn("80 matching lines in 1 cards; the first 5 are shown", out)
+        self.assertEqual(out.count("\n"), 5)
+        self.assertIn("no lines match", self.st.grep("marker", group="engine"))                                    # другая группа
+        chat = Path(self.tmp.name) / "chat.md"
+        chat.write_text(make_chat([("вопрос про alpha", "> # Заголовок\n> текст про gamma")] * 2), encoding="utf-8")
+        st2 = cards.Store(Path(self.tmp.name) / "chat.sqlite")
+        st2.index_chat(chat)
+        self.assertIn("текст про gamma", st2.grep("gamma"))                                                         # «> » цитаты снято
+        self.assertNotIn("> текст", st2.grep("gamma"))
+        st2.con.close()
+
+    def test_grep_is_an_mcp_tool(self):
+        self.assertIn("grep", {s["name"] for s in cards.TOOL_SPECS})
+        self.assertIn("matching lines", cards.call_tool(self.st, "grep", {"pattern": "return"}))
+
+
 class Patch(Base):
     def test_patch_ok_writes_file_and_bumps_version(self):
         cid = self.cid("router.ts")
@@ -416,6 +445,36 @@ class Mcp(unittest.TestCase):
             self.assertIn("fact_set", lines[0]["result"]["instructions"])                  # правила памяти едут вместе с сервером
             self.assertEqual(lines[0]["result"]["serverInfo"]["name"], "cards")
             self.assertIn("k = v", lines[2]["result"]["content"][0]["text"])
+
+
+class McpNotes(unittest.TestCase):
+    def test_stdio_lint_log_and_note_with_checked_sources(self):
+        with tempfile.TemporaryDirectory() as d:
+            d = Path(d)
+            chat = d / "chat.md"
+            chat.write_text(make_chat(NOTE_PAIRS), encoding="utf-8")
+            db = d / "c.sqlite"
+            st = cards.Store(db, project=project_for(d, d / "nodesk"))
+            st.index_chat(chat)
+            st.con.close()
+            call = lambda i, name, args: {"jsonrpc": "2.0", "id": i, "method": "tools/call", "params": {"name": name, "arguments": args}}  # noqa: E731
+            msgs = [{"jsonrpc": "2.0", "id": 1, "method": "initialize", "params": {}},
+                    call(2, "note", {"title": "Т", "text": "тело", "sources": [{"card": "t001", "lines": "13-13", "quote": "открытая вики"}]}),
+                    call(3, "note", {"title": "Плохая", "text": "тело", "sources": [{"card": "t001", "lines": "13-13", "quote": "нет такой цитаты"}]}),
+                    call(4, "lint", {}), call(5, "log", {"n": 5}), call(6, "open", {"id": "n001"})]
+            cfg = d / "project.json"                                # заметки из MCP разрешены по умолчанию; стола рядом нет, настоящий стол не читаем
+            cfg.write_text(json.dumps({"pm_dir": "nowhere", "chats": []}), encoding="utf-8")
+            msgs.append({"jsonrpc": "2.0", "id": 7, "method": "tools/list"})
+            r = subprocess.run([sys.executable, str(Path(cards.__file__)), "--db", str(db), "--config", str(cfg), "serve"],
+                               input="\n".join(json.dumps(m) for m in msgs) + "\n", capture_output=True, text=True, timeout=30)
+            out = {x["id"]: x["result"] for x in (json.loads(l) for l in r.stdout.strip().split("\n"))}
+            text = lambda i: out[i]["content"][0]["text"]  # noqa: E731
+            self.assertTrue({"note", "lint", "log"} <= {t["name"] for t in out[7]["tools"]})
+            self.assertTrue(text(2).startswith("OK n001"), text(2))
+            self.assertTrue(text(3).startswith("ERR quote not found"), text(3))           # неверная цитата отвергнута при записи
+            self.assertIn("nothing to flag", text(4))
+            self.assertIn("] note | n001 |", text(5))
+            self.assertIn("SOURCES (1", text(6))
 
 
 class Helpers(unittest.TestCase):

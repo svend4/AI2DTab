@@ -203,7 +203,8 @@
     "turn": "t069",
     "span": "network reliability < threshold"
    }
-  ]
+  ],
+  "invalid": "«ранняя версия» не определена: источники сигналов описаны и в t025, и в t043"
  },
  {
   "id": "s_architecture_freeze_evo0",
@@ -230,7 +231,8 @@
     "turn": "t068",
     "span": "kernel_manifest.yaml"
    }
-  ]
+  ],
+  "invalid": "первоначальный план v0.1 описан дважды (t028 — перечень схем, t029 — 12 канонических типов); якорь взят из одного описания"
  },
  {
   "id": "s_kill_criteria_evo0",
@@ -257,7 +259,8 @@
     "turn": "t070",
     "span": "discard real-time grasp-control path"
    }
-  ]
+  ],
+  "invalid": "примеров условий остановки много на разных уровнях (генератор, программа, финансирование, гипотеза); перечень не определён"
  },
  {
   "id": "s_causal_engine_agg1",
@@ -267,8 +270,8 @@
   "session": 1,
   "check": [
    "what may happen if X changes|что (может )?(произойти|случится)",
-   "evaluates?\\s+(the\\s+)?explanation|оценива\\w+ объяснени",
-   "suppl(y|ies)\\s+(causal\\s+)?claims?|поставля\\w+\\s+(причинн\\w+\\s+)?(claims?|утвержден)"
+   "evaluates?\\s+(the\\s+)?explanation|оценива\\w+\\s+(\\w+\\s+)?объяснени",
+   "causal\\s+claims?|причинн\\w+\\s+(claims?|утвержден\\w+)"
   ],
   "reference": "Causal Engine говорит, «what may happen if X changes», то есть что может произойти при изменении X. С наблюдениями Evolution Engine он работает так: Causal Engine evaluates explanation, то есть оценивает объяснение. В Data Fabric он поставляет причинные утверждения: Causal Engine supplies causal Claims, а Perception Fabric поставляет только наблюдения.",
   "anchors": [
@@ -353,7 +356,8 @@
     "turn": "t079",
     "span": "supersedes"
    }
-  ]
+  ],
+  "invalid": "в чате несколько разных наборов полей контракта (input/output schema, quality profile, side effects; inputs, outputs, constraints, verification…)"
  },
  {
   "id": "s_entity_resolution_agg0",
@@ -376,7 +380,8 @@
     "turn": "t076",
     "span": "company registry IDs"
    }
-  ]
+  ],
+  "invalid": "несколько верных списков сигналов и внешних идентификаторов в t019, t030, t051, t068, t076"
  },
  {
   "id": "s_foresight_evo1",
@@ -403,7 +408,8 @@
     "turn": "t065",
     "span": "new vocabulary frequency"
    }
-  ]
+  ],
+  "invalid": "в чате два разных конвейера Foresight; «какой сигнал добавляется позже» не определён"
  },
  {
   "id": "s_query_planner_agg0",
@@ -528,7 +534,8 @@
     "turn": "t080",
     "span": "provider coverage"
    }
-  ]
+  ],
+  "invalid": "«сначала предлагали описывать» не определено: в t038 есть и структурированная карта, и вектор роста (Capability Growth Vector)"
  },
  {
   "id": "s_strategy_engine_agg0",

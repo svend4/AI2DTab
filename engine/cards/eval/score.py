@@ -16,6 +16,7 @@ import statistics
 from pathlib import Path
 
 DATA = Path(__file__).resolve().parent / "data"
+INCLUDE_INVALID = False
 QFILES = {"repo_lookup": "questions_repo_lookup.json", "repo_semantic": "questions_repo_semantic.json", "chat": "questions_chat.json", "chat_pos": "questions_chat_pos.json",
           "synth": "questions_synth.json"}
 
@@ -44,7 +45,7 @@ def rescore(docs_by_key) -> int:
             for t in d["turns"]:
                 q = qs.get(t["id"])
                 if q is not None:
-                    t["skip"] = bool(q.get("invalid"))
+                    t["skip"] = bool(q.get("invalid")) and not INCLUDE_INVALID
                     new = check(q, t.get("ans") or "")
                     changed += (new != t["ok"])
                     t["ok"] = new
@@ -93,7 +94,7 @@ def agg(docs):
                 ns=[len(d["turns"]) for d in docs])
 
 
-ORDER = ["none", "flat", "tools", "tools+cat", "tools+cat-llm", "cards-l1", "cards", "cards-llm", "notes-l1", "wiki-files"]
+ORDER = ["none", "flat", "tools", "tools+cat", "tools+cat-llm", "cards-l1", "cards-grep", "cards", "cards-llm", "notes-l1", "wiki-files", "wiki-only", "wiki-only2"]
 
 
 def main():
@@ -101,9 +102,12 @@ def main():
     ap.add_argument("out")
     ap.add_argument("--md", action="store_true")
     ap.add_argument("--fails", action="store_true")
+    ap.add_argument("--include-invalid", action="store_true", help="считать и вопросы, помеченные invalid (по умолчанию они исключены у всех вариантов)")
     ap.add_argument("--matrix", action="store_true", help="по каждому вопросу: сколько прогонов каждого варианта ответили верно и сколько якорей нашлось")
     ap.add_argument("--read-rate", type=float, default=0.10, help="$ за МТок чтения кэша (в источниках расходится: 0.10 или 0.20); пересчитывает цену по токенам")
     ns = ap.parse_args()
+    global INCLUDE_INVALID
+    INCLUDE_INVALID = ns.include_invalid
     runs = load(Path(ns.out))
     for docs in runs.values():
         for d in docs:
