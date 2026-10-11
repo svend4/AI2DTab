@@ -7,5 +7,6 @@
   "pm_dir": "..",
   "promote": {"cluster": "C", "layer": 1, "type": "fact", "mcp_apply": false, "max_waiting": 20, "warn_ratio": 0.8},
   "canon_types": ["fact", "decision"],
-  "notes": {"mcp_write": true, "require_sources": true}
+  "notes": {"mcp_write": true, "require_sources": true},
+  "lint": {"churn_versions": 5, "derived_raw_warn": 0.6, "derived_raw_min_tok": 10000}
 }

@@ -114,6 +114,10 @@ PROJECT_DEFAULT = {
     # и с какой доли предела начинать предупреждать. max_waiting <= 0 выключает предупреждения. Значения — предположение, а не измерение
     "promote": {"cluster": "C", "layer": 1, "type": "fact", "mcp_apply": False, "max_waiting": 20, "warn_ratio": 0.8},
     "canon_types": ["fact", "decision"],                 # какие принятые объекты стола показывать как канон
+    # пороги lint, только предупреждения (значения — предположения, не измерения; <= 0 выключает проверку):
+    # churn_versions — с скольких версий у ключа журнала сообщать о частых правках; derived_raw_warn — с какого отношения токенов заметок к токенам реплик чата предупреждать
+    # derived_raw_min_tok — на совсем маленьком чате отношение ничего не значит, предупреждаем только от этого числа токенов реплик
+    "lint": {"churn_versions": 5, "derived_raw_warn": 0.6, "derived_raw_min_tok": 10000},
     # заметки лежат только в базе картотеки (стол они не трогают): запись из MCP разрешена, но источники обязательны и проверяются при записи
     "notes": {"mcp_write": True, "require_sources": True},
 }
@@ -1461,17 +1465,29 @@ class Store:
 
     def _promote_limits(self) -> tuple:
         """(предел, порог предупреждения) из promote.max_waiting и promote.warn_ratio. Мусор в настройках — значения по умолчанию; предел <= 0 — предупреждений нет (порог 0)."""
-        pr = self.project.get("promote", {})
-        try:
-            limit = int(pr.get("max_waiting", 20))
-        except (TypeError, ValueError):
-            limit = 20
-        try:
-            ratio = float(pr.get("warn_ratio", 0.8))
-        except (TypeError, ValueError):
-            ratio = 0.8
-        ratio = min(max(ratio, 0.0), 1.0)
+        limit = self._setting("promote", "max_waiting", 20, int)
+        ratio = min(max(self._setting("promote", "warn_ratio", 0.8, float), 0.0), 1.0)
         return limit, (max(1, math.ceil(limit * ratio)) if limit > 0 else 0)
+
+    def _setting(self, section: str, key: str, default, cast):
+        """Число из project.json; нет значения или мусор — default."""
+        try:
+            return cast((self.project.get(section) or {}).get(key, default))
+        except (TypeError, ValueError):
+            return default
+
+    def derived_ratio(self):
+        """(отношение, токены заметок, токены реплик чата) — «рост производного»: сколько весят заметки по сравнению с репликами, из которых они сделаны.
+        Нет заметок или нет реплик — None (отношения нет)."""
+        tok = {r["kind"]: r["t"] for r in self.con.execute(
+            "SELECT kind, COALESCE(SUM(ntok), 0) t FROM cards WHERE status='active' AND kind IN ('note', 'turn') GROUP BY kind")}
+        notes, turns = tok.get("note", 0), tok.get("turn", 0)
+        return (notes / turns, notes, turns) if notes > 0 and turns > 0 else None
+
+    def growth_line(self) -> str:
+        """Строка для справки: «DERIVED/RAW 0.44 (notes ~12K tok, chat replies ~27K tok)». Пусто, пока нечего сравнивать."""
+        d = self.derived_ratio()
+        return f"DERIVED/RAW {d[0]:.2f} (notes ~{fmt_tok(d[1])} tok, chat replies ~{fmt_tok(d[2])} tok)" if d else ""
 
     def waiting_proposals(self):
         """Сколько предложений журнала ждут решения человека: объекты стола LF-* в статусе raw. Только чтение; нет стола — None.
@@ -1634,10 +1650,21 @@ class Store:
         by_key: dict = defaultdict(list)
         for r in self.con.execute("SELECT * FROM facts ORDER BY key_norm, version, id"):
             by_key[r["key_norm"]].append(r)
+        churn_from = self._setting("lint", "churn_versions", 5, int)
+        same = lambda a, b: " ".join(a.split()).casefold() == " ".join(b.split()).casefold()  # noqa: E731
         for vs in by_key.values():
             latest = vs[-1]
             if latest["status"] == "active" and not latest["source"]:
                 add("warn", "ledger-no-source", latest["key"], f"v{latest['version']} = «{clip(latest['value'], 50)}» has no source: record where it comes from (fact_set key value source)")
+            if latest["status"] == "active" and len(vs) >= 3:        # текущее значение уже было раньше, не в предыдущей версии: A → B → A
+                back = [i for i, r in enumerate(vs[:-2]) if same(r["value"], latest["value"])]
+                if back:
+                    path = [f"«{clip(r['value'], 30)}» (v{r['version']})" for r in vs[back[-1]:]]
+                    path = path if len(path) <= 6 else path[:3] + ["…"] + path[-2:]
+                    add("warn", "ledger-flipflop", latest["key"], f"the value came back: {' → '.join(path)}. Two sources may disagree, or a correction was undone: "
+                        "check the source and record it (fact_set key value source)")
+            if latest["status"] == "active" and churn_from > 0 and len(vs) >= churn_from:
+                add("info", "ledger-churn", latest["key"], f"{len(vs)} versions: a key that keeps changing is not a settled fact; settle it in the desk (promote, then ACCEPT) or split it into stable keys")
             for r in vs:
                 if not r["pm_id"] or not desk_status:
                     continue
@@ -1674,6 +1701,12 @@ class Store:
         if warn_from and waiting is not None and waiting >= warn_from:
             add("warn", "proposal-backlog", "desk", f"{waiting} proposals wait for ACCEPT (warning from {warn_from}, limit {limit}): the human is the bottleneck, "
                 "ask them to ACCEPT or TAKE some before proposing more")
+
+        heavy_from = self._setting("lint", "derived_raw_warn", 0.6, float)
+        d = self.derived_ratio()
+        if d and heavy_from > 0 and d[0] >= heavy_from and d[2] >= self._setting("lint", "derived_raw_min_tok", 10000, int):
+            add("warn", "derived-heavy", "notes", f"notes weigh {d[0]:.2f} of the chat replies they summarize (~{fmt_tok(d[1])} vs ~{fmt_tok(d[2])} tok, warning from {heavy_from:g}): "
+                "derived text is growing as large as its source; merge or drop notes before filing more")
 
         notes = self.con.execute("SELECT id, title, body, meta FROM cards WHERE kind='note' AND status='active' ORDER BY id").fetchall()
         ids = {n["id"] for n in notes}
@@ -1833,7 +1866,7 @@ class Store:
         canon, shown = self._canon_view()
         ledger = self._ledger_section(shown)
         groups = self.catalog(level=1) if catalog and self.con.execute("SELECT 1 FROM groups LIMIT 1").fetchone() else ""
-        health = "\n".join(x for x in (self.lint_summary(), self.waiting_line()) if x)
+        health = "\n".join(x for x in (self.lint_summary(), self.waiting_line(), self.growth_line()) if x)
         parts = [head, canon, ledger, health, ("MATERIAL: " + groups.replace("GROUPS ", "groups ", 1)) if groups else ""]
         text = "\n\n".join(p for p in parts if p)
         while est_tokens(text) > budget_tok and groups.count("\n") > 3:      # не влезаем: режем список групп с конца
@@ -1906,7 +1939,8 @@ TOOL_SPECS = [
                 "group": {"type": "string", "description": "optional group title, default 'notes'"}}, required=["title", "text", "sources"]),
     dict(name="lint",
          description="Health check of the memory (read-only): canon objects whose date has passed or that wait for an outside event, ledger facts without a "
-                     "source, proposals waiting for ACCEPT (and a backlog of them), canon that lags behind the ledger, notes whose sources vanished or changed.",
+                     "source, proposals waiting for ACCEPT (and a backlog of them), canon that lags behind the ledger, ledger facts that flip back and forth "
+                     "or change too often, notes whose sources vanished or changed, notes growing as large as the chat they summarize.",
          props={}, required=[]),
     dict(name="log",
          description="Chronological log of memory operations (facts, notes, patches, proposals) merged with the desk's events, one line each with a stable "

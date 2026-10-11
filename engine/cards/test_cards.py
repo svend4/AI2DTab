@@ -793,6 +793,163 @@ class PromoteQueueWarnings(unittest.TestCase):
         self.assertIn("backlog", spec["lint"])
 
 
+class LedgerAndGrowthLint(unittest.TestCase):
+    """H5: журнал качается (A → B → A) и производное растёт вровень с первоисточником. Обе беды ловятся без модели, только предупреждениями.
+    Пороги лежат в project.json (lint.churn_versions = 5, lint.derived_raw_warn = 0.6): это предположения, а не измерения."""
+
+    def setUp(self):
+        self.tmp = tempfile.TemporaryDirectory()
+        self.t = Path(self.tmp.name)
+        self.st = cards.Store(self.t / "c.sqlite", project=project_for(self.t, self.t / "nodesk"))     # стола рядом нет: настоящий не читаем
+
+    def tearDown(self):
+        self.st.con.close()
+        self.tmp.cleanup()
+
+    def hist(self, key, *values):
+        for v in values:
+            self.st.fact_set(key, v, "t1")
+
+    def found(self, code):
+        return [f for f in self.st.lint() if f["code"] == code]
+
+    def one(self, code):
+        fs = self.found(code)
+        self.assertEqual(len(fs), 1, f"{code}: ждали ровно одно замечание, есть {fs}")
+        return fs[0]
+
+    def chat_and_note(self):
+        chat = self.t / "chat.md"
+        chat.write_text(make_chat(NOTE_PAIRS), encoding="utf-8")
+        self.st.index_chat(chat)
+        body = [cards.unquote(x) for x in cards.split_lines(self.st._card("t001")["body"])]
+        line = next(i for i, x in enumerate(body, 1) if "открытая вики" in x)
+        out = self.st.add_note("Technopedia", f"Открытая вики знаний с версиями (t001 L{line}).",
+                               sources=[dict(card="t001", lines=f"{line}-{line}", quote="ОТКРЫТАЯ вики знаний")], author="agent")
+        self.assertTrue(out.startswith("OK n001"), out)
+
+    def set_tokens(self, raw, derived):
+        """Подставляем размеры напрямую: так отношение известно точно, а не зависит от оценки токенов."""
+        self.st.con.execute("UPDATE cards SET ntok=0 WHERE kind IN ('turn', 'note')")
+        self.st.con.execute("UPDATE cards SET ntok=? WHERE id='t001'", (raw,))
+        self.st.con.execute("UPDATE cards SET ntok=? WHERE id='n001'", (derived,))
+        self.st.con.commit()
+
+    # --- качание
+    def test_a_value_that_comes_back_is_flagged_with_the_sequence(self):
+        self.hist("deadline", "15 March", "22 March", "15 March")
+        f = self.one("ledger-flipflop")
+        self.assertEqual((f["level"], f["subject"]), ("warn", "deadline"))
+        self.assertIn("«15 March» (v1) → «22 March» (v2) → «15 March» (v3)", f["message"])
+
+    def test_a_later_loop_is_shown_from_its_last_match(self):
+        self.hist("deadline", "A", "B", "C", "B")
+        f = self.one("ledger-flipflop")
+        self.assertIn("«B» (v2) → «C» (v3) → «B» (v4)", f["message"])
+        self.assertNotIn("(v1)", f["message"])
+
+    def test_ordinary_changes_are_not_flipflops(self):
+        self.hist("a", "1", "2", "3")                                                    # только вперёд
+        self.hist("b", "x", "x")                                                         # повтор — не версия
+        self.hist("c", "one", "two")                                                     # двух версий для возврата мало
+        self.assertEqual(self.found("ledger-flipflop"), [])
+
+    def test_the_comparison_ignores_case_and_spaces(self):
+        self.hist("deadline", "15 March", "22 March", "15  march")
+        self.assertEqual(len(self.found("ledger-flipflop")), 1)
+
+    def test_a_long_way_back_is_shortened(self):
+        self.hist("deadline", "A", "B", "C", "D", "E", "F", "G", "A")
+        f = self.one("ledger-flipflop")
+        self.assertIn("«A» (v1) → «B» (v2) → «C» (v3) → … → «G» (v7) → «A» (v8)", f["message"])
+        self.assertNotIn("(v4)", f["message"])
+
+    def test_a_retracted_key_is_left_alone(self):
+        self.hist("back", "A", "B", "A")                                                 # вернулось, но ключ потом сняли
+        self.st.fact_retract("back")
+        self.hist("busy", "1", "2", "3", "4", "5")                                       # много версий, но ключ снят
+        self.st.fact_retract("busy")
+        self.assertEqual((self.found("ledger-flipflop"), self.found("ledger-churn")), ([], []))
+
+    # --- частые правки
+    def test_churn_is_info_from_five_versions(self):
+        self.hist("score", "1", "2", "3", "4")
+        self.assertEqual(self.found("ledger-churn"), [])
+        self.hist("score", "5")
+        f = self.one("ledger-churn")
+        self.assertEqual((f["level"], f["subject"]), ("info", "score"))
+        self.assertIn("5 versions", f["message"])
+
+    def test_the_lint_thresholds_come_from_the_settings_and_can_be_switched_off(self):
+        self.hist("score", "1", "2", "3")
+        self.assertEqual(self.found("ledger-churn"), [])
+        self.st.project["lint"]["churn_versions"] = 3
+        self.assertEqual(len(self.found("ledger-churn")), 1)
+        self.st.project["lint"]["churn_versions"] = 0
+        self.assertEqual(self.found("ledger-churn"), [])
+        self.st.project["lint"]["churn_versions"] = "много"                               # мусор — значение по умолчанию
+        self.assertEqual(self.found("ledger-churn"), [])
+        self.hist("score", "4", "5")
+        self.assertEqual(len(self.found("ledger-churn")), 1)
+
+    # --- производное против первоисточника
+    def test_the_ratio_is_in_the_brief_and_warns_from_the_threshold(self):
+        self.chat_and_note()
+        self.set_tokens(20000, 8800)
+        self.assertEqual(self.st.growth_line(), "DERIVED/RAW 0.44 (notes ~8.8K tok, chat replies ~20K tok)")
+        self.assertIn("DERIVED/RAW 0.44", self.st.handoff(catalog=False))
+        self.assertEqual(self.found("derived-heavy"), [])
+        self.set_tokens(20000, 12000)
+        f = self.one("derived-heavy")
+        self.assertEqual((f["level"], f["subject"]), ("warn", "notes"))
+        self.assertIn("0.60", f["message"])
+        self.assertIn("DERIVED/RAW 0.60", self.st.handoff(catalog=False))
+
+    def test_without_notes_or_without_chat_there_is_no_ratio(self):
+        self.assertEqual(self.st.growth_line(), "")
+        self.chat_and_note()
+        self.st.con.execute("UPDATE cards SET status='archived' WHERE kind='turn'")        # заметки есть, реплик нет
+        self.st.con.commit()
+        self.assertEqual(self.st.growth_line(), "")
+        self.assertEqual(self.found("derived-heavy"), [])
+        self.st.con.execute("UPDATE cards SET status='active' WHERE kind='turn'")
+        self.st.con.execute("UPDATE cards SET status='archived' WHERE kind='note'")        # реплики есть, заметок нет
+        self.st.con.commit()
+        self.assertEqual(self.st.growth_line(), "")
+        self.assertNotIn("DERIVED/RAW", self.st.handoff(catalog=False))
+
+    def test_the_ratio_threshold_is_a_setting_and_can_be_switched_off(self):
+        self.chat_and_note()
+        self.set_tokens(20000, 10000)
+        self.assertEqual(self.found("derived-heavy"), [])
+        self.st.project["lint"]["derived_raw_warn"] = 0.5
+        self.assertEqual(len(self.found("derived-heavy")), 1)
+        self.st.project["lint"]["derived_raw_warn"] = 0
+        self.assertEqual(self.found("derived-heavy"), [])
+        self.assertIn("DERIVED/RAW 0.50", self.st.growth_line())                          # число остаётся видимым и без порога
+
+    def test_a_tiny_chat_shows_the_number_but_does_not_warn(self):
+        """На десятке реплик отношение ничего не значит: число видно, предупреждения нет, пока реплик меньше derived_raw_min_tok."""
+        self.chat_and_note()
+        self.set_tokens(1000, 900)
+        self.assertIn("DERIVED/RAW 0.90", self.st.growth_line())
+        self.assertEqual(self.found("derived-heavy"), [])
+        self.st.project["lint"]["derived_raw_min_tok"] = 0                              # порог размера выключен — предупреждение есть
+        self.assertEqual(len(self.found("derived-heavy")), 1)
+
+    def test_an_empty_ledger_and_no_notes_add_nothing(self):
+        self.assertEqual([f["code"] for f in self.st.lint()], [])
+        self.assertEqual(self.st.lint_summary(), "")
+        self.assertNotIn("DERIVED/RAW", self.st.handoff(catalog=False))
+
+    def test_the_thresholds_are_written_in_the_shipped_project_json(self):
+        shipped = json.loads((Path(cards.__file__).resolve().parent / "project.json").read_text(encoding="utf-8"))["lint"]
+        want = {"churn_versions": 5, "derived_raw_warn": 0.6, "derived_raw_min_tok": 10000}
+        self.assertEqual({k: shipped.get(k) for k in want}, want)
+        self.assertEqual({k: cards.load_project()["lint"][k] for k in want}, want)
+        self.assertEqual({k: cards.PROJECT_DEFAULT["lint"][k] for k in want}, want)
+
+
 class Mcp(unittest.TestCase):
     def test_stdio_roundtrip(self):
         with tempfile.TemporaryDirectory() as d:
