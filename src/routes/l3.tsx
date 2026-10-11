@@ -12,7 +12,7 @@ function L3() {
   const rows = useDesk((s) => s.canon);
   const wires = useDesk((s) => s.wires);
   const nav = useNavigate();
-  const { canWrite } = useDeskAccess();
+  const access = useDeskAccess();
   const [ready, setReady] = useState(false);
   const cells = rows.filter((r) => r.pred && r.obj);
   const rest = rows.filter((r) => !(r.pred && r.obj));
@@ -99,7 +99,7 @@ function L3() {
                 <td className="px-3 py-2">
                   <button
                     type="button"
-                    {...writeProps(canWrite)}
+                    {...writeProps(access)}
                     className="text-xs underline"
                     onClick={() => {
                       void runBoth(r.id).then(() => nav({ to: "/l4" }));

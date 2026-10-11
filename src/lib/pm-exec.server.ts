@@ -15,8 +15,8 @@ export type Engine = {
 export const realEngine: Engine = { ready: engineReady, run: (argv, tape) => runPm(argv, tape) };
 
 /**
- * `user === null` — анонимный посетитель: ему доступно только чтение, и базу он не создаёт.
- * Вошедшему первая команда создаёт базу, если её нет (как делал прежний `pmExec`).
+ * `user === null` — гость, `user.writer === false` — вошедший без допуска: им доступно только чтение, и базу они не создают.
+ * Допущенному первая команда создаёт базу, если её нет (как делал прежний `pmExec`).
  */
 export async function execute(
   input: PmInput,
@@ -28,11 +28,11 @@ export async function execute(
     return { ok: false, stdout: "", stderr: decision.message, code: decision.code };
   }
   if (!engine.ready()) {
-    if (!user) {
+    if (!user?.writer) {
       return {
         ok: false,
         stdout: "",
-        stderr: "стол ещё не создан: его создаёт первая команда после входа",
+        stderr: "стол ещё не создан: его создаёт первая команда допущенного к записи",
         code: "engine_unavailable",
       };
     }

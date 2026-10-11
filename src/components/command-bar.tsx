@@ -2,8 +2,8 @@ import { useState, type FormEvent } from "react";
 import { acceptBoth, bridge, fetchBoth, refreshBook, runBoth, takeBoth } from "@/lib/desk-bridge";
 import { downloadText } from "@/lib/machine";
 import { useDesk } from "@/lib/desk-store";
-import { needsLogin } from "@/lib/desk-access";
-import { LOGIN_MESSAGE, verbKind } from "@/lib/pm-request";
+import { deniedMessage } from "@/lib/desk-access";
+import { verbKind } from "@/lib/pm-request";
 import { useDeskAccess } from "@/lib/use-desk-access";
 
 function tail(out: { ok: boolean; stdout: string; stderr: string }) {
@@ -36,8 +36,9 @@ export function CommandBar() {
     const [cmd, ...rest] = t.split(/\s+/);
     const C = (cmd || "").toUpperCase();
     const arg = rest.join(" ");
-    if (needsLogin(verbKind(C), access)) {
-      setEcho(LOGIN_MESSAGE);
+    const denied = deniedMessage(verbKind(C), access);
+    if (denied) {
+      setEcho(denied);
       return;
     }
     setLine("");

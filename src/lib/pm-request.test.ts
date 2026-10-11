@@ -11,7 +11,8 @@ import {
 } from "./pm-request.ts";
 import type { PmInput, PmUser } from "./pm-request.ts";
 
-const USER: PmUser = { id: "user-1" };
+const USER: PmUser = { id: "user-1", writer: true };
+const READER: PmUser = { id: "user-2", writer: false }; // вошёл, но не допущен к записи
 const ANON: PmUser = null;
 
 function allowed(line: string, user: PmUser = USER, tape?: string) {
@@ -49,7 +50,7 @@ describe("дыры сайта из docs/AUDIT.md, раздел 4.1", () => {
       "RAW --file x",
       "SET RAW \\ --file",
     ];
-    for (const user of [USER, ANON]) {
+    for (const user of [USER, READER, ANON]) {
       for (const line of lines) refused(line, "bad_token", user);
     }
   });
@@ -87,6 +88,48 @@ describe("дыры сайта из docs/AUDIT.md, раздел 4.1", () => {
     ];
     for (const line of lines) refused(line, "login_required", ANON);
     for (const line of lines) allowed(line, USER);
+  });
+
+  it("вошедшему без допуска запись и массовые глаголы тоже закрыты, но читать он может", () => {
+    const writes = [
+      "TAKE RAW",
+      "ACCEPT F001",
+      "FILL",
+      "PURGE",
+      "WIRE F001 D101 constrains",
+      "PLANT текст",
+      "FETCH",
+      "RUN F001",
+      "PROBE C A",
+      "SPEC",
+      "BATCH STATUS",
+      "BATCH TAKE RAW; PURGE; REPAIR",
+    ];
+    for (const line of writes) refused(line, "not_writer", READER);
+    refused("PLANT", "not_writer", READER, "id\ttitle\nB1\tx");
+    for (const line of ["STATUS", "CANON", "RAW", "INSTR", "SET RAW", "CAT LANG-FROM-DB.md"])
+      allowed(line, READER);
+    assert.match(refused("TAKE RAW", "not_writer", READER).message, /допущенным/);
+    assert.match(refused("TAKE RAW", "login_required", ANON).message, /входа/);
+  });
+
+  it("допуск закрыт по умолчанию: пользователь без поля writer или с writer не true писать не может", () => {
+    const noField = { id: "user-3" } as unknown as PmUser;
+    for (const writer of [undefined, null, 0, 1, "true", "yes", {}, []]) {
+      const user = { id: "user-4", writer } as unknown as PmUser;
+      refused("TAKE RAW", "not_writer", user);
+      refused("PURGE", "not_writer", user);
+    }
+    refused("TAKE RAW", "not_writer", noField);
+    allowed("RAW", noField);
+  });
+
+  it("сначала разбор, потом права: плохая строка отвергается одинаково у всех", () => {
+    for (const user of [USER, READER, ANON]) {
+      refused("PLANT --file /etc/passwd", "bad_token", user);
+      refused("BATCH TAKE RAW; MUL A B", "unknown_verb", user);
+      refused("", "empty", user);
+    }
   });
 
   it("BATCH не обходит таблицу: подкоманды проверяются каждая", () => {
@@ -301,6 +344,8 @@ describe("правила глаголов", () => {
         // анонимному доступно ровно то, что относится к чтению
         const anon = buildPmArgs({ line }, ANON);
         assert.equal(anon.ok, kind === "read", `«${line}» без входа`);
+        const reader = buildPmArgs({ line }, READER);
+        assert.equal(reader.ok, kind === "read", `«${line}» без допуска`);
       }
     });
   }
@@ -504,7 +549,7 @@ describe("случайные строки: в движок попадает то
       let line = "";
       for (let i = 0; i < n; i++)
         line += pieces[Math.floor(next() * pieces.length)] + (next() < 0.7 ? " " : "");
-      for (const user of [USER, ANON]) {
+      for (const user of [USER, READER, ANON]) {
         const r = buildPmArgs({ line }, user);
         if (!r.ok) continue;
         allowedCount++;
@@ -512,7 +557,7 @@ describe("случайные строки: в движок попадает то
         assert.equal(r.argv[0], "exec", where);
         assert.ok(Object.hasOwn(VERBS, r.argv[1]), where);
         assert.equal(r.argv[1], r.argv[1].toUpperCase(), where);
-        if (!user) assert.equal(r.kind, "read", where);
+        if (!user?.writer) assert.equal(r.kind, "read", where);
         const isBatch = r.argv[1] === "BATCH";
         for (const tok of r.argv.slice(2)) {
           if (tok === ";") {

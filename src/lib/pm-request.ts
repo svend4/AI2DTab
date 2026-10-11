@@ -5,7 +5,8 @@
  * вызов «чтение» или «запись»; `pm-request.test.ts` проверяет его таблицей безопасности из `docs/AUDIT.md`, раздел 4.
  *
  * Правила (режим A):
- *  - анонимному посетителю доступны только глаголы чтения (`kind: "read"`); запись (`write`) и массовые глаголы (`bulk`) — после входа;
+ *  - чтение (`kind: "read"`) доступно всем; запись (`write`) и массовые глаголы (`bulk`) — только вошедшему и допущенному к записи
+ *    (`user.writer`, список допущенных — `desk-writers.ts`): гость получает `login_required`, вошедший без допуска — `not_writer`;
  *  - глагол берётся из таблицы `VERBS`, а не из регулярного выражения по первому слову;
  *  - аргументы разбираются по правилам глагола: идентификатор объекта, выражение над множествами, слова. Токен с ведущим дефисом
  *    любого вида (- – — − ﹣ －) не проходит нигде, поэтому `--file`, `--file=…`, `--fi` до argparse не доходят;
@@ -18,7 +19,8 @@
  */
 
 export type VerbKind = "read" | "write" | "bulk";
-export type PmUser = { id: string } | null;
+/** `null` — гость. `writer` обязателен: забытое поле не даёт записи (закрыто по умолчанию). */
+export type PmUser = { id: string; writer: boolean } | null;
 export type PmInput = { line: string; tape?: string };
 export type Refusal =
   | "empty"
@@ -28,7 +30,8 @@ export type Refusal =
   | "bad_args"
   | "too_many"
   | "tape"
-  | "login_required";
+  | "login_required"
+  | "not_writer";
 export type PmRefused = { ok: false; code: Refusal; message: string };
 /** Ответ сайта на команду; `code` — причина отказа или сбоя, если она есть. */
 export type PmReply = {
@@ -38,6 +41,7 @@ export type PmReply = {
   code?: Refusal | "engine_unavailable" | "bridge";
 };
 export const LOGIN_MESSAGE = "запись в стол требует входа";
+export const NOT_WRITER_MESSAGE = "запись разрешена только допущенным аккаунтам";
 /** `argv` — то, что идёт в `pm.py` (начиная с `exec`). Если `tape` истинно, сервер добавляет `--file <свой временный файл>`. */
 export type PmParsed = { ok: true; verb: string; kind: VerbKind; argv: string[]; tape: boolean };
 
@@ -323,11 +327,14 @@ function parseBatch(rest: string): PmParsed | PmRefused {
   return { ok: true, verb: "BATCH", kind: "bulk", argv, tape: false };
 }
 
-/** Разбор строки и проверка прав: анонимному — только чтение, вошедшему — всё из таблицы. */
+/** Разбор строки и проверка прав: гостю и вошедшему без допуска — только чтение, допущенному — всё из таблицы. */
 export function buildPmArgs(input: PmInput, user: PmUser): PmParsed | PmRefused {
   const parsed = parsePmLine(input);
   if (!parsed.ok) return parsed;
-  if (parsed.kind !== "read" && !user) return refuse("login_required", LOGIN_MESSAGE);
+  if (parsed.kind !== "read") {
+    if (!user) return refuse("login_required", LOGIN_MESSAGE);
+    if (user.writer !== true) return refuse("not_writer", NOT_WRITER_MESSAGE);
+  }
   return parsed;
 }
 
