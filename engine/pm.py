@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import argparse
+import re
 import sqlite3
 from datetime import datetime, timezone
 from pathlib import Path
@@ -475,24 +476,49 @@ def resolve_set(con, name: str) -> list:
 
 SET_NAMES = {"NEQ", "NE", "RAW", "CANON", "SUPERSEDED", "SESSION", "A", "B", "C", "D", "OBS", "OBSERVATION", "JUNK"}
 
+# Знаки операций над множествами; слова AND/OR/MINUS — только отдельными словами, чтобы не резать идентификаторы вроде ORG1
+SET_OPS = {"∩": "∩", "&": "∩", "AND": "∩", "∪": "∪", "|": "∪", "OR": "∪", "\\": "\\", "MINUS": "\\"}
+_SET_OP_RE = re.compile(r"[∩∪\\&|]|(?<!\S)(?:AND|OR|MINUS)(?!\S)")
+
+
+def split_set_expr(expr: str):
+    """«A \\ B ∩ C» → (["A", "B", "C"], ["\\", "∩"]): операнды и знаки (∩ ∪ \\) по порядку. Пустой операнд — ошибка."""
+    expr = (expr or "").strip()
+    if not expr:
+        raise SystemExit("пустое выражение множества")
+    operands, ops, pos = [], [], 0
+    for m in _SET_OP_RE.finditer(expr):
+        operands.append(expr[pos:m.start()].strip())
+        ops.append(SET_OPS[m.group(0)])
+        pos = m.end()
+    operands.append(expr[pos:].strip())
+    if any(not o for o in operands):
+        raise SystemExit(f"в выражении множества пропущен операнд: {expr}")
+    return operands, ops
+
+
+def set_operand(con, name: str) -> list:
+    """Строки одного операнда: имя множества или идентификатор объекта. Неизвестное имя — ошибка, а не пустое множество."""
+    rows = resolve_set(con, name)
+    if not rows and name.strip().upper().replace("≠", "NEQ") not in SET_NAMES:
+        raise SystemExit(f"нет множества или объекта {name.strip()}")
+    return rows
+
 
 def eval_set_expr(con, expr: str):
-    import re
-    expr = (expr or "").strip()
-    parts = re.split(r"\s*(∩|∪|\\|&|\||AND|OR|MINUS)\s*", expr, maxsplit=1)
-    left = resolve_set(con, parts[0])
-    if len(parts) == 1:
-        return parts[0], left
-    op, right_n = parts[1], parts[2]
-    right = resolve_set(con, right_n)
-    li, ri = {r["id"] for r in left}, {r["id"] for r in right}
-    if op in {"∩", "&", "AND"}:
-        keep, name = li & ri, f"{parts[0]} ∩ {right_n}"
-    elif op in {"∪", "|", "OR"}:
-        keep, name = li | ri, f"{parts[0]} ∪ {right_n}"
-    else:
-        keep, name = li - ri, f"{parts[0]} \\ {right_n}"
-    by = {r["id"]: r for r in left + right}
+    """Выражение над множествами слева направо без приоритетов: «A \\ B \\ C» = «(A \\ B) \\ C»."""
+    operands, ops = split_set_expr(expr)
+    by, first = {}, set_operand(con, operands[0])
+    for r in first:
+        by.setdefault(r["id"], r)
+    keep, name = {r["id"] for r in first}, operands[0]
+    for op, operand in zip(ops, operands[1:]):
+        rows = set_operand(con, operand)
+        for r in rows:
+            by.setdefault(r["id"], r)
+        ids = {r["id"] for r in rows}
+        keep = keep & ids if op == "∩" else keep | ids if op == "∪" else keep - ids
+        name += f" {op} {operand}"
     return name, [by[i] for i in sorted(keep)]
 
 
@@ -1035,29 +1061,7 @@ def cmd_exec(ns: argparse.Namespace) -> None:
         con.commit()
         return
     if cmd == "SET":
-        import re
-        expr = arg.strip()
-        parts = re.split(r"\s*(∩|∪|\\|&|\||AND|OR|MINUS)\s*", expr, maxsplit=1)
-        left = resolve_set(con, parts[0])
-        if len(parts) == 1:
-            print_set(f"SET {parts[0]}", left)
-            log(con, "SET", None, parts[0])
-            con.commit()
-            return
-        op, right_n = parts[1], parts[2]
-        right = resolve_set(con, right_n)
-        li, ri = {r["id"] for r in left}, {r["id"] for r in right}
-        if op in {"∩", "&", "AND"}:
-            keep = li & ri
-            name = f"{parts[0]} ∩ {right_n}"
-        elif op in {"∪", "|", "OR"}:
-            keep = li | ri
-            name = f"{parts[0]} ∪ {right_n}"
-        else:
-            keep = li - ri
-            name = f"{parts[0]} \\ {right_n}"
-        by = {r["id"]: r for r in left + right}
-        rows = [by[i] for i in sorted(keep)]
+        name, rows = eval_set_expr(con, arg)
         print_set(f"SET {name}", rows)
         log(con, "SET", None, name)
         con.commit()
