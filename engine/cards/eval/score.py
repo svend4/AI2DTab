@@ -16,7 +16,8 @@ import statistics
 from pathlib import Path
 
 DATA = Path(__file__).resolve().parent / "data"
-QFILES = {"repo_lookup": "questions_repo_lookup.json", "repo_semantic": "questions_repo_semantic.json", "chat": "questions_chat.json", "chat_pos": "questions_chat_pos.json"}
+QFILES = {"repo_lookup": "questions_repo_lookup.json", "repo_semantic": "questions_repo_semantic.json", "chat": "questions_chat.json", "chat_pos": "questions_chat_pos.json",
+          "synth": "questions_synth.json"}
 
 
 def check(q: dict, ans: str) -> bool:
@@ -25,6 +26,11 @@ def check(q: dict, ans: str) -> bool:
     if q.get("forbid") and re.search(q["forbid"], a, re.I):
         ok = False
     return ok
+
+
+def anchor_hits(q: dict, ans: str) -> list:
+    a = (ans or "").replace("\u00a0", " ").replace("\u202f", " ")
+    return [bool(re.search(rx, a, re.I)) for rx in q.get("check", [])]
 
 
 def rescore(docs_by_key) -> int:
@@ -42,6 +48,7 @@ def rescore(docs_by_key) -> int:
                     new = check(q, t.get("ans") or "")
                     changed += (new != t["ok"])
                     t["ok"] = new
+                    t["hits"] = anchor_hits(q, t.get("ans") or "")
     return changed
 
 
@@ -59,6 +66,7 @@ def agg(docs):
     ok = n = 0
     by_type = collections.defaultdict(lambda: [0, 0])
     calls = tin = usd = out = 0
+    an_ok = an_n = 0
     secs, firsts, rests = [], [], []
     docs = [dict(d, turns=[x for x in d["turns"] if not x.get("skip")]) for d in docs]      # вопросы, помеченные invalid, не считаем
     for d in docs:
@@ -69,6 +77,9 @@ def agg(docs):
             by_type[x.get("type") or "-"][0] += x["ok"]
             by_type[x.get("type") or "-"][1] += 1
             secs.append(x["secs"])
+            if x.get("hits") is not None and len(x["hits"]) > 1:
+                an_ok += sum(x["hits"])
+                an_n += len(x["hits"])
         calls += sum(x["calls"] for x in t)
         tin += sum(x["i"] + x["w"] + x["cr"] for x in t)
         usd += sum(x["usd"] for x in t)
@@ -76,13 +87,13 @@ def agg(docs):
         firsts.append(t[0]["usd"])
         rests.append(sum(x["usd"] for x in t[1:]) / max(1, len(t) - 1))
     k = len(docs)
-    return dict(runs=k, ok=ok, n=n, by_type=dict(by_type), calls=calls / max(1, n), tin=tin / k, usd=usd / k,
+    return dict(runs=k, ok=ok, n=n, an_ok=an_ok, an_n=an_n, by_type=dict(by_type), calls=calls / max(1, n), tin=tin / k, usd=usd / k,
                 usd_q=usd / max(1, n), med=statistics.median(secs), first=statistics.mean(firsts), rest=statistics.mean(rests),
                 usds=[sum(x["usd"] for x in d["turns"]) for d in docs], oks=[sum(x["ok"] for x in d["turns"]) for d in docs],
                 ns=[len(d["turns"]) for d in docs])
 
 
-ORDER = ["flat", "tools", "tools+cat", "tools+cat-llm", "cards-l1", "cards", "cards-llm"]
+ORDER = ["none", "flat", "tools", "tools+cat", "tools+cat-llm", "cards-l1", "cards", "cards-llm", "notes-l1", "wiki-files"]
 
 
 def main():
@@ -90,6 +101,7 @@ def main():
     ap.add_argument("out")
     ap.add_argument("--md", action="store_true")
     ap.add_argument("--fails", action="store_true")
+    ap.add_argument("--matrix", action="store_true", help="по каждому вопросу: сколько прогонов каждого варианта ответили верно и сколько якорей нашлось")
     ap.add_argument("--read-rate", type=float, default=0.10, help="$ за МТок чтения кэша (в источниках расходится: 0.10 или 0.20); пересчитывает цену по токенам")
     ns = ap.parse_args()
     runs = load(Path(ns.out))
@@ -103,7 +115,8 @@ def main():
     sets = sorted({s for s, _ in runs})
     for s in sets:
         print(f"\n### {s}")
-        hdr = ["вариант", "прогонов", "верно", "по типам", "вызовов/вопрос", "токенов на входе за прогон", "$ за прогон", "$ за вопрос", "мед. с/вопрос"]
+        multi = any(a_["an_n"] for a_ in (agg(runs[(s, arm)]) for arm in ORDER if (s, arm) in runs))
+        hdr = ["вариант", "прогонов", "верно", "по типам"] + (["якорей"] if multi else []) + ["вызовов/вопрос", "токенов на входе за прогон", "$ за прогон", "$ за вопрос", "мед. с/вопрос"]
         rows = []
         for arm in ORDER:
             if (s, arm) not in runs:
@@ -111,7 +124,7 @@ def main():
             a = agg(runs[(s, arm)])
             types = ", ".join(f"{t} {v[0]}/{v[1]}" for t, v in sorted(a["by_type"].items())) if len(a["by_type"]) > 1 else ""
             per_run = "+".join(f"{o}" for o in a["oks"])
-            rows.append([arm, str(a["runs"]), f"{a['ok']}/{a['n']} ({per_run} из {a['ns'][0]})", types, f"{a['calls']:.1f}",
+            rows.append([arm, str(a["runs"]), f"{a['ok']}/{a['n']} ({per_run} из {a['ns'][0]})", types] + ([f"{a['an_ok']}/{a['an_n']}"] if multi else []) + [f"{a['calls']:.1f}",
                          f"{a['tin']:,.0f}", f"{a['usd']:.3f}" + (f" ({min(a['usds']):.3f}–{max(a['usds']):.3f})" if a["runs"] > 1 else ""),
                          f"{a['usd_q']:.4f}", f"{a['med']:.1f}"])
         if ns.md:
@@ -125,6 +138,30 @@ def main():
             print("  ".join(h.ljust(w[i]) for i, h in enumerate(hdr)))
             for r in rows:
                 print("  ".join(c.ljust(w[i]) for i, c in enumerate(r)))
+        if ns.matrix:
+            arms = [arm for arm in ORDER if (s, arm) in runs]
+            qs = {q["id"]: q for q in json.loads((DATA / QFILES[s]).read_text(encoding="utf-8"))} if s in QFILES else {}
+            by_q = collections.defaultdict(dict)
+            for arm in arms:
+                per = collections.defaultdict(lambda: [0, 0, 0, 0])
+                for d in runs[(s, arm)]:
+                    for x in d["turns"]:
+                        if x.get("skip"):
+                            continue
+                        per[x["id"]][0] += x["ok"]
+                        per[x["id"]][1] += 1
+                        per[x["id"]][2] += sum(x.get("hits") or [])
+                        per[x["id"]][3] += len(x.get("hits") or [])
+                by_q = by_q if by_q else collections.defaultdict(dict)
+                for qid, v in per.items():
+                    by_q[qid][arm] = v
+            print("  -- по вопросам (верно/прогонов · якорей):  " + " ".join(f"{a:>10}" for a in arms))
+            for qid in sorted(by_q, key=lambda i: (qs.get(i, {}).get("session", 0), i)):
+                cells = []
+                for arm in arms:
+                    v = by_q[qid].get(arm)
+                    cells.append(f"{v[0]}/{v[1]}·{v[2]}/{v[3]}".rjust(10) if v else " " * 10)
+                print(f"     {qid:<30} {qs.get(qid, {}).get('type', '')[:3]} " + " ".join(cells))
         if ns.fails:
             for arm in ORDER:
                 if (s, arm) not in runs:

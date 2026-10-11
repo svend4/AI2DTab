@@ -6,5 +6,6 @@
   "chats": ["../../attachments/*.md"],
   "pm_dir": "..",
   "promote": {"cluster": "C", "layer": 1, "type": "fact", "mcp_apply": false},
-  "canon_types": ["fact", "decision"]
+  "canon_types": ["fact", "decision"],
+  "notes": {"mcp_write": true, "require_sources": true}
 }

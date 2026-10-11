@@ -9,6 +9,7 @@ import subprocess
 import sys
 import tempfile
 import unittest
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
@@ -415,6 +416,266 @@ class Mcp(unittest.TestCase):
             self.assertIn("fact_set", lines[0]["result"]["instructions"])                  # правила памяти едут вместе с сервером
             self.assertEqual(lines[0]["result"]["serverInfo"]["name"], "cards")
             self.assertIn("k = v", lines[2]["result"]["content"][0]["text"])
+
+
+class Helpers(unittest.TestCase):
+    def test_parse_span(self):
+        self.assertEqual(cards.parse_span("317-345"), (317, 345))
+        self.assertEqual(cards.parse_span("L5"), (5, 5))
+        self.assertEqual(cards.parse_span("L5-L9"), (5, 9))
+        self.assertEqual(cards.parse_span([3, 9]), (3, 9))
+        for bad in ("9-3", "abc", "0-3", "", None):
+            self.assertIsNone(cards.parse_span(bad), bad)
+
+    def test_norm_quote_ignores_case_markup_and_quotes(self):
+        self.assertEqual(cards.norm_quote("**Привет**,  «Мир» — Ёлка"), 'привет, "мир" - елка')
+
+    def test_dates_in(self):
+        from datetime import date
+        self.assertEqual(cards.dates_in("с 01.10.2026 и 2027-01-05, но не 31.02.2026 и не 12.12.1999"), [date(2026, 10, 1), date(2027, 1, 5)])
+
+
+NOTE_PAIRS = [("что такое Technopedia", "## Определение\n\nTechnopedia — это открытая вики знаний.\nОна хранит версии утверждений."),
+              ("а форки?", "## Форки\n\nФорк позволяет оспорить утверждение.\nКаждый форк имеет автора.")]
+
+
+class Notes(unittest.TestCase):
+    """Заметки: источник обязателен и проверяется при записи, потом видно, что он изменился."""
+
+    def setUp(self):
+        self.tmp = tempfile.TemporaryDirectory()
+        self.t = Path(self.tmp.name)
+        self.chat = self.t / "chat.md"
+        self.chat.write_text(make_chat(NOTE_PAIRS), encoding="utf-8")
+        self.st = cards.Store(self.t / "c.sqlite", project=project_for(self.t, self.t / "nodesk"))
+        self.st.index_chat(self.chat)
+        self.l = self.line_of("t001", "открытая вики")
+
+    def tearDown(self):
+        self.st.con.close()
+        self.tmp.cleanup()
+
+    def line_of(self, cid, needle):
+        body = [cards.unquote(x) for x in cards.split_lines(self.st._card(cid)["body"])]
+        return next(i for i, x in enumerate(body, 1) if needle in x)
+
+    def make_note(self, **kw):
+        args = dict(title="Technopedia", text=f"Открытая вики знаний с версиями (t001 L{self.l}).",
+                    sources=[dict(card="t001", lines=f"{self.l}-{self.l}", quote="ОТКРЫТАЯ вики знаний")], author="agent")
+        args.update(kw)
+        return self.st.add_note(**args)
+
+    def test_note_roundtrip_open_find_lint(self):
+        out = self.make_note()
+        self.assertTrue(out.startswith("OK n001") and "1 verified source" in out, out)
+        shown = self.st.open("n001")
+        self.assertIn(f"SOURCES (1", shown)
+        self.assertIn(f"t001 L{self.l}-{self.l} «ОТКРЫТАЯ вики знаний»", shown)
+        self.assertIn("n001", self.st.find("версиями"))                      # заметка ищется наравне с картотекой
+        self.assertEqual(self.st.lint(), [])                                  # источник на месте, цитата найдена
+
+    def test_sources_are_checked_on_write(self):
+        def err(**kw):
+            r = self.make_note(**kw)
+            self.assertTrue(r.startswith("ERR"), r)
+            return r
+        self.assertIn("does not exist", err(sources=[dict(card="t999", lines="1-2")]))
+        self.assertIn("outside", err(sources=[dict(card="t001", lines="500-600")]))
+        self.assertIn("quote not found", err(sources=[dict(card="t001", lines=f"{self.l}-{self.l}", quote="закрытая энциклопедия")]))
+        self.assertIn("give the lines", err(sources=[dict(card="t001", lines="")]))
+        self.assertIn("required", err(text=" "))
+        self.make_note()
+        self.assertIn("is a note", err(sources=[dict(card="n001", lines="1-1")]))     # источник — первичная карточка, не другая заметка
+        self.assertEqual(self.st.con.execute("SELECT COUNT(*) c FROM cards WHERE kind='note'").fetchone()["c"], 1)   # неудачные записи ничего не оставили
+
+    def test_manual_note_has_no_sources_and_is_not_flagged(self):
+        out = self.st.add_note("Мысль", "просто заметка человека", sources=None)
+        self.assertIn("manual", out)
+        self.assertIn("none (a manual note)", self.st.open("n001"))
+        self.assertEqual(self.st.lint(), [])
+
+    def test_lint_flags_changed_and_missing_sources(self):
+        self.make_note(sources=[dict(card="t001", lines=f"{self.l}-{self.l + 1}", quote="открытая вики")])      # две строки: 13 и 14
+        self.assertEqual(self.st.lint(), [])
+        changed = make_chat([(NOTE_PAIRS[0][0], NOTE_PAIRS[0][1].replace("открытая вики", "закрытая вики")), NOTE_PAIRS[1]])
+        self.chat.write_text(changed, encoding="utf-8")
+        self.st.index_chat(self.chat)
+        f = self.st.lint()
+        self.assertEqual([(x["level"], x["code"], x["subject"]) for x in f], [("warn", "note-source-drift", "n001")])
+        self.assertIn("[CHANGED", self.st.open("n001"))
+        self.chat.write_text(make_chat([("коротко", "да")]), encoding="utf-8")        # реплика стала короче цитируемых строк
+        self.st.index_chat(self.chat)
+        f = self.st.lint()
+        self.assertEqual([(x["level"], x["code"]) for x in f], [("error", "note-source-missing")])
+        self.assertIn("MISSING", self.st.open("n001"))
+
+    def test_lint_flags_note_without_sources_and_dangling_links(self):
+        self.make_note()
+        self.st.add_note("Висит", "ссылка на [[n099]] и [[n001]]", sources=[dict(card="t001", lines="1-3")])
+        self.st.con.execute("DELETE FROM note_sources WHERE note_id='n002'")           # как будто источники потеряны
+        self.st.con.commit()
+        codes = {(x["code"], x["subject"]) for x in self.st.lint()}
+        self.assertIn(("note-no-sources", "n002"), codes)
+        self.assertIn(("note-dangling-link", "n002"), codes)
+        self.assertTrue(any(c == "note-orphan" for c, _ in codes))                     # на n002 никто не ссылается, а на n001 — да
+
+    def test_patch_note_keeps_sources_and_bumps_version(self):
+        self.make_note()
+        out = self.st.patch("n001", 1, "с версиями", "с версиями утверждений")
+        self.assertTrue(out.startswith("OK n001 v2"), out)
+        self.assertIn("версиями утверждений", self.st.open("n001"))
+        self.assertIn("SOURCES (1", self.st.open("n001"))
+        self.assertEqual(self.st.lint(), [])
+
+    def test_big_note_gets_outline_and_sources_come_last(self):
+        text = "# Страница\n\n" + "\n\n".join(f"## Раздел {i}\n\n" + "слово " * 300 for i in range(8))
+        self.st.add_note("Большая", text, sources=[dict(card="t001", lines="1-3")])
+        out = self.st.open("n001")
+        self.assertIn("OUTLINE", out)
+        self.assertNotIn("SOURCES", out)                                               # источники печатаются, когда показан конец заметки
+        last = self.st._card("n001")["nlines"]
+        self.assertIn("SOURCES (1", self.st.open("n001", lines=f"{last - 2}-{last}"))
+
+    def test_mcp_note_requires_sources_and_obeys_switch(self):
+        self.assertIn("needs at least one source", cards.call_tool(self.st, "note", {"title": "x", "text": "y", "sources": []}))
+        ok = cards.call_tool(self.st, "note", {"title": "Т", "text": "тело", "sources": [dict(card="t001", lines=f"{self.l}-{self.l}", quote="открытая вики")]})
+        self.assertTrue(ok.startswith("OK n001"), ok)
+        self.st.project["notes"]["mcp_write"] = False
+        self.assertIn("switched off", cards.call_tool(self.st, "note", {"title": "x", "text": "y", "sources": [dict(card="t001", lines="1-2")]}))
+        self.assertEqual(self.st.con.execute("SELECT COUNT(*) c FROM cards WHERE kind='note'").fetchone()["c"], 1)
+
+    def test_log_lines_have_stable_prefix_and_grep(self):
+        self.st.fact_set("budget", "96000 EUR", "t1")
+        self.make_note()
+        self.st.patch("n001", 1, "с версиями", "с версиями утверждений")
+        self.st.fact_retract("budget")
+        out = self.st.log(n=10, desk=False)
+        for part in ("] fact | budget | = 96000 EUR (v1)", "] note | n001 |", "] patch | n001 |", "] retract | budget |"):
+            self.assertIn(part, out)
+        self.assertTrue(all(ln.startswith("## [") for ln in out.split("\n")))
+        self.assertEqual(self.st.log(grep="budget", desk=False).count("\n"), 1)
+        self.assertEqual(self.st.log(n=1, desk=False).count("\n"), 0)
+
+    def test_export_wiki_writes_index_log_and_pages_with_file_lines(self):
+        self.make_note()
+        res = self.st.export_wiki(self.t / "wiki")
+        self.assertEqual(res["pages"], 1)
+        idx = (self.t / "wiki" / "index.md").read_text(encoding="utf-8")
+        self.assertIn("[Technopedia](pages/n001-technopedia.md)", idx)
+        page = (self.t / "wiki" / "pages" / "n001-technopedia.md").read_text(encoding="utf-8")
+        file_line = next(i for i, x in enumerate(self.chat.read_text(encoding="utf-8").split("\n"), 1) if "открытая вики" in x)
+        self.assertIn(f"chat.md:L{file_line}-{file_line}", page)                       # ссылка дополнена координатами исходного файла
+        self.assertIn("## [", (self.t / "wiki" / "log.md").read_text(encoding="utf-8"))
+        self.st.export_wiki(self.t / "wiki")                                           # повторный экспорт перезаписывает, не плодит страницы
+        self.assertEqual(len(list((self.t / "wiki" / "pages").glob("*.md"))), 1)
+
+
+class LintDesk(unittest.TestCase):
+    def setUp(self):
+        self.tmp = tempfile.TemporaryDirectory()
+        self.t = Path(self.tmp.name)
+        self.desk = make_desk(self.t)
+        self.st = cards.Store(self.t / "c.sqlite", project=project_for(self.t, self.desk))
+
+    def tearDown(self):
+        self.st.con.close()
+        self.tmp.cleanup()
+
+    def codes(self, **kw):
+        return [(f["code"], f["subject"]) for f in self.st.lint(**kw)]
+
+    def accept(self, oid):
+        subprocess.run([sys.executable, str(self.desk / "pm.py"), "exec", "ACCEPT", oid], cwd=self.desk, check=True, capture_output=True)
+
+    def test_canon_with_passed_date_and_open_condition(self):
+        c = self.codes(today="2026-10-11")
+        self.assertIn(("canon-date-passed", "F001"), c)            # пилот 01.10.2026 уже в прошлом
+        self.assertIn(("canon-condition", "D001"), c)              # «пока нет нового письма Минтруда»
+        self.assertNotIn(("canon-date-passed", "D001"), c)         # 01.01.2027 ещё впереди
+        self.assertNotIn(("canon-date-passed", "F001"), self.codes(today="2026-09-01"))
+
+    def test_lint_does_not_touch_the_desk(self):
+        db = self.desk / "project-store.sqlite"
+        before = (db.stat().st_mtime_ns, db.stat().st_size)
+        self.st.lint(today="2026-10-11")
+        self.assertEqual(before, (db.stat().st_mtime_ns, db.stat().st_size))
+
+    def test_ledger_fact_without_source_and_proposal_waiting_for_accept(self):
+        self.st.fact_set("budget", "96000 EUR")
+        self.st.fact_set("lead", "Anna", "реплика 3")
+        self.st.fact_promote("lead", apply=True)
+        today = datetime.now(timezone.utc).date()
+        c = self.codes(today=today.isoformat())
+        self.assertIn(("ledger-no-source", "budget"), c)
+        self.assertNotIn(("ledger-no-source", "lead"), c)
+        self.assertNotIn(("proposal-waiting", "LF-lead-v1"), c)                                   # только что предложено
+        self.assertIn(("proposal-waiting", "LF-lead-v1"), self.codes(today=(today + timedelta(days=8)).isoformat()))
+        self.accept("LF-lead-v1")
+        self.assertNotIn(("proposal-waiting", "LF-lead-v1"), self.codes(today=(today + timedelta(days=8)).isoformat()))
+
+    def test_canon_behind_ledger_then_retracted(self):
+        self.st.fact_set("deadline", "15 March", "t1")
+        self.st.fact_promote("deadline", apply=True, accept=True)
+        self.assertNotIn("canon-behind-ledger", [c for c, _ in self.codes()])
+        self.st.fact_set("deadline", "22 March", "t2")
+        self.assertIn(("canon-behind-ledger", "LF-deadline-v1"), self.codes())
+        self.st.fact_retract("deadline")
+        c = self.codes()
+        self.assertIn(("canon-retracted", "LF-deadline-v1"), c)
+        self.assertNotIn(("canon-behind-ledger", "LF-deadline-v1"), c)
+
+    def test_rejected_and_vanished_proposals(self):
+        self.st.fact_set("risk", "high", "t1")
+        self.st.fact_promote("risk", apply=True)
+        con = sqlite3.connect(self.desk / "project-store.sqlite")
+        con.execute("UPDATE objects SET status='rejected' WHERE id='LF-risk-v1'")
+        con.commit()
+        self.assertIn(("proposal-rejected", "LF-risk-v1"), self.codes())
+        con.execute("DELETE FROM objects WHERE id='LF-risk-v1'")
+        con.commit()
+        con.close()
+        self.assertIn(("proposal-missing", "LF-risk-v1"), self.codes())
+
+    def test_text_is_compact_and_reaches_handoff_and_mcp(self):
+        out = cards.call_tool(self.st, "lint", {})
+        self.assertTrue(out.startswith("LINT "), out)
+        self.assertIn("canon-condition D001", out)
+        self.assertIn("LINT:", self.st.handoff())
+        many = [dict(level="warn", code="note-source-drift", subject=f"n{i:03d}", message="x") for i in range(30)]
+        txt = cards.Store.lint_text(many)
+        self.assertIn("and 27 more", txt)
+        self.assertLessEqual(txt.count("\n"), 5)
+        self.assertIn("nothing to flag", cards.Store.lint_text([]))
+
+    def test_no_desk_no_findings_on_empty_store(self):
+        self.st.project["pm_dir"] = str(self.t / "nowhere")
+        self.assertEqual(self.st.lint(), [])
+        self.assertNotIn("LINT:", self.st.handoff())
+
+    def test_log_merges_desk_events(self):
+        self.st.fact_set("k", "v", "s")
+        self.st.fact_promote("k", apply=True, accept=True)
+        out = self.st.log(n=500)
+        self.assertIn("] fact | k |", out)
+        self.assertIn("] promote | LF-k-v1 |", out)
+        self.assertIn("] desk:ACCEPT | LF-k-v1 |", out)
+        self.assertNotIn("desk:", self.st.log(n=500, desk=False))
+
+    def test_cli_lint_exit_code_and_note_source_flag(self):
+        db = self.t / "cli.sqlite"
+        chat = self.t / "chat.md"
+        chat.write_text(make_chat(NOTE_PAIRS), encoding="utf-8")
+        run = lambda *a: subprocess.run([sys.executable, str(Path(cards.__file__)), "--db", str(db), "--config", str(self.t / "none.json"), *a],  # noqa: E731
+                                        capture_output=True, text=True, timeout=60)
+        self.assertEqual(run("index-chat", str(chat)).returncode, 0)
+        r = run("note", "Заголовок", "текст", "--source", "t001:13-14:открытая вики")
+        self.assertIn("OK n001", r.stdout + r.stderr)
+        self.assertEqual(run("lint").returncode, 0)
+        chat.write_text(make_chat([("коротко", "да")]), encoding="utf-8")
+        run("index-chat", str(chat))
+        r = run("lint")
+        self.assertEqual(r.returncode, 1)                                                    # есть ошибка: источник пропал
+        self.assertIn("note-source-missing", r.stdout)
 
 
 if __name__ == "__main__":

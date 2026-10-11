@@ -94,6 +94,50 @@ for q in chat:
     if q["id"] == "c_t015_467_sem":
         q["invalid"] = "неоднозначен: в чате есть второй пример автоматической проверки (benchmark_pass_rate >= 0.95)"
 
+
+# --- синтез: вопросы, ответ на которые собирается из нескольких реплик (кандидаты — gen_synth.py, отбор — мой).
+# Критерии отбора: по одному вопросу на понятие; вопрос определённый (какой именно аспект спрашивается); якоря — имена, идентификаторы, числа, а не
+# общие слова; каждый якорь лежит в 1–3 репликах чата, и у вопроса якоря из ≥ 2 разных реплик. Регулярные выражения терпимы к русской передаче
+# английского термина там, где она естественна. Сессии (по 8) разводят близкие понятия по разным сессиям: ответ на один не должен подсказывать другой.
+SYNTH = {
+    # id кандидата: (сессия, [регулярные выражения: все должны сработать])
+    "s_signpost_evo1": (0, [r"repo activity", r"NOT_OBSERVED", r"network\s+reliability"]),
+    "s_acceptance_test_evo1": (0, [r"Reference Implementation Project", r"Composite Capability Gap", r"Action Proposal"]),
+    "s_procedural_graph_agg1": (0, [r"how an executor performs a task|как исполнитель выполняет задачу",
+                                    r"latest safe start|последн\w+ безопасн\w+ (дат\w+ )?(старт|начал)", r"COMMAND_REQUEST"]),
+    "s_idempotency_agg1": (0, [r"matcher_version", r"world_revision", r"external\s+event\s+ID|ID\s+внешн\w+\s+событ", r"content\s+hash|хеш\w*\s+содержим"]),
+    "s_promotion_agg1": (0, [r"SHADOW", r"Validated Pattern", r"conformance\s+tests?"]),
+    "s_team_builder_agg0": (0, [r"MUST\s+capabilit", r"Candidate Resources?", r"infra\w*\s+engineer", r"security\s+specialist"]),
+    "s_open_knowledge_evo0": (0, [r"Knowledge Git", r"Knowledge View Compiler", r"private overlays?"]),
+    "s_research_observatory_agg0": (0, [r"scientific feedback subsystem", r"structured epistemic state", r"layout algorithms?"]),
+    "s_foresight_evo1": (1, [r"Weak Signals", r"Foresight State", r"new vocabulary frequency"]),
+    "s_kill_criteria_evo0": (1, [r"GO\s*/\s*MODIFY\s*/\s*KILL", r"safety target not met", r"real-time\s+grasp|grasp-control"]),
+    "s_causal_engine_agg1": (1, [r"what may happen if X changes|что (может )?(произойти|случится)", r"evaluates?\s+(the\s+)?explanation|оценива\w+ объяснени",
+                                 r"suppl(y|ies)\s+(causal\s+)?claims?|поставля\w+\s+(причинн\w+\s+)?(claims?|утвержден)"]),
+    "s_entity_resolution_agg0": (1, [r"email hash|хеш\w* (e-?mail|почт)", r"ORCID", r"company registry"]),
+    "s_package_manager_agg0": (1, [r"Tool Binding Package", r"Ontology Package", r"how capabilities can be implemented"]),
+    "s_architecture_freeze_evo0": (1, [r"Project IR schema", r"ARCHITECTURE_FREEZE_v0\.1", r"kernel_manifest"]),
+    "s_capability_contract_agg0": (1, [r"what it does", r"compatible_with", r"supersedes", r"\bextends\b"]),
+    "s_team_hypothesis_agg0": (1, [r"Latent Team Hypothesis", r"Composite Team Hypothesis"]),
+    "s_strategy_engine_agg0": (2, [r"Literature review", r"university facility", r"Partial Deployment"]),
+    "s_capability_capital_evo0": (2, [r"структурирован\w+ карт|structured map", r"INSTITUTIONALIZED", r"provider coverage"]),
+    "s_handoff_evo0": (2, [r"remaining work", r"personal inbox", r"Context Capsule"]),
+    "s_capability_package_evo0": (2, [r"Package #174", r"verification_contract_id", r"upstream contributions?"]),
+    "s_funding_resolver_agg0": (2, [r"corporate sponsor", r"open-source infrastructure grants?", r"bount"]),
+    "s_commitment_agg1": (2, [r"test_report_required", r"approved budgets?"]),
+    "s_query_planner_agg0": (2, [r"negative-result terms", r"program types", r"exact terminology"]),
+    "s_technopedia_evo0": (2, [r"Open Knowledge Infrastructure", r"human-readable projection"]),
+}
+synth = []
+_cand_synth = {c["id"]: c for c in json.loads((D / "cand_synth.json").read_text(encoding="utf-8"))}
+for qid, (sess, rxs) in SYNTH.items():
+    c = _cand_synth[qid]
+    synth.append(dict(id=qid, type=c["type"], term=c["term"], text=c["text"], session=sess, check=rxs, reference=c["reference"],
+                      anchors=[dict(turn=p["turn"], span=p["span"]) for p in c["parts"]]))
+rnd_s = random.Random(5)
+rnd_s.shuffle(synth)
+synth.sort(key=lambda q: q["session"])
+
 pos_path = D / "questions_chat_pos.json"
 if pos_path.exists():
     pos = json.loads(pos_path.read_text(encoding="utf-8"))
@@ -102,7 +146,8 @@ if pos_path.exists():
             q.update(card="t043", ts="2026-09-18 09:58", check=[r"09:58"], note="эталон исправлен после первых прогонов: все варианты ответили 09:58, проверка вручную подтвердила")
     pos_path.write_text(json.dumps(pos, ensure_ascii=False, indent=1), encoding="utf-8")
 
-for name, obj in (("questions_repo_lookup", lookup), ("questions_repo_semantic", semantic), ("questions_chat", chat), ("questions_repo_edit", edit)):
+for name, obj in (("questions_repo_lookup", lookup), ("questions_repo_semantic", semantic), ("questions_chat", chat), ("questions_repo_edit", edit),
+                  ("questions_synth", synth)):
     (D / f"{name}.json").write_text(json.dumps(obj, ensure_ascii=False, indent=1), encoding="utf-8")
     print(name, len(obj))
 print("chat types:", {t: sum(1 for q in chat if q["type"] == t) for t in ("lexical", "semantic")})

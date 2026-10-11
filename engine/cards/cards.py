@@ -21,6 +21,10 @@
     python3 cards.py --db cards.sqlite canon        # канон стола: принятые человеком факты и решения (только чтение)
     python3 cards.py --db cards.sqlite promote budget [--apply]   # предложить факт журнала столу (raw; принимает человек)
     python3 cards.py --db cards.sqlite handoff      # стартовая справка новой сессии
+    python3 cards.py --db cards.sqlite note "Заголовок" "текст" --source t026:317-345:дословная цитата   # заметка с проверяемым источником
+    python3 cards.py --db cards.sqlite lint         # что в памяти протухло: даты в каноне, факты без источника, заметки с изменившимся источником
+    python3 cards.py --db cards.sqlite log -n 20    # журнал операций + события стола
+    python3 cards.py --db cards.sqlite export-wiki wiki/   # заметки как папка markdown (index.md, log.md, pages/)
     python3 cards.py --db cards.sqlite serve --refresh   # MCP по stdio: инструменты для Claude Code
 """
 from __future__ import annotations
@@ -82,6 +86,15 @@ CREATE TABLE IF NOT EXISTS facts (
   version INTEGER NOT NULL, status TEXT NOT NULL, source TEXT NOT NULL DEFAULT '', ts TEXT NOT NULL
 );
 CREATE INDEX IF NOT EXISTS idx_facts_key ON facts(key_norm, status);
+CREATE TABLE IF NOT EXISTS note_sources (
+  note_id TEXT NOT NULL, card_id TEXT NOT NULL, l1 INTEGER NOT NULL, l2 INTEGER NOT NULL,
+  card_version INTEGER NOT NULL DEFAULT 1, text_hash TEXT NOT NULL DEFAULT '', quote TEXT NOT NULL DEFAULT '',
+  PRIMARY KEY (note_id, card_id, l1, l2)
+);
+CREATE INDEX IF NOT EXISTS idx_note_sources_card ON note_sources(card_id);
+CREATE TABLE IF NOT EXISTS oplog (
+  id INTEGER PRIMARY KEY AUTOINCREMENT, ts TEXT NOT NULL, op TEXT NOT NULL, subject TEXT NOT NULL DEFAULT '', detail TEXT NOT NULL DEFAULT ''
+);
 """
 
 
@@ -97,6 +110,8 @@ PROJECT_DEFAULT = {
     # писать в базу стола (она лежит в репозитории) человек разрешает здесь или делает сам: cards.py promote КЛЮЧ --apply
     "promote": {"cluster": "C", "layer": 1, "type": "fact", "mcp_apply": False},
     "canon_types": ["fact", "decision"],                 # какие принятые объекты стола показывать как канон
+    # заметки лежат только в базе картотеки (стол они не трогают): запись из MCP разрешена, но источники обязательны и проверяются при записи
+    "notes": {"mcp_write": True, "require_sources": True},
 }
 
 
@@ -129,7 +144,9 @@ PROTOCOL = """This project keeps its memory outside the conversation. Look thing
   key and history is kept (fact_history). Read the current state with facts().
 - The desk's canon (facts and decisions a human accepted): canon(). It outranks the ledger. To propose a ledger fact to the desk call
   fact_promote(key, apply=true): it creates a RAW object; only a human accepts it (ACCEPT).
-- Edits: patch(id, version, old, new); on STALE re-apply with the version shown. Chat cards are read-only history."""
+- Edits: patch(id, version, old, new); on STALE re-apply with the version shown. Chat cards are read-only history.
+- Notes: a synthesis built from several cards can be filed back with note(title, text, sources=[{card, lines, quote}]); sources are checked
+  on write. Notes are derived data: re-read the cited lines when exact words or numbers matter. lint() lists what has gone stale."""
 
 
 # ---------------------------------------------------------------- мелочи
@@ -174,6 +191,46 @@ def clip(s: str, n: int) -> str:
 
 def numbered(lines: list, first: int) -> str:
     return "\n".join(f"{first + i:5d}| {ln}" for i, ln in enumerate(lines))
+
+
+def norm_quote(s: str) -> str:
+    """Для сверки цитат: регистр, ё/е, кавычки, тире, разметка (** и `) и пробелы не важны."""
+    s = (s or "").lower().replace("ё", "е")
+    s = s.translate({ord(c): '"' for c in "«»“”„"}).replace("—", "-").replace("–", "-").replace("’", "'")
+    s = re.sub(r"[*`]+", "", s)
+    return " ".join(s.split())
+
+
+def parse_span(v):
+    """'317-345' | 'L317-L345' | '317' | [317, 345] -> (317, 345); не разобрано -> None."""
+    if isinstance(v, (list, tuple)) and len(v) == 2 and all(isinstance(x, int) for x in v):
+        a, b = int(v[0]), int(v[1])
+        return (a, b) if b >= a >= 1 else None
+    m = re.match(r"^\s*L?(\d+)\s*(?:[-:–]\s*L?(\d+))?\s*$", str(v))
+    if not m:
+        return None
+    a = int(m.group(1))
+    b = int(m.group(2) or a)
+    return (a, b) if b >= a >= 1 else None
+
+
+_DATE = re.compile(r"\b(\d{1,2})\.(\d{1,2})\.(\d{4})\b|\b(\d{4})-(\d{2})-(\d{2})\b")
+# условие «пока …», «до получения …»: объект действует, пока не случится внешнее событие
+_COND = re.compile(r"(?i)\b(пока|until|pending|временно|предварительно|tbd|ожида\w*|до (?:получения|решения|появления|тех пор))\b")
+
+
+def dates_in(text: str) -> list:
+    """Даты вида 01.10.2026 и 2026-10-01 в тексте -> список date (нечитаемые пропускаем)."""
+    from datetime import date
+    out = []
+    for m in _DATE.finditer(text or ""):
+        try:
+            d = date(int(m.group(3)), int(m.group(2)), int(m.group(1))) if m.group(1) else date(int(m.group(4)), int(m.group(5)), int(m.group(6)))
+        except ValueError:
+            continue
+        if 2000 <= d.year <= 2100:
+            out.append(d)
+    return sorted(set(out))
 
 
 # ---------------------------------------------------------------- слова: идентификаторы, русская основа, запрос
@@ -653,6 +710,9 @@ class Store:
             meta.pop("heads", None)
             if len(entries) > MAX_OUTLINE:
                 meta["heads"] = entries
+        elif c["kind"] == "note":
+            ls = split_lines(text)
+            outline, summary = (navigable(outline_md(text), ls) if len(ls) > 12 else []), c["summary"]
         else:
             outline, summary = json.loads(c["outline"]), c["summary"]
         self.con.execute(
@@ -837,17 +897,110 @@ class Store:
         self.con.commit()
         return f"OK {gid} updated"
 
-    # --- заметки (карточки, которые пишет сам агент)
-    def add_note(self, title: str, text: str, group: str = "notes") -> str:
+    # --- журнал операций (факты, заметки, правки, предложения столу): строка на событие, одинаковый префикс — работает grep
+    def _log(self, op: str, subject: str = "", detail: str = ""):
+        self.con.execute("INSERT INTO oplog(ts,op,subject,detail) VALUES(?,?,?,?)", (now(), op, subject, clip(detail, 200)))
+
+    def log(self, n: int = 20, grep: str | None = None, desk: bool = True) -> str:
+        rows = [(r["ts"], r["op"], r["subject"], r["detail"]) for r in self.con.execute("SELECT ts, op, subject, detail FROM oplog ORDER BY id")]
+        con = self._desk_con() if desk else None
+        if con is not None:
+            try:
+                for r in con.execute("SELECT ts, actor, action, object_id, detail FROM events ORDER BY id DESC LIMIT 300"):
+                    rows.append((r["ts"], "desk:" + r["action"], r["object_id"] or "", f"{r['actor']}: {r['detail'] or ''}".strip(": ")))
+            finally:
+                con.close()
+        rows.sort(key=lambda x: x[0])
+        lines = [f"## [{ts[:10]} {ts[11:16]}] {op} | {subj} | {clip(det, 160)}" for ts, op, subj, det in rows]
+        if grep:
+            lines = [ln for ln in lines if grep.lower() in ln.lower()]
+        lines = lines[-max(1, int(n)):]
+        return "\n".join(lines) if lines else "(log is empty)"
+
+    # --- заметки: карточки со сводками, которые пишет агент или проход «compile». Источники обязательны и проверяются при записи:
+    #     карточка есть, строки в пределах, цитата найдена дословно (с точностью до регистра, кавычек и разметки). Слепок строк
+    #     хранится, поэтому позже видно, что источник изменился (lint, open).
+    def _cite_lines(self, c, l1: int, l2: int) -> list:
+        seg = split_lines(c["body"])[l1 - 1:l2]
+        return [unquote(x) for x in seg] if json.loads(c["meta"]).get("ro") else seg
+
+    def add_note(self, title: str, text: str, group: str = "notes", sources=None, summary: str | None = None, author: str = "human",
+                 group_kind: str = "notes", group_ord: int = 99, group_summary: str = "agent-written notes", op: str = "note") -> str:
+        title, text = " ".join((title or "").split()), (text or "").rstrip()
+        if not title or not text.strip():
+            return "ERR title and text are required"
+        rows = []
+        for s in sources or []:
+            if isinstance(s, dict):
+                card, span, quote = str(s.get("card") or s.get("id") or ""), s.get("lines"), (s.get("quote") or "").strip()
+            else:
+                parts = list(s) + [None, ""]
+                card, span, quote = str(parts[0]), parts[1], (parts[2] or "").strip()
+            c = self._card(card)
+            if c is None or c["status"] != "active":
+                return f"ERR source card {card!r} does not exist (cite cards by the ids that find/open show)"
+            if c["kind"] == "note":
+                return f"ERR source {card} is a note; cite the primary card the claim comes from"
+            sp = parse_span(span) if span not in (None, "") else None
+            if sp is None:
+                return f"ERR source {card}: give the lines as 'a-b' (the card has {c['nlines']} lines)"
+            l1, l2 = sp
+            if l2 > c["nlines"]:
+                return f"ERR source {card} has {c['nlines']} lines; lines {l1}-{l2} are outside"
+            seg = self._cite_lines(c, l1, l2)
+            if quote and norm_quote(quote) not in norm_quote("\n".join(seg)):
+                return f"ERR quote not found in {card} L{l1}-{l2}; copy the exact words from those lines or widen the range"
+            rows.append((card, l1, l2, c["version"], sha1("\n".join(seg)), quote))
         cid = self._next_id("n")
-        gid = self._group_for("notes", group, 99, "agent-written notes")
+        gid = self._group_for(group_kind, group, group_ord, group_summary)
+        ls = split_lines(text)
+        outline = navigable(outline_md(text), ls) if len(ls) > 12 else []
+        meta = {"author": author}
+        if not rows:
+            meta["manual"] = True
         self.con.execute(
             "INSERT INTO cards(id,group_id,kind,title,summary,outline,body,nlines,ntok,version,status,src,src_hash,meta,updated) "
-            "VALUES(?,?,?,?,?,'[]',?,?,?,1,'active',NULL,?,'{}',?)",
-            (cid, gid, "note", clip(title, 100), clip(title + " | " + text, SUMMARY_MAX), text, count_lines(text), est_tokens(text), sha1(text), now()))
+            "VALUES(?,?,?,?,?,?,?,?,?,1,'active',NULL,?,?,?)",
+            (cid, gid, "note", clip(title, 100), clip(summary or (title + " | " + text), SUMMARY_MAX), json.dumps(outline, ensure_ascii=False), text,
+             count_lines(text), est_tokens(text), sha1(text), json.dumps(meta, ensure_ascii=False), now()))
+        self.con.executemany("INSERT OR IGNORE INTO note_sources(note_id,card_id,l1,l2,card_version,text_hash,quote) VALUES(?,?,?,?,?,?,?)",
+                             [(cid, *r) for r in rows])
         self._reindex_chunks(cid, title, text)
+        self._log(op, cid, f"{title} ({len(rows)} sources)")
         self.con.commit()
-        return f"OK {cid} created"
+        return f"OK {cid} created" + (f" with {len(rows)} verified source(s)" if rows else " (no sources: a manual note)")
+
+    def note_sources(self, note_id: str) -> list:
+        """Источники заметки с состоянием: ok | changed (слепок строк не совпал) | missing (карточки нет или она стала короче)."""
+        out = []
+        for r in self.con.execute("SELECT * FROM note_sources WHERE note_id=? ORDER BY card_id, l1, l2", (note_id,)):
+            c = self._card(r["card_id"])
+            if c is None or c["status"] != "active" or r["l2"] > c["nlines"]:
+                state, quote_ok = "missing", False
+            else:
+                seg = "\n".join(self._cite_lines(c, r["l1"], r["l2"]))
+                state = "ok" if sha1(seg) == r["text_hash"] else "changed"
+                quote_ok = (not r["quote"]) or norm_quote(r["quote"]) in norm_quote(seg)
+            out.append(dict(card=r["card_id"], l1=r["l1"], l2=r["l2"], quote=r["quote"], state=state, quote_ok=quote_ok))
+        return out
+
+    def _sources_block(self, cid: str) -> str:
+        src = self.note_sources(cid)
+        if not src:
+            return "\nSOURCES: none (a manual note)"
+        bad = [s for s in src if s["state"] != "ok"]
+        lines = []
+        if len(src) <= 6:
+            for s in src:
+                flag = "" if s["state"] == "ok" else f"  [{s['state'].upper()}: re-check the cited text]"
+                lines.append(f"  {s['card']} L{s['l1']}-{s['l2']}" + (f" «{clip(s['quote'], 90)}»" if s["quote"] else "") + flag)
+        else:
+            by: dict = defaultdict(list)
+            for s in src:
+                by[s["card"]].append(f"L{s['l1']}-{s['l2']}" + ("" if s["state"] == "ok" else f"[{s['state'].upper()}]"))
+            for card, rs in by.items():
+                lines.append(f"  {card} " + ", ".join(rs[:12]) + (f" (+{len(rs) - 12})" if len(rs) > 12 else ""))
+        return (f"\nSOURCES ({len(src)}; check with open(card, lines='a-b')" + (f"; {len(bad)} no longer match" if bad else "") + "):\n" + "\n".join(lines))
 
     # ------------------------------------------------------------ чтение: каталог
     def _card_line(self, r) -> str:
@@ -1026,6 +1179,8 @@ class Store:
         if shown < len(chunk):
             last = a + shown - 1
             txt += f"\n… [cut at L{last}: {len(chunk) - shown} more lines; continue with lines='{last + 1}-{b}']"
+        elif c["kind"] == "note" and b == len(body_lines):
+            txt += self._sources_block(cid)                                           # у заметки в конце — её источники и их состояние
         return head + (f"\n[{label}]" if label else "") + "\n" + txt
 
     # ------------------------------------------------------------ правка патчем
@@ -1072,6 +1227,7 @@ class Store:
                 tmp.write_bytes(new_text.encode("utf-8"))
                 os.replace(tmp, path)
             self._replace_text(cid, new_text, sha1(new_text), note=note or "patch")
+            self._log("patch", cid, f"v{c['version'] + 1}, L{line_no}")
             self.con.commit()
         except OSError as e:
             self.con.rollback()
@@ -1125,6 +1281,7 @@ class Store:
             r = self.con.execute("SELECT MAX(version) m FROM facts WHERE key_norm=?", (kn,)).fetchone()
             ver = (r["m"] or 0) + 1
         self.con.execute("INSERT INTO facts(key,key_norm,value,version,status,source,ts) VALUES(?,?,?,?,'active',?,?)", (key, kn, value, ver, source, now()))
+        self._log("fact", key, f"= {clip(value, 80)} (v{ver})")
         self.con.commit()
         return f"OK {key} = {value} (v{ver}" + (f"; was v{ver - 1}: {cur['value']}" if cur else "") + ")"
 
@@ -1133,6 +1290,7 @@ class Store:
         if not cur:
             return f"no active fact {key!r}"
         self.con.execute("UPDATE facts SET status='retracted' WHERE id=?", (cur["id"],))
+        self._log("retract", cur["key"], f"was: {clip(cur['value'], 80)} (v{cur['version']})")
         self.con.commit()
         return f"OK {key} retracted (was: {cur['value']})"
 
@@ -1177,6 +1335,15 @@ class Store:
     # ------------------------------------------------------------ мост со столом (pm.py): канон читаем, предложения кладём как raw
     def _pm_dir(self) -> Path:
         return project_path(self.project, self.project["pm_dir"])
+
+    def _desk_con(self):
+        """База стола в режиме только чтения; нет базы — None."""
+        db = self._pm_dir() / "project-store.sqlite"
+        if not db.exists():
+            return None
+        con = sqlite3.connect(db.as_uri() + "?mode=ro", uri=True)
+        con.row_factory = sqlite3.Row
+        return con
 
     def canon(self, types=None, limit: int = 60) -> str:
         """Принятые человеком (ACCEPT) факты и решения стола. Только чтение: база стола открывается в режиме ro."""
@@ -1229,6 +1396,7 @@ class Store:
         if r.returncode != 0:
             return f"ERR pm.py add failed: {(r.stderr or r.stdout).strip()[:300]}"
         self.con.execute("UPDATE facts SET pm_id=? WHERE id=?", (oid, cur["id"]))
+        self._log("promote", oid, f"{cur['key']} v{cur['version']} proposed to the desk as RAW")
         self.con.commit()
         msg = f"OK {oid} created in the desk as RAW"
         if accept:
@@ -1238,17 +1406,192 @@ class Store:
             msg += f"; waiting for a human: python3 pm.py exec ACCEPT {oid}"
         return msg + note
 
+    # ------------------------------------------------------------ lint: проверка здоровья памяти, без модели
+    def lint(self, today=None, stale_days: int = 7) -> list:
+        """Детерминированные проверки. Канон стола: дата в прошлом, условие «пока …». Журнал: факт без источника, предложение столу без ACCEPT,
+        канон отстаёт от журнала. Заметки: нет источников, источник пропал или изменился, цитата не найдена, битая ссылка [[nNNN]], сироты.
+        Возвращает список dict(level=error|warn|info, code, subject, message). Ничего не пишет."""
+        from datetime import date
+        if today is None:
+            today = datetime.now(timezone.utc).date()
+        elif isinstance(today, str):
+            today = date.fromisoformat(today)
+        out: list = []
+
+        def add(level, code, subject, msg):
+            out.append(dict(level=level, code=code, subject=subject, message=msg))
+
+        desk_status: dict = {}
+        con = self._desk_con()
+        if con is not None:
+            try:
+                types = list(self.project.get("canon_types") or ["fact", "decision"])
+                for r in con.execute("SELECT id, title, body FROM objects WHERE status='canon' AND type IN (%s) ORDER BY id" % ",".join("?" * len(types)), types):
+                    text = f"{r['title']}\n{r['body'] or ''}"
+                    past = [d for d in dates_in(text) if d < today]
+                    if past:
+                        add("info", "canon-date-passed", r["id"], f"«{clip(r['title'], 60)}» mentions {past[-1].isoformat()} ({(today - past[-1]).days} days ago): "
+                            "a plan that has passed? re-check it, or retire the object in the desk")
+                    m = _COND.search(text)
+                    if m:
+                        add("info", "canon-condition", r["id"], f"«{clip(r['title'], 60)}» has conditional wording «{m.group(0)}»: "
+                            "the condition is an outside event; check whether it has happened")
+                desk_status = {r["id"]: r["status"] for r in con.execute("SELECT id, status FROM objects")}
+            finally:
+                con.close()
+
+        by_key: dict = defaultdict(list)
+        for r in self.con.execute("SELECT * FROM facts ORDER BY key_norm, version, id"):
+            by_key[r["key_norm"]].append(r)
+        for vs in by_key.values():
+            latest = vs[-1]
+            if latest["status"] == "active" and not latest["source"]:
+                add("warn", "ledger-no-source", latest["key"], f"v{latest['version']} = «{clip(latest['value'], 50)}» has no source: record where it comes from (fact_set key value source)")
+            for r in vs:
+                if not r["pm_id"] or not desk_status:
+                    continue
+                st = desk_status.get(r["pm_id"])
+                if st is None:
+                    add("warn", "proposal-missing", r["pm_id"], f"ledger fact {r['key']} v{r['version']} points to a desk object that no longer exists")
+                elif st == "raw" and r["status"] == "active":
+                    age = (today - date.fromisoformat(r["ts"][:10])).days
+                    if age >= stale_days:
+                        add("info", "proposal-waiting", r["pm_id"], f"proposed {age} days ago and still RAW: accept or reject it in the desk")
+                elif st == "canon":
+                    if latest["status"] == "retracted":
+                        add("warn", "canon-retracted", r["pm_id"], f"{r['key']} was retracted in the ledger but is still canon in the desk")
+                    elif latest["version"] > r["version"]:
+                        add("warn", "canon-behind-ledger", r["pm_id"], f"canon holds {r['key']} v{r['version']} = «{clip(r['value'], 50)}», the ledger has "
+                            f"v{latest['version']} = «{clip(latest['value'], 50)}»: decide in the desk (it has no 'supersede')")
+                elif st == "rejected" and r["status"] == "active":
+                    add("info", "proposal-rejected", r["pm_id"], f"the desk rejected this proposal, but the ledger still carries {r['key']} v{r['version']}: revise or retract it")
+
+        notes = self.con.execute("SELECT id, title, body, meta FROM cards WHERE kind='note' AND status='active' ORDER BY id").fetchall()
+        ids = {n["id"] for n in notes}
+        inbound: Counter = Counter()
+        for n in notes:
+            meta = json.loads(n["meta"])
+            for ref in set(re.findall(r"\[\[(n\d+)\]\]", n["body"])):
+                if ref not in ids:
+                    add("info", "note-dangling-link", n["id"], f"links to {ref}, which does not exist")
+                elif ref != n["id"]:
+                    inbound[ref] += 1
+            if meta.get("manual"):
+                continue
+            srcs = self.note_sources(n["id"])
+            if not srcs:
+                add("warn", "note-no-sources", n["id"], f"«{clip(n['title'], 50)}» has no sources: cite the cards it is based on")
+                continue
+            for s in srcs:
+                where = f"{s['card']} L{s['l1']}-{s['l2']}"
+                if s["state"] == "missing":
+                    add("error", "note-source-missing", n["id"], f"cites {where}, which is gone or shorter now")
+                elif s["state"] == "changed":
+                    add("warn", "note-source-drift", n["id"], f"the text of {where} changed after the note was written: re-read it and update the note")
+                elif not s["quote_ok"]:
+                    add("warn", "note-quote-missing", n["id"], f"the quote «{clip(s['quote'], 60)}» is not in {where}")
+        if sum(inbound.values()):
+            orphans = [n["id"] for n in notes if not inbound[n["id"]] and not json.loads(n["meta"]).get("manual")]
+            if orphans:
+                add("info", "note-orphan", f"{len(orphans)} notes", "no other note links to: " + ", ".join(orphans[:8]) + (f" (+{len(orphans) - 8})" if len(orphans) > 8 else ""))
+        rank = {"error": 0, "warn": 1, "info": 2}
+        out.sort(key=lambda f: (rank[f["level"]], f["code"], f["subject"]))
+        return out
+
+    @staticmethod
+    def lint_text(findings: list, limit: int = 40, today=None) -> str:
+        cnt = Counter(f["level"] for f in findings)
+        head = f"LINT {today or datetime.now(timezone.utc).date().isoformat()}: {cnt['error']} errors · {cnt['warn']} warnings · {cnt['info']} info"
+        if not findings:
+            return head + " — nothing to flag."
+        groups: dict = {}
+        for f in findings:
+            groups.setdefault((f["level"], f["code"]), []).append(f)
+        lines = [head]
+        for (level, code), fs in groups.items():
+            for f in fs[:3]:
+                lines.append(f"{level:<5} {code} {f['subject']}: {f['message']}")
+            if len(fs) > 3:
+                lines.append(f"{level:<5} {code} … and {len(fs) - 3} more: " + ", ".join(f["subject"] for f in fs[3:15]) + (" …" if len(fs) > 15 else ""))
+        if len(lines) > limit + 1:
+            lines = lines[:limit + 1] + [f"… {len(lines) - limit - 1} more lines"]
+        return "\n".join(lines)
+
+    def lint_summary(self) -> str:
+        f = self.lint()
+        if not f:
+            return ""
+        c = Counter(x["level"] for x in f)
+        return f"LINT: {c['error']} errors, {c['warn']} warnings, {c['info']} info. Call lint() for the list."
+
+    # ------------------------------------------------------------ вид «LLM Wiki»: заметки -> папка markdown (index.md, log.md, pages/)
+    def export_wiki(self, out_dir, chat_name: str = "chat.md") -> dict:
+        """База остаётся источником истины, папка — генерируемый вид (как STATUS-FROM-DB.md у стола). Ссылки вида «t026 L317-345» в страницах
+        дополняются координатами исходного файла чата (chat.md:L…), чтобы страницу можно было проверить обычным Read/Grep."""
+        out = Path(out_dir)
+        (out / "pages").mkdir(parents=True, exist_ok=True)
+        for old in (out / "pages").glob("*.md"):
+            old.unlink()
+        notes = self.con.execute(
+            "SELECT c.*, g.title gtitle, g.ord gord, g.summary gsum FROM cards c LEFT JOIN groups g ON g.id = c.group_id "
+            "WHERE c.kind='note' AND c.status='active' ORDER BY g.ord, g.id, c.id").fetchall()
+
+        def slug(t):
+            return re.sub(r"[^\w]+", "-", t.lower(), flags=re.UNICODE).strip("-")[:48] or "page"
+
+        def file_lines(card_id, l1, l2):
+            c = self._card(card_id)
+            a = json.loads(c["meta"]).get("file_line0") if c else None
+            return f"{chat_name}:L{a + l1 - 1}-{a + l2 - 1}" if a else None
+
+        cite = re.compile(r"\b(t\d{3}) L(\d+)(?:-(\d+))?\b")
+
+        def with_file_lines(text):
+            def rep(m):
+                l1, l2 = int(m.group(2)), int(m.group(3) or m.group(2))
+                fl = file_lines(m.group(1), l1, l2)
+                return m.group(0) + (f" [{fl}]" if fl else "")
+            return cite.sub(rep, text)
+
+        index = ["# Wiki index", "",
+                 f"Compiled from {chat_name} (one exchange = one block starting with the line '# you asked'). Each page lists its sources as "
+                 f"'tNNN L<a>-<b>' (exchange id and line range inside the exchange) with the matching {chat_name} line range in brackets. "
+                 "Pages are derived summaries: check exact wording and numbers in the cited lines.", ""]
+        cur_group = None
+        for n in notes:
+            if n["gtitle"] != cur_group:
+                cur_group = n["gtitle"]
+                cnt = sum(1 for x in notes if x["gtitle"] == cur_group)
+                index += ["", f"## {cur_group} ({cnt})", ""]
+            fname = f"{n['id']}-{slug(n['title'])}.md"
+            srcs = self.note_sources(n["id"])
+            body = with_file_lines(n["body"])
+            head = ["---", f"id: {n['id']}", f"title: {n['title']}", f"group: {n['gtitle']}", f"sources: {len(srcs)}", "---"]
+            head += [""] if body.startswith("# ") else [f"# {n['title']}", ""]
+            tail = []
+            if srcs and len(srcs) <= 8:
+                tail = ["", "## Sources", ""] + [f"- {s['card']} L{s['l1']}-{s['l2']}" + (f" [{file_lines(s['card'], s['l1'], s['l2'])}]" if file_lines(s['card'], s['l1'], s['l2']) else "")
+                                                   + (f" «{clip(s['quote'], 120)}»" if s["quote"] else "") for s in srcs]
+            (out / "pages" / fname).write_text("\n".join(head) + body + "\n" + "\n".join(tail) + "\n", encoding="utf-8")
+            index.append(f"- [{n['title']}](pages/{fname}) — {clip(n['summary'], 200)}")
+        (out / "index.md").write_text("\n".join(index) + "\n", encoding="utf-8")
+        log = ["# Log", "", "Append-only record of how the wiki was built (grep '^## \\[' log.md).", ""]
+        for r in self.con.execute("SELECT ts, op, subject, detail FROM oplog WHERE op IN ('note','ingest','consolidate') ORDER BY id"):
+            log.append(f"## [{r['ts'][:10]} {r['ts'][11:16]}] {r['op']} | {r['subject']} | {r['detail']}")
+        (out / "log.md").write_text("\n".join(log) + "\n", encoding="utf-8")
+        return dict(pages=len(notes), index_chars=len("\n".join(index)))
+
     def handoff(self, budget_tok: int = 4000, catalog: bool = True) -> str:
-        """Стартовая справка новой сессии: правила + канон стола + действующие факты журнала + список групп материала."""
+        """Стартовая справка новой сессии: правила + канон стола + действующие факты журнала + замечания lint + список групп материала."""
         head = "MEMORY BRIEF — start of a new session\n" + PROTOCOL
         canon = self.canon()
         ledger = "LEDGER (conversation facts, current):\n" + self.facts()
         groups = self.catalog(level=1) if catalog and self.con.execute("SELECT 1 FROM groups LIMIT 1").fetchone() else ""
-        parts = [head, canon, ledger, ("MATERIAL: " + groups.replace("GROUPS ", "groups ", 1)) if groups else ""]
+        parts = [head, canon, ledger, self.lint_summary(), ("MATERIAL: " + groups.replace("GROUPS ", "groups ", 1)) if groups else ""]
         text = "\n\n".join(p for p in parts if p)
         while est_tokens(text) > budget_tok and groups.count("\n") > 3:      # не влезаем: режем список групп с конца
             groups = "\n".join(groups.split("\n")[:-1])
-            parts[3] = "MATERIAL: " + groups.replace("GROUPS ", "groups ", 1) + "\n(list shortened; catalog() shows the rest)"
+            parts[4] = "MATERIAL: " + groups.replace("GROUPS ", "groups ", 1) + "\n(list shortened; catalog() shows the rest)"
             text = "\n\n".join(p for p in parts if p)
         return text
 
@@ -1296,6 +1639,23 @@ TOOL_SPECS = [
          description="Propose a ledger fact to the desk: creates a RAW object, never canon; only a human accepts it. "
                      "Without apply=true (or when the project has switched writing off) it just shows what would be written.",
          props={"key": {"type": "string"}, "apply": {"type": "boolean"}}, required=["key"]),
+    dict(name="note",
+         description="File a finding back as a wiki note so it need not be re-derived. Give a short title, markdown text and sources: a list of "
+                     "{card, lines, quote}. Every source is checked on write (the card exists, the lines are inside it, the quote is present word for word). "
+                     "Notes are derived data: when exact words or numbers matter, re-read the cited lines. Do not file guesses.",
+         props={"title": {"type": "string"}, "text": {"type": "string"},
+                "sources": {"type": "array", "items": {"type": "object", "properties": {
+                    "card": {"type": "string"}, "lines": {"type": "string", "description": "e.g. '317-345'"},
+                    "quote": {"type": "string", "description": "exact words from those lines"}}, "required": ["card", "lines"]}},
+                "group": {"type": "string", "description": "optional group title, default 'notes'"}}, required=["title", "text", "sources"]),
+    dict(name="lint",
+         description="Health check of the memory (read-only): canon objects whose date has passed or that wait for an outside event, ledger facts without a "
+                     "source, proposals waiting for ACCEPT, canon that lags behind the ledger, notes whose sources vanished or changed.",
+         props={}, required=[]),
+    dict(name="log",
+         description="Chronological log of memory operations (facts, notes, patches, proposals) merged with the desk's events, one line each with a stable "
+                     "prefix '## [date time] op | subject | detail' so grep-style filtering works. Read-only.",
+         props={"n": {"type": "integer", "description": "last N lines, default 20"}, "grep": {"type": "string"}}, required=[]),
     dict(name="facts", description="List the current (active) facts, optionally only keys starting with a prefix.",
          props={"prefix": {"type": "string"}}, required=[]),
     dict(name="fact_history", description="All versions of one fact key, oldest first (use for 'what was it before' and 'how many times did it change').",
@@ -1330,6 +1690,18 @@ def call_tool(store: Store, name: str, args: dict) -> str:
         return out
     if name == "fact_history":
         return store.fact_history(a.get("key", ""))
+    if name == "note":
+        pol = store.project.get("notes", {})
+        if not pol.get("mcp_write", True):
+            return "ERR writing notes is switched off for agents in this project (project.json: notes.mcp_write=false)"
+        srcs = a.get("sources") or []
+        if pol.get("require_sources", True) and not srcs:
+            return "ERR a note needs at least one source: sources=[{card, lines, quote}]"
+        return store.add_note(a.get("title", ""), a.get("text", ""), group=a.get("group") or "notes", sources=srcs, author="agent")
+    if name == "lint":
+        return store.lint_text(store.lint())
+    if name == "log":
+        return store.log(n=int(a.get("n") or 20), grep=a.get("grep") or None)
     return f"ERR unknown tool {name!r}"
 
 
@@ -1403,7 +1775,15 @@ def main(argv=None) -> None:
     p = sub.add_parser("history"); p.add_argument("id")
     p = sub.add_parser("set-summary", help="переписать строку обзора карточки"); p.add_argument("id"); p.add_argument("summary")
     p = sub.add_parser("set-group", help="переписать название/обзор группы"); p.add_argument("id"); p.add_argument("--title"); p.add_argument("--summary")
-    p = sub.add_parser("note"); p.add_argument("title"); p.add_argument("text")
+    p = sub.add_parser("note", help="записать заметку; источник — КАРТОЧКА:СТРОКИ[:ЦИТАТА], ключ можно повторять")
+    p.add_argument("title"); p.add_argument("text"); p.add_argument("--source", action="append", default=[])
+    p = sub.add_parser("lint", help="проверка здоровья памяти: канон, журнал, заметки (код возврата 1, если есть ошибки)")
+    p.add_argument("--today", default=None, help="ГГГГ-ММ-ДД (по умолчанию сегодня)"); p.add_argument("--stale-days", type=int, default=7)
+    p.add_argument("--limit", type=int, default=40)
+    p = sub.add_parser("log", help="журнал операций вместе с событиями стола")
+    p.add_argument("-n", type=int, default=20); p.add_argument("--grep"); p.add_argument("--no-desk", action="store_true")
+    p = sub.add_parser("export-wiki", help="заметки -> папка markdown (index.md, log.md, pages/)")
+    p.add_argument("dir"); p.add_argument("--chat-name", default="chat.md", help="как называть файл чата в ссылках на строки")
     p = sub.add_parser("fact"); p.add_argument("key"); p.add_argument("value"); p.add_argument("--source", default="")
     p = sub.add_parser("retract"); p.add_argument("key")
     p = sub.add_parser("facts"); p.add_argument("prefix", nargs="?", default="")
@@ -1447,7 +1827,21 @@ def main(argv=None) -> None:
     elif c == "set-group":
         print(st.set_group(ns.id, ns.title, ns.summary))
     elif c == "note":
-        print(st.add_note(ns.title, ns.text))
+        srcs = []
+        for s in ns.source:
+            card, _, rest = s.partition(":")
+            span, _, quote = rest.partition(":")
+            srcs.append(dict(card=card, lines=span, quote=quote))
+        print(st.add_note(ns.title, ns.text, sources=srcs))
+    elif c == "lint":
+        findings = st.lint(today=ns.today, stale_days=ns.stale_days)
+        print(st.lint_text(findings, limit=ns.limit, today=ns.today))
+        if any(f["level"] == "error" for f in findings):
+            sys.exit(1)
+    elif c == "log":
+        print(st.log(n=ns.n, grep=ns.grep, desk=not ns.no_desk))
+    elif c == "export-wiki":
+        print(st.export_wiki(ns.dir, chat_name=ns.chat_name))
     elif c == "fact":
         print(st.fact_set(ns.key, ns.value, ns.source))
     elif c == "retract":
