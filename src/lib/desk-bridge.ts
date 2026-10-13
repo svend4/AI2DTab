@@ -3,12 +3,13 @@ import { dumpTsv } from "@/lib/machine";
 import { pmRead, pmWrite } from "@/lib/pm-api";
 import { LOGIN_MESSAGE, parsePmLine, type PmReply } from "@/lib/pm-request";
 import { useDesk, type Row } from "@/lib/desk-store";
+import { applyBookReply, createSequencer, parseBook, type BookSink } from "@/lib/desk-refresh";
 
 export type BridgeOut = PmReply;
 
 /** Серверная ошибка в виде ответа моста. «Unauthorized» — вход не выполнен: пишущий вызов не дошёл до стола. */
 function failure(e: unknown): BridgeOut {
-  const message = e instanceof Error ? e.message : "bridge";
+  const message = e instanceof Error ? e.message : "сервер не ответил";
   if (message === "Unauthorized") {
     return { ok: false, stdout: "", stderr: LOGIN_MESSAGE, code: "login_required" };
   }
@@ -30,100 +31,29 @@ export async function bridge(line: string, extra?: { tape?: string }): Promise<B
   }
 }
 
-function asRow(r: Record<string, string>, status: Row["status"]): Row {
+/** Номера запросов книги: ответ отстающего запроса не применяется (AUD-23). */
+const bookSequence = createSequencer();
+
+function bookSink(): BookSink {
+  const s = useDesk.getState();
   return {
-    id: r.id,
-    cluster: r.cluster || "C",
-    layer: String(r.layer || "2"),
-    type: r.type || "observation",
-    title: r.title || r.id,
-    body: r.body || "",
-    source: "sqlite",
-    status,
-    pred: r.pred || undefined,
-    rel: r.rel || undefined,
-    obj: r.obj || undefined,
+    setPlane: s.setPlane,
+    setCanon: s.setCanon,
+    setInstr: (instr) => s.setInstr(instr as Instr | null),
+    setWires: s.setWires,
+    setNotice: s.setNotice,
   };
 }
 
-function parseSheet(text: string, status: Row["status"]): Row[] {
-  const lines = text.trim().split(/\n/).filter(Boolean);
-  if (lines.length < 2) return [];
-  const head = lines[0].split("\t");
-  const out: Row[] = [];
-  for (const line of lines.slice(1)) {
-    const cells = line.split("\t");
-    const rec: Record<string, string> = {};
-    head.forEach((h, i) => {
-      rec[h] = cells[i] ?? "";
-    });
-    if (!rec.id) continue;
-    out.push(asRow(rec, status));
-  }
-  return out;
-}
-
-export async function refreshCanon(): Promise<Row[]> {
-  const out = await bridge("CANON");
-  const rows = parseSheet(out.stdout, "accepted");
-  useDesk.getState().setCanon(rows);
-  return rows;
-}
-
-export async function refreshPlane(): Promise<Row[]> {
-  const out = await bridge("RAW");
-  const rows = parseSheet(out.stdout, "raw");
-  useDesk.getState().setPlane(rows);
-  return rows;
-}
-
-export async function refreshInstr(): Promise<void> {
-  const out = await bridge("INSTR");
-  const line = out.stdout.split("\n").find((l) => l.trim().startsWith("{"));
-  if (!line) return;
-  try {
-    useDesk.getState().setInstr(JSON.parse(line) as Instr);
-  } catch {
-    /* keep last */
-  }
-}
-
-export async function refreshWires(): Promise<void> {
-  const out = await bridge("PACKET");
-  const wires = [];
-  for (const line of out.stdout.split("\n")) {
-    const m = line.match(/^(\S+)\s+-([^-]+)->\s+(\S+)\s*(.*)$/);
-    if (!m) continue;
-    wires.push({ from: m[1], rel: m[2].trim(), to: m[3], note: (m[4] || "").trim() });
-  }
-  useDesk.getState().setWires(wires);
-}
-
+/**
+ * Обновляет книгу стола одним вызовом `JSON`. Сбой или испорченный ответ не трогает стол: пользователь видит причину в
+ * уведомлении (AUD-14, AUD-11). Запасного пути из четырёх вызовов нет: при сбое он повторил бы тот же отказ четыре раза.
+ */
 export async function refreshBook(): Promise<void> {
+  const token = bookSequence.next();
   const out = await bridge("JSON");
-  const line = (out.stdout || "").split("\n").find((l) => l.trim().startsWith("{"));
-  if (line) {
-    try {
-      const d = JSON.parse(line) as {
-        instr: Instr;
-        raw: Record<string, string>[];
-        canon: Record<string, string>[];
-        wires: { from: string; rel: string; to: string; note: string }[];
-      };
-      const s = useDesk.getState();
-      s.setPlane((d.raw || []).map((r) => asRow(r, "raw")));
-      s.setCanon((d.canon || []).map((r) => asRow(r, "accepted")));
-      s.setInstr(d.instr);
-      s.setWires(d.wires || []);
-      return;
-    } catch {
-      /* four calls */
-    }
-  }
-  await refreshPlane();
-  await refreshCanon();
-  await refreshInstr();
-  await refreshWires();
+  if (!bookSequence.isLatest(token)) return;
+  applyBookReply(parseBook(out), bookSink());
 }
 
 export async function plantToDb(rows: Row[]): Promise<BridgeOut> {

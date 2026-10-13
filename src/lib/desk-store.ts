@@ -43,6 +43,9 @@ type Desk = {
   setPlane: (rows: Row[]) => void;
   setInstr: (i: Instr | null) => void;
   setWires: (w: Wire[]) => void;
+  /** Причина, почему стол не обновился; пусто, когда всё в порядке. В сохранённое состояние не входит. */
+  notice: string | null;
+  setNotice: (notice: string | null) => void;
   execLine: (line: string) => string;
 };
 
@@ -65,6 +68,8 @@ export const useDesk = create<Desk>()(
       setPlane: (plane) => set({ plane }),
       setInstr: (instr) => set({ instr }),
       setWires: (wires) => set({ wires }),
+      notice: null,
+      setNotice: (notice) => set({ notice }),
 
       execLine: (line) => {
         const raw = line.trim();
