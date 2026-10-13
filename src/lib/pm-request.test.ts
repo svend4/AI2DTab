@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import {
   LIMITS,
   VERBS,
+  actorArgs,
   buildPmArgs,
   isSetExpr,
   kindOf,
@@ -576,5 +577,33 @@ describe("случайные строки: в движок попадает то
       }
     }
     assert.ok(allowedCount > 500, `генератор почти ничего не пропускает: ${allowedCount}`);
+  });
+});
+
+describe("кто записал: идентификатор для `pm.py --actor` (AUD-15)", () => {
+  it("обычный номер пользователя становится web:<номер>, одним токеном", () => {
+    assert.deepEqual(actorArgs("user-1"), ["--actor", "web:user-1"]);
+    assert.deepEqual(actorArgs("dev-user"), ["--actor", "web:dev-user"]);
+    assert.deepEqual(actorArgs("a".repeat(64)), ["--actor", `web:${"a".repeat(64)}`]);
+    assert.equal(`web:${"a".repeat(64)}`.length, 68); // pm.py принимает до 80 знаков
+  });
+
+  it("номер с чужими знаками отказывает, а не обрезается и не превращается в другой", () => {
+    for (const id of [
+      "",
+      " ",
+      "a b",
+      "a;b",
+      "a|b",
+      "a'b",
+      "a/*b*/",
+      "-x",
+      "a\tb",
+      "кириллица",
+      "x".repeat(65),
+    ]) {
+      const r = actorArgs(id);
+      assert.equal(Array.isArray(r) ? "ok" : r.code, "bad_actor", JSON.stringify(id));
+    }
   });
 });

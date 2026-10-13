@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import { execute } from "./pm-exec.server.ts";
 import type { Engine } from "./pm-exec.server.ts";
 import type { PmRun } from "./pm-run.server.ts";
+import type { PmInput } from "./pm-request.ts";
 
 const USER = { id: "user-1", writer: true };
 const READER = { id: "user-2", writer: false }; // вошёл, но не допущен к записи
@@ -97,7 +98,9 @@ describe("execute", () => {
   it("лента идёт в движок только у PLANT, и это текст, а не путь", async () => {
     const { engine, calls } = fake(true);
     await execute({ line: "PLANT", tape: "id\ttitle\nB1\tx" }, USER, engine);
-    assert.deepEqual(calls, [{ argv: ["exec", "PLANT"], tape: "id\ttitle\nB1\tx" }]);
+    assert.deepEqual(calls, [
+      { argv: ["exec", "--actor", "web:user-1", "PLANT"], tape: "id\ttitle\nB1\tx" },
+    ]);
     const bad = await execute({ line: "RAW", tape: "x" }, USER, engine);
     assert.equal(bad.code, "tape");
     assert.equal(calls.length, 1);
@@ -106,7 +109,9 @@ describe("execute", () => {
   it("пустая лента — это нет ленты: файла не создаём", async () => {
     const { engine, calls } = fake(true);
     await execute({ line: "PLANT текст", tape: "" }, USER, engine);
-    assert.deepEqual(calls, [{ argv: ["exec", "PLANT", "текст"], tape: undefined }]);
+    assert.deepEqual(calls, [
+      { argv: ["exec", "--actor", "web:user-1", "PLANT", "текст"], tape: undefined },
+    ]);
   });
 
   it("ошибка движка — ok: false без кода, сбой запуска — engine_unavailable", async () => {
@@ -132,5 +137,56 @@ describe("execute", () => {
     >[0];
     await execute(input, USER, engine);
     assert.deepEqual(calls, [{ argv: ["exec", "STATUS"], tape: undefined }]);
+  });
+});
+
+describe("кто записал (AUD-15)", () => {
+  it("запись вошедшего писателя несёт его номер сразу после exec; номер из тела запроса не берётся", async () => {
+    const { engine, calls } = fake(true);
+    await execute({ line: "ACCEPT F001" }, USER, engine);
+    await execute({ line: "ACCEPT F002", actor: "evil" } as unknown as PmInput, USER, engine);
+    assert.deepEqual(
+      calls.map((c) => c.argv),
+      [
+        ["exec", "--actor", "web:user-1", "ACCEPT", "F001"],
+        ["exec", "--actor", "web:user-1", "ACCEPT", "F002"],
+      ],
+    );
+    assert.ok(!JSON.stringify(calls).includes("evil"));
+  });
+
+  it("BATCH и PLANT с лентой тоже несут флаг сразу после exec; путь к ленте добавит сервер в конце", async () => {
+    const { engine, calls } = fake(true);
+    await execute({ line: "BATCH TAKE RAW; PURGE" }, USER, engine);
+    await execute({ line: "PLANT", tape: "id\ttitle\nB1\tx" }, USER, engine);
+    assert.deepEqual(
+      calls.map((c) => c.argv.slice(0, 4)),
+      [
+        ["exec", "--actor", "web:user-1", "BATCH"],
+        ["exec", "--actor", "web:user-1", "PLANT"],
+      ],
+    );
+    assert.equal(calls[1].tape, "id\ttitle\nB1\tx");
+  });
+
+  it("номер писателя с чужими знаками отказывает до движка, и на пустом столе база не создаётся", async () => {
+    const { engine, calls } = fake(false);
+    const r = await execute({ line: "ACCEPT F001" }, { id: "bad id;", writer: true }, engine);
+    assert.equal(r.ok, false);
+    assert.equal(r.code, "bad_actor");
+    assert.deepEqual(calls, []);
+  });
+
+  it("чтение и гость идут без флага, как прежде", async () => {
+    const { engine, calls } = fake(true);
+    await execute({ line: "CANON" }, READER, engine);
+    await execute({ line: "RAW" }, null, engine);
+    assert.deepEqual(
+      calls.map((c) => c.argv),
+      [
+        ["exec", "CANON"],
+        ["exec", "RAW"],
+      ],
+    );
   });
 });
