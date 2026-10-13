@@ -2,7 +2,7 @@
  * Что делает сервер с командой стола: проверить (`pm-request.ts`), убедиться, что движок на месте, выполнить (`pm-run.server.ts`).
  * Вынесено из `pm-api.ts` без фреймворка, чтобы это проверял `node --test` с подставным движком.
  */
-import { buildPmArgs } from "./pm-request.ts";
+import { actorArgs, buildPmArgs } from "./pm-request.ts";
 import type { PmInput, PmReply, PmUser } from "./pm-request.ts";
 import { engineReady, runPm } from "./pm-run.server.ts";
 import type { PmRun } from "./pm-run.server.ts";
@@ -27,6 +27,13 @@ export async function execute(
   if (!decision.ok) {
     return { ok: false, stdout: "", stderr: decision.message, code: decision.code };
   }
+  // Запись идёт от имени вошедшего (AUD-15): флаг сразу после `exec`, а номер берётся только из проверенного `user`.
+  // Проверка номера — до движка, чтобы испорченный номер не создал базу на пустом столе.
+  const actor = decision.kind !== "read" && user?.writer === true ? actorArgs(user.id) : [];
+  if (!Array.isArray(actor)) {
+    return { ok: false, stdout: "", stderr: actor.message, code: actor.code };
+  }
+  const argv = [decision.argv[0], ...actor, ...decision.argv.slice(1)];
   if (!engine.ready()) {
     if (!user?.writer) {
       return {
@@ -38,7 +45,7 @@ export async function execute(
     }
     await engine.run(["init"]);
   }
-  const res = await engine.run(decision.argv, decision.tape ? input.tape : undefined);
+  const res = await engine.run(argv, decision.tape ? input.tape : undefined);
   const reply: PmReply = { ok: res.code === 0, stdout: res.stdout, stderr: res.stderr };
   if (res.code === 127) reply.code = "engine_unavailable";
   return reply;

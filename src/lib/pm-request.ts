@@ -31,7 +31,8 @@ export type Refusal =
   | "too_many"
   | "tape"
   | "login_required"
-  | "not_writer";
+  | "not_writer"
+  | "bad_actor";
 export type PmRefused = { ok: false; code: Refusal; message: string };
 /** Ответ сайта на команду; `code` — причина отказа или сбоя, если она есть. */
 export type PmReply = {
@@ -42,6 +43,10 @@ export type PmReply = {
 };
 export const LOGIN_MESSAGE = "запись в стол требует входа";
 export const NOT_WRITER_MESSAGE = "запись разрешена только допущенным аккаунтам";
+export const BAD_ACTOR_MESSAGE = "номер пользователя не годится для журнала стола";
+/** Метка в журнале стола (`pm.py --actor`, AUD-15): `web:` и номер пользователя. Знаки — те же, что в `engine/pm.py: ACTOR_RE`. */
+export const ACTOR_PREFIX = "web:";
+const ACTOR_SUBJECT = /^[A-Za-z0-9][A-Za-z0-9._:@+=/-]{0,63}$/;
 /** `argv` — то, что идёт в `pm.py` (начиная с `exec`). Если `tape` истинно, сервер добавляет `--file <свой временный файл>`. */
 export type PmParsed = { ok: true; verb: string; kind: VerbKind; argv: string[]; tape: boolean };
 
@@ -336,6 +341,16 @@ export function buildPmArgs(input: PmInput, user: PmUser): PmParsed | PmRefused 
     if (user.writer !== true) return refuse("not_writer", NOT_WRITER_MESSAGE);
   }
   return parsed;
+}
+
+/**
+ * Флаг для `pm.py exec` от имени вошедшего писателя: `["--actor", "web:<номер>"]`. Номер приходит из `authMiddleware`
+ * (проверенный), никогда из строки команды или тела запроса. Номер с чужими знаками отказывает целиком, а не обрезается:
+ * иначе журнал записал бы не того, кто нажал кнопку. Флаг ставит `execute` сразу после `exec`, до слов команды.
+ */
+export function actorArgs(id: string): string[] | PmRefused {
+  if (!ACTOR_SUBJECT.test(id)) return refuse("bad_actor", BAD_ACTOR_MESSAGE);
+  return ["--actor", ACTOR_PREFIX + id];
 }
 
 /** Класс команды для клиента (какой серверный вызов выбрать); null — команда не пройдёт разбор. */
