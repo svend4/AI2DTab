@@ -644,5 +644,68 @@ class SiteVerbTable(Desk):
             self.assertFalse(self.engine.is_set_expr(arg), arg)
 
 
+class ActorOfEvents(Desk):
+    """AUD-15 (план, шаг 7): кто принял. Сайт передаёт `--actor web:<id>` сразу после `exec`; без флага пишет `machine:exec`."""
+
+    def setUp(self):
+        super().setUp()
+        self.add("A1", typ="observation", status="raw", cluster="A")
+        self.add("A2", typ="observation", status="raw", cluster="A")
+        self.add("A3", typ="observation", status="raw", cluster="B")
+
+    def actors(self, action):
+        con = self.db()
+        try:
+            return [r[0] for r in con.execute("SELECT actor FROM events WHERE action=? ORDER BY id", (action,))]
+        finally:
+            con.close()
+
+    def state(self):
+        con = self.db()
+        try:
+            objs = tuple(con.execute("SELECT id, status FROM objects ORDER BY id"))
+            return objs, con.execute("SELECT COUNT(*) FROM events").fetchone()[0]
+        finally:
+            con.close()
+
+    def test_terminal_without_the_flag_still_writes_machine_exec(self):
+        self.out("ACCEPT", "A1")
+        self.assertEqual(self.actors("ACCEPT")[-1], "machine:exec")
+
+    def test_the_site_actor_is_written_with_the_event(self):
+        r = self.run_pm("--actor", "web:user-1", "ACCEPT", "A1")
+        self.assertEqual(r.returncode, 0, r.stderr)
+        self.assertEqual(self.actors("ACCEPT")[-1], "web:user-1")
+
+    def test_the_actor_reaches_the_commands_run_inside_batch(self):
+        r = self.run_pm("--actor", "web:user-1", "BATCH", "ACCEPT", "A2", ";", "TAKE", "A3")
+        self.assertEqual(r.returncode, 0, r.stderr)
+        self.assertEqual(self.actors("ACCEPT")[-1], "web:user-1")
+        self.assertEqual(self.actors("TAKE")[-1], "web:user-1")
+
+    def test_a_malformed_actor_is_refused_before_anything_is_written(self):
+        before = self.state()
+        for bad in ["", "a b", "a;b", "x" * 81, "tab\tname", "кириллица"]:
+            r = self.run_pm("--actor", bad, "ACCEPT", "A1")
+            self.assertNotEqual(r.returncode, 0, repr(bad))
+            self.assertIn("актор", r.stderr, repr(bad))
+            self.assertEqual(self.state(), before, repr(bad))
+        r = self.run_pm("--actor", "-x", "ACCEPT", "A1")          # ведущий дефис argparse принимает за опцию
+        self.assertNotEqual(r.returncode, 0)
+        self.assertEqual(self.state(), before)
+
+    def test_the_flag_must_come_before_the_words(self):
+        before = self.state()
+        r = self.run_pm("ACCEPT", "--actor", "web:user-1", "A1")
+        self.assertNotEqual(r.returncode, 0)
+        self.assertEqual(self.state(), before)
+
+    def test_a_read_with_an_actor_writes_no_event(self):
+        before = self.state()
+        r = self.run_pm("--actor", "web:user-1", "SET", "A")
+        self.assertEqual(r.returncode, 0, r.stderr)
+        self.assertEqual(self.state(), before)
+
+
 if __name__ == "__main__":
     unittest.main()
