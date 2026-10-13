@@ -240,12 +240,26 @@ READS = {
     "CONC", "VOCAB", "PORT", "DUMP", "DIFF", "CELL", "STATUS", "MATRIX", "RANGE",
 }
 
+# Кто записал событие (AUD-15). Сайт передаёт `exec --actor web:<id>` сразу после `exec`, терминал без флага пишет DEFAULT_ACTOR.
+# Флаг — метка оператора, не проверенная личность: в CLI входа нет. Правило одно и для сайта (`pm-request.ts`), и для этого файла.
+DEFAULT_ACTOR = "machine:exec"
+ACTOR = DEFAULT_ACTOR
+ACTOR_RE = re.compile(r"[A-Za-z0-9][A-Za-z0-9._:@+=/-]{0,79}")
+
+
+def valid_actor(text: str) -> str:
+    if not ACTOR_RE.fullmatch(text):
+        raise argparse.ArgumentTypeError(
+            "неверный идентификатор актора: до 80 знаков из латиницы, цифр и . _ : @ + = / -, первый — буква или цифра")
+    return text
+
+
 def log(con, action, oid=None, detail=""):
     if action in READS:
         return
     con.execute(
         "INSERT INTO events(ts,actor,action,object_id,detail) VALUES (?,?,?,?,?)",
-        (now(), "machine:exec", action, oid, detail),
+        (now(), ACTOR, action, oid, detail),
     )
 
 
@@ -1331,6 +1345,7 @@ def cmd_exec(ns: argparse.Namespace) -> None:
 
 
 def main() -> None:
+    global ACTOR
     p = argparse.ArgumentParser(description="Ступень 4 портфеля: действия над SQLite")
     sub = p.add_subparsers(dest="cmd", required=True)
     sub.add_parser("init").set_defaults(func=cmd_init)
@@ -1352,8 +1367,10 @@ def main() -> None:
     e = sub.add_parser("exec")
     e.add_argument("line", nargs="*")
     e.add_argument("--file", dest="file")
+    e.add_argument("--actor", dest="actor", type=valid_actor, default=None)
     e.set_defaults(func=cmd_exec)
     ns = p.parse_args()
+    ACTOR = getattr(ns, "actor", None) or DEFAULT_ACTOR                 # присваивается на каждый запуск: повторный main() не унаследует чужого
     if ns.cmd != "init" and not DB.exists():
         raise SystemExit("нет базы: сначала python3 pm.py init")
     ns.func(ns)
