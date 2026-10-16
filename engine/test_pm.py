@@ -611,7 +611,7 @@ class SiteVerbTable(Desk):
             self.assertNotIn("unknown", r.stderr + r.stdout, f"{verb}: движок не знает глагола")
 
     def test_read_verbs_do_not_change_the_database(self):
-        self.out("STATUS")                                                       # первый запуск может один раз домигрировать ячейки: снимок после него
+        self.out("STATUS")                                                       # чтения базу не меняют: снимок до чтений тот же, что после
         for verb, (kind, _) in self.table.items():
             if kind != "read":
                 continue
@@ -906,6 +906,32 @@ class BulkConfirm(Desk):
         r = self.run_pm("--ids", "плохой id", "ACCEPT", "R1")
         self.assertEqual(r.returncode, 2, r.stdout)
         self.assertEqual(self.status_of("R1"), "raw")
+
+
+class ReadsLeaveTheBase(Desk):
+    """Чтения не меняют базу (решение владельца): миграция ячеек идёт только перед записью. Строка со знаком ≠ без pred — старая."""
+
+    def setUp(self):
+        super().setUp()
+        self.add("LG1", typ="observation", status="raw", cluster="A", title="стабильность ≠ надёжность")
+        self.out("STATUS")
+
+    def pred_of(self, oid):
+        con = self.db()
+        try:
+            return con.execute("SELECT pred FROM objects WHERE id=?", (oid,)).fetchone()[0]
+        finally:
+            con.close()
+
+    def test_reads_do_not_migrate_legacy_cells(self):
+        self.assertIsNone(self.pred_of("LG1"))
+        for words in (["IDS", "RAW"], ["RAW"], ["LOOK", "стабильность"], ["NEQ"], ["JSON"], ["STATUS"]):
+            self.out(*words)
+            self.assertIsNone(self.pred_of("LG1"), " ".join(words))
+
+    def test_a_write_migrates_them(self):
+        self.out("ACCEPT", "LG1")
+        self.assertEqual(self.pred_of("LG1"), "стабильность")
 
 
 if __name__ == "__main__":
