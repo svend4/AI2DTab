@@ -22,7 +22,6 @@ export const Route = createFileRoute("/l2")({ component: L2 });
 
 function L2() {
   const access = useDeskAccess();
-  const rows = useDesk((s) => s.rows);
   const book = useDesk((s) => s.plane);
   const canon = useDesk((s) => s.canon);
   const [open, setOpen] = useState<string | null>(null);
@@ -30,7 +29,7 @@ function L2() {
   const cluster = useDesk((s) => s.cluster);
   const setLook = useDesk((s) => s.setLook);
   const setCluster = useDesk((s) => s.setCluster);
-  const source = book.length ? book : rows.filter((r) => r.status === "raw");
+  const source = book;
   const plane = source.filter((r) => {
     if (cluster && r.cluster !== cluster) return false;
     if (!look) return true;

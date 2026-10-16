@@ -12,16 +12,14 @@ const HREF: Record<Stage, string> = { L1: "/", L2: "/l2", L3: "/l3", L4: "/l4" }
 
 export function DeskNav() {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
-  const rows = useDesk((s) => s.rows);
   const canon = useDesk((s) => s.canon);
   const plane = useDesk((s) => s.plane);
   const instr = useDesk((s) => s.instr);
   const notice = useDesk((s) => s.notice);
   const writeNotice = useDesk((s) => s.writeNotice);
-  const rawN = plane.length || rows.filter((r) => r.status === "raw").length;
-  const counts: Record<Stage, number> = {
-    L1: rows.filter((r) => r.source === "лента").length,
-    L2: rawN,
+  /** L1 — лента: у неё нет счётчика, книга не хранит строк ленты (AUD-26). */
+  const counts: Partial<Record<Stage, number>> = {
+    L2: plane.length,
     L3: canon.length,
     L4: canon.length,
   };
@@ -54,7 +52,7 @@ export function DeskNav() {
                 <span className="font-mono text-xs">{st.id}</span>
                 <span className="text-sm font-medium">{st.name}</span>
                 <span className={cn("text-xs", on ? "text-accent-fg/70" : "text-subtle")}>
-                  {counts[st.id]} · {st.role}
+                  {counts[st.id] === undefined ? st.role : `${counts[st.id]} · ${st.role}`}
                 </span>
               </Link>
             );
