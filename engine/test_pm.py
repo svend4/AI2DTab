@@ -707,5 +707,73 @@ class ActorOfEvents(Desk):
         self.assertEqual(self.state(), before)
 
 
+class OwnerOfObjects(Desk):
+    """AUD-15 (владелец): посадка и принятие пишут владельца из того же актора, что и журнал; ACCEPT только для понятий и для
+    сырых, открытых и черновых объектов. Снятое, закрытое и служебные типы возвращаются только новым объектом."""
+
+    def setUp(self):
+        super().setUp()
+        self.add("A1", typ="observation", status="raw", cluster="A")
+
+    def field(self, oid, name):
+        con = self.db()
+        try:
+            return con.execute(f"SELECT {name} FROM objects WHERE id=?", (oid,)).fetchone()[0]
+        finally:
+            con.close()
+
+    def set_status(self, oid, status):
+        con = self.db()
+        try:
+            con.execute("UPDATE objects SET status=? WHERE id=?", (status, oid))
+            con.commit()
+        finally:
+            con.close()
+
+    def test_accept_makes_the_verified_actor_the_owner(self):
+        r = self.run_pm("--actor", "web:user-2", "ACCEPT", "A1")
+        self.assertEqual(r.returncode, 0, r.stderr)
+        self.assertEqual(self.field("A1", "owner"), "web:user-2")
+        self.assertEqual(self.field("A1", "status"), "canon")
+
+    def test_accept_without_flag_keeps_the_terminal_owner(self):
+        self.out("ACCEPT", "A1")
+        self.assertEqual(self.field("A1", "owner"), "machine:exec")
+
+    def test_plant_makes_the_verified_actor_the_owner(self):
+        tape = self.dir / "tape.txt"
+        tape.write_text("Первый абзац ленты.\n\nВторой абзац ленты.\n", encoding="utf-8")
+        r = self.run_pm("--actor", "web:user-3", "PLANT", "--file", str(tape))
+        self.assertEqual(r.returncode, 0, r.stderr)
+        planted = [line.split()[1] for line in r.stdout.splitlines() if line.startswith("plant ")]
+        self.assertTrue(planted, r.stdout)
+        for oid in planted:
+            self.assertEqual(self.field(oid, "owner"), "web:user-3", oid)
+
+    def test_only_concept_types_are_accepted(self):
+        for i, typ in enumerate(["fact", "decision", "observation", "question", "artifact"]):
+            oid = f"TY{i}"
+            self.add(oid, typ=typ, status="raw", cluster="A")
+            self.assertIn(f"ACCEPT {oid}", self.out("ACCEPT", oid), typ)
+            self.assertEqual(self.field(oid, "status"), "canon", typ)
+        for i, typ in enumerate(["task", "signal", "signpost", "packet", "session", "tape"]):
+            oid = f"TN{i}"
+            self.add(oid, typ=typ, status="raw", cluster="A")
+            self.assertIn(f"REFUSE {oid} type={typ}", self.out("ACCEPT", oid), typ)
+            self.assertEqual(self.field(oid, "status"), "raw", typ)
+
+    def test_only_raw_open_and_draft_statuses_are_accepted(self):
+        for i, status in enumerate(["raw", "open", "draft"]):
+            oid = f"SA{i}"
+            self.add(oid, typ="observation", status=status, cluster="A")
+            self.assertIn(f"ACCEPT {oid}", self.out("ACCEPT", oid), status)
+            self.assertEqual(self.field(oid, "status"), "canon", status)
+        for i, status in enumerate(["rejected", "closed", "candidate", "dormant"]):
+            oid = f"SR{i}"
+            self.add(oid, typ="observation", status=status, cluster="A")
+            self.assertIn(f"REFUSE {oid} status={status}", self.out("ACCEPT", oid), status)
+            self.assertEqual(self.field(oid, "status"), status, status)
+
+
 if __name__ == "__main__":
     unittest.main()
