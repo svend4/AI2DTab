@@ -390,6 +390,7 @@ describe("таблица глаголов", () => {
       "DUMP",
       "GAUGE",
       "GRID",
+      "IDS",
       "INSTR",
       "JSON",
       "LOOK",
@@ -605,5 +606,14 @@ describe("кто записал: идентификатор для `pm.py --acto
       const r = actorArgs(id);
       assert.equal(Array.isArray(r) ? "ok" : r.code, "bad_actor", JSON.stringify(id));
     }
+  });
+});
+
+describe("IDS: набор целиком, только чтение (AUD-15)", () => {
+  it("IDS — чтение по правилу набора, и без входа", () => {
+    assert.equal(VERBS.IDS.kind, "read");
+    const r = buildPmArgs({ line: "IDS RAW" }, null);
+    assert.equal(r.ok, true);
+    if (r.ok) assert.deepEqual(r.argv, ["exec", "IDS", "RAW"]);
   });
 });

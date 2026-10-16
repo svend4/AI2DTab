@@ -1,7 +1,7 @@
 import { useEffect, type ReactNode } from "react";
 import { Link, useRouterState } from "@tanstack/react-router";
 import { STAGES, type Stage } from "@/lib/cycle-data";
-import { useDesk } from "@/lib/desk-store";
+import { useDesk, type BulkAsk } from "@/lib/desk-store";
 import { AccessBar } from "@/components/access-bar";
 import { CommandBar } from "@/components/command-bar";
 import { refreshBook } from "@/lib/desk-bridge";
@@ -19,6 +19,7 @@ export function DeskNav() {
   const notice = useDesk((s) => s.notice);
   const bookCut = useDesk((s) => s.bookCut);
   const snapshot = useDesk((s) => s.snapshot);
+  const bulk = useDesk((s) => s.bulk);
   const writeNotice = useDesk((s) => s.writeNotice);
   /** L1 — лента: у неё нет счётчика, книга не хранит строк ленты (AUD-26). */
   const counts: Partial<Record<Stage, number>> = {
@@ -39,6 +40,7 @@ export function DeskNav() {
         ) : null}
         {bookCut ? <p className="text-xs text-subtle">{bookCut}</p> : null}
         {snapshot ? <p className="text-xs text-subtle">{snapshotLabel(snapshot)}</p> : null}
+        {bulk ? <BulkConfirm bulk={bulk} /> : null}
         <InstrumentStrip instr={instr} />
         <InstrumentPanel instr={instr} />
         <nav className="grid grid-cols-2 gap-2 sm:grid-cols-4">
@@ -70,6 +72,45 @@ export function DeskNav() {
 }
 
 /** Уведомление стола: текст причины и кнопка «Скрыть». Для записи и для обновления — два отдельных слота. */
+/** Панель подтверждения массовой записи: список id виден до нажатия, ответ уходит в ожидание моста (AUD-15). */
+function BulkConfirm({ bulk }: { bulk: BulkAsk }) {
+  const answer = (ok: boolean) => {
+    useDesk.getState().setBulk(null);
+    bulk.done(ok);
+  };
+  return (
+    <section
+      aria-labelledby="bulk-title"
+      className="flex flex-col gap-2 rounded-md border border-border bg-elevated px-3 py-2"
+    >
+      <p id="bulk-title" className="text-sm text-fg">
+        Записать {bulk.ids.length} объектов? <span className="font-mono text-xs">{bulk.line}</span>
+      </p>
+      <ul className="max-h-40 overflow-y-auto font-mono text-xs text-muted">
+        {bulk.ids.map((id) => (
+          <li key={id}>{id}</li>
+        ))}
+      </ul>
+      <div className="flex flex-wrap gap-2">
+        <button
+          type="button"
+          onClick={() => answer(true)}
+          className="inline-flex min-h-11 items-center rounded-md border border-border bg-fg px-3 text-sm text-accent-fg"
+        >
+          Подтвердить
+        </button>
+        <button
+          type="button"
+          onClick={() => answer(false)}
+          className="inline-flex min-h-11 items-center rounded-md border border-border px-3 text-sm text-muted"
+        >
+          Отмена
+        </button>
+      </div>
+    </section>
+  );
+}
+
 function DeskAlert({ text, onHide }: { text: string; onHide: () => void }) {
   return (
     <div

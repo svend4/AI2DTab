@@ -567,7 +567,9 @@ class SetExpressions(Desk):
         S = self.sets()
         target = (S["RAW"] & S["A"]) & S["OBS"]                       # X1
         before = dict(self.state()[0])
-        self.out("TAKE", "RAW", "∩", "A", "∩", "OBS")
+        r = self.run_pm("--ids", ",".join(sorted(target)), "TAKE", "RAW", "∩", "A", "∩", "OBS")   # RAW и OBS — массовые: со списком
+        self.assertEqual(r.returncode, 0, r.stderr)
+        self.assertNotIn("REFUSE", r.stdout)
         after = dict(self.state()[0])
         for oid, status in after.items():
             self.assertEqual(status, "rejected" if oid in target else before[oid], oid)
@@ -579,7 +581,7 @@ class SiteVerbTable(Desk):
     """Таблица глаголов сайта (какие глаголы доступны без входа) против настоящего pm.py: у чтения нет побочных эффектов, лишних глаголов нет."""
     EXAMPLE = {
         "STATUS": "STATUS", "LOOK": "LOOK enbek", "DUMP": "DUMP", "GRID": "GRID", "MATRIX": "MATRIX", "DIFF": "DIFF", "JSON": "JSON", "CANON": "CANON",
-        "RAW": "RAW", "NEQ": "NEQ", "CELL": "CELL", "SET": "SET RAW \\ NEQ", "VOCAB": "VOCAB A", "PACKET": "PACKET", "CONC": "CONC", "CONCORD": "CONCORD x",
+        "RAW": "RAW", "NEQ": "NEQ", "CELL": "CELL", "SET": "SET RAW \\ NEQ", "IDS": "IDS RAW", "VOCAB": "VOCAB A", "PACKET": "PACKET", "CONC": "CONC", "CONCORD": "CONCORD x",
         "INSTR": "INSTR", "GAUGE": "GAUGE", "PANEL": "PANEL", "PORT": "PORT C A", "CAT": "CAT LANG-FROM-DB.md",
         "PLANT": "PLANT проверка", "CUT": "CUT проверка", "ACCEPT": "ACCEPT F001", "TAKE": "TAKE F001", "RUN": "RUN F001", "FETCH": "FETCH",
         "WIRE": "WIRE F001 D101 constrains", "PROBE": "PROBE C A", "FILL": "FILL", "SWEEP": "SWEEP", "PURGE": "PURGE", "REPAIR": "REPAIR",
@@ -773,6 +775,77 @@ class OwnerOfObjects(Desk):
             self.add(oid, typ="observation", status=status, cluster="A")
             self.assertIn(f"REFUSE {oid} status={status}", self.out("ACCEPT", oid), status)
             self.assertEqual(self.field(oid, "status"), status, status)
+
+
+class BulkConfirm(Desk):
+    """AUD-15 (массовые RAW и OBS): принять или снять можно только список id, который человек подтвердил. IDS печатает набор целиком."""
+
+    def setUp(self):
+        super().setUp()
+        for i in range(1, 4):
+            self.add(f"R{i}", typ="observation", status="raw", cluster="A")
+
+    def ids(self, expr):
+        return self.out("IDS", expr).split()
+
+    def status_of(self, oid):
+        con = self.db()
+        try:
+            return con.execute("SELECT status FROM objects WHERE id=?", (oid,)).fetchone()[0]
+        finally:
+            con.close()
+
+    def test_ids_prints_the_whole_set_not_eighty_rows(self):
+        con = self.db()
+        try:
+            for i in range(90):
+                con.execute("INSERT INTO objects(id,cluster,layer,type,title,status,body,created_at,updated_at,owner) "
+                            "VALUES (?,?,?,?,?,?,?,?,?,?)", (f"BULK{i:03d}", "A", 2, "observation", "t", "raw", "", "x", "x", "machine:exec"))
+            con.commit()
+        finally:
+            con.close()
+        raw_ids = self.ids("RAW")
+        self.assertEqual(len(raw_ids), len(set(raw_ids)))
+        self.assertGreaterEqual(len(raw_ids), 90)
+        self.assertIn("BULK089", raw_ids)
+
+    def test_bulk_accept_is_refused_without_the_list(self):
+        r = self.run_pm("ACCEPT", "RAW")
+        self.assertEqual(r.returncode, 0, r.stderr)
+        self.assertIn("REFUSE ACCEPT RAW: нужно подтверждение", r.stdout)
+        self.assertEqual(self.status_of("R1"), "raw")
+
+    def test_bulk_accept_with_the_listed_ids_goes_through(self):
+        ids = self.ids("RAW")
+        r = self.run_pm("--ids", ",".join(ids), "ACCEPT", "RAW")
+        self.assertEqual(r.returncode, 0, r.stderr)
+        self.assertIn("ACCEPT RAW → ok=", r.stdout)
+        self.assertEqual(self.status_of("R1"), "canon")
+
+    def test_list_that_differs_from_the_set_is_refused(self):
+        ids = self.ids("RAW")
+        for listed in (ids[:-1], ids + ["ZZ9"]):
+            r = self.run_pm("--ids", ",".join(listed), "ACCEPT", "RAW")
+            self.assertEqual(r.returncode, 0, r.stderr)
+            self.assertIn("набор изменился", r.stdout)
+            self.assertEqual(self.status_of("R1"), "raw")
+
+    def test_take_and_obs_need_the_list_too(self):
+        self.assertIn("нужно подтверждение", self.run_pm("TAKE", "RAW").stdout)
+        self.assertIn("нужно подтверждение", self.run_pm("ACCEPT", "OBS").stdout)
+        self.assertEqual(self.status_of("R1"), "raw")
+        r = self.run_pm("--ids", ",".join(self.ids("RAW")), "TAKE", "RAW")
+        self.assertIn("TAKE RAW", r.stdout)
+        self.assertEqual(self.status_of("R1"), "rejected")
+
+    def test_single_object_accept_needs_no_list(self):
+        self.assertIn("ACCEPT R1", self.out("ACCEPT", "R1"))
+        self.assertEqual(self.status_of("R1"), "canon")
+
+    def test_the_list_is_checked_by_the_engine(self):
+        r = self.run_pm("--ids", "плохой id", "ACCEPT", "R1")
+        self.assertEqual(r.returncode, 2, r.stdout)
+        self.assertEqual(self.status_of("R1"), "raw")
 
 
 if __name__ == "__main__":

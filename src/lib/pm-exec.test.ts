@@ -237,3 +237,23 @@ describe("опубликованный снимок: только чтение (
     assert.ok(calls.length > 0);
   });
 });
+
+describe("массовые записи со списком id (AUD-15)", () => {
+  it("список уходит в движок флагом перед глаголом, и только для записи", async () => {
+    const { engine, calls } = fake(true);
+    await execute({ line: "ACCEPT RAW", ids: ["B1", "B2"] }, USER, engine);
+    assert.deepEqual(calls[0].argv, [
+      "exec",
+      "--actor",
+      "web:user-1",
+      "--ids",
+      "B1,B2",
+      "ACCEPT",
+      "RAW",
+    ]);
+    await execute({ line: "IDS RAW", ids: ["B1"] }, null, engine);
+    assert.deepEqual(calls[1].argv, ["exec", "IDS", "RAW"]);
+    await execute({ line: "ACCEPT A1" }, USER, engine);
+    assert.deepEqual(calls[2].argv, ["exec", "--actor", "web:user-1", "ACCEPT", "A1"]);
+  });
+});

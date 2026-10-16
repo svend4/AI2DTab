@@ -60,7 +60,9 @@ export async function execute(
   if (!Array.isArray(actor)) {
     return { ok: false, stdout: "", stderr: actor.message, code: actor.code };
   }
-  const argv = [decision.argv[0], ...actor, ...decision.argv.slice(1)];
+  // Список подтверждения массовой записи (AUD-15) — флагом перед глаголом, как актор; для чтения не нужен.
+  const confirm = decision.kind !== "read" && input.ids ? ["--ids", input.ids.join(",")] : [];
+  const argv = [decision.argv[0], ...actor, ...confirm, ...decision.argv.slice(1)];
   if (!engine.ready()) {
     if (!user?.writer) {
       return {

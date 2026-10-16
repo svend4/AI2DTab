@@ -145,7 +145,7 @@ describe("строка команд: исход записи виден, обн�
     assert.match(commandBar, /const kind = verbKind\(C\);/);
     assert.match(
       commandBar,
-      /kind === "write" \|\| kind === "bulk" \? await writeDesk\(t\) : await bridge\(t\)/,
+      /kind === "write" \|\| kind === "bulk" \? await writeBulk\(t\) : await bridge\(t\)/,
     );
     assert.doesNotMatch(commandBar, /const WRITE =/);
   });
@@ -160,8 +160,9 @@ describe("строка команд: исход записи виден, обн�
 });
 
 describe("кнопки и переходы: при сбое пользователь остаётся на месте", () => {
-  it("L2: FILL, SWEEP, GAP, PURGE и PROBE идут через writeDesk, мимо стора не пишут", () => {
-    for (const verb of ["FILL", "SWEEP", "GAP", "PURGE", "PROBE C A"]) {
+  it("L2: FILL, SWEEP, GAP, PURGE и PROBE идут через мост записи, мимо стора не пишут", () => {
+    assert.match(l2, /writeBulk\("FILL"\)/);
+    for (const verb of ["SWEEP", "GAP", "PURGE", "PROBE C A"]) {
       assert.match(l2, new RegExp(`writeDesk\\("${verb}"\\)`), verb);
     }
     assert.doesNotMatch(l2, /bridge\("(FILL|SWEEP|GAP|PURGE|PROBE)/);
@@ -193,5 +194,42 @@ describe("снимок стола: дата в шапке, запись в сн�
   it("доступ к записи учитывает снимок", () => {
     assert.match(access, /const snapshot = useDesk\(\(s\) => s\.snapshot !== null\)/);
     assert.match(access, /deskAccess\(\{ user, isPending, writer, snapshot \}\)/);
+  });
+});
+
+describe("массовые записи RAW и OBS: список и подтверждение до записи (AUD-15)", () => {
+  it("мост берёт список через IDS и ждёт подтверждения до записи со списком", () => {
+    const body = fn(bridge, "writeBulk");
+    const order = [
+      "bulkExpr(line)",
+      "bridge(`IDS ${expr}`)",
+      "askBulk(line, ids)",
+      "writeDesk(line, { ids })",
+    ].map((p) => body.indexOf(p));
+    assert.ok(
+      order.every((i) => i >= 0),
+      JSON.stringify(order),
+    );
+    assert.deepEqual(
+      [...order].sort((a, b) => a - b),
+      order,
+    );
+  });
+
+  it("команды строки и кнопка FILL идут через writeBulk, а не мимо подтверждения", () => {
+    assert.match(
+      commandBar,
+      /kind === "write" \|\| kind === "bulk" \? await writeBulk\(t\) : await bridge\(t\)/,
+    );
+    assert.match(l2, /writeBulk\("FILL"\)/);
+    assert.doesNotMatch(l2, /writeDesk\("FILL"\)/);
+  });
+
+  it("панель подтверждения показывает список id и закрывает ожидание ответом", () => {
+    assert.match(nav, /function BulkConfirm/);
+    assert.match(nav, /bulk\.ids\.map/);
+    assert.match(nav, /answer\(true\)/);
+    assert.match(nav, /setBulk\(null\)/);
+    assert.match(store, /bulk: BulkAsk \| null;/);
   });
 });
