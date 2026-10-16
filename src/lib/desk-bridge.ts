@@ -1,145 +1,156 @@
 import type { Instr } from "@/components/instruments";
 import { dumpTsv } from "@/lib/machine";
-import { pmExec } from "@/lib/pm-api";
+import { pmRead, pmWrite } from "@/lib/pm-api";
+import { LOGIN_MESSAGE, parsePmLine, type PmReply } from "@/lib/pm-request";
 import { useDesk, type Row } from "@/lib/desk-store";
+import {
+  applyBookReply,
+  createSequencer,
+  describeReply,
+  parseBook,
+  type BookSink,
+} from "@/lib/desk-refresh";
+import { BULK_MAX, alwaysList, parseRows, setExprOf, touchesBulk } from "@/lib/desk-bulk";
+import { fetchAdded, writeOutcome } from "@/lib/desk-writes";
 
-export type BridgeOut = { ok: boolean; stdout: string; stderr: string };
+export type BridgeOut = PmReply;
 
-export async function bridge(line: string, extra?: { tape?: string; file?: string }): Promise<BridgeOut> {
+/** Серверная ошибка в виде ответа моста. «Unauthorized» — вход не выполнен: пишущий вызов не дошёл до стола. */
+function failure(e: unknown): BridgeOut {
+  const message = e instanceof Error ? e.message : "сервер не ответил";
+  if (message === "Unauthorized") {
+    return { ok: false, stdout: "", stderr: LOGIN_MESSAGE, code: "login_required" };
+  }
+  return { ok: false, stdout: "", stderr: message, code: "bridge" };
+}
+
+/**
+ * Команда столу. Чтение идёт открытым вызовом, остальное — вызовом с входом; сервер проверяет строку ещё раз и сам,
+ * поэтому выбор вызова здесь ничего не открывает. Ленту PLANT передаёт `extra.tape`; пути к файлу у моста нет.
+ */
+export async function bridge(
+  line: string,
+  extra?: { tape?: string; ids?: string[] },
+): Promise<BridgeOut> {
+  const parsed = parsePmLine({ line, tape: extra?.tape });
+  if (!parsed.ok) return { ok: false, stdout: "", stderr: parsed.message, code: parsed.code };
+  const call = parsed.kind === "read" ? pmRead : pmWrite;
   try {
-    return await pmExec({ data: { line, tape: extra?.tape, file: extra?.file } });
+    return await call({ data: { line, tape: extra?.tape, ids: extra?.ids } });
   } catch (e) {
-    return { ok: false, stdout: "", stderr: e instanceof Error ? e.message : "bridge" };
+    return failure(e);
   }
 }
 
-function asRow(r: Record<string, string>, status: Row["status"]): Row {
+/** Номера запросов книги: ответ отстающего запроса не применяется (AUD-23). */
+const bookSequence = createSequencer();
+
+function bookSink(): BookSink {
+  const s = useDesk.getState();
   return {
-    id: r.id,
-    cluster: r.cluster || "C",
-    layer: String(r.layer || "2"),
-    type: r.type || "observation",
-    title: r.title || r.id,
-    body: r.body || "",
-    source: "sqlite",
-    status,
-    pred: r.pred || undefined,
-    rel: r.rel || undefined,
-    obj: r.obj || undefined,
+    setPlane: s.setPlane,
+    setCanon: s.setCanon,
+    setInstr: (instr) => s.setInstr(instr as Instr | null),
+    setWires: s.setWires,
+    setNotice: s.setNotice,
+    setCut: s.setBookCut,
+    setSnapshot: s.setSnapshot,
   };
 }
 
-function parseSheet(text: string, status: Row["status"]): Row[] {
-  const lines = text.trim().split(/\n/).filter(Boolean);
-  if (lines.length < 2) return [];
-  const head = lines[0].split("\t");
-  const out: Row[] = [];
-  for (const line of lines.slice(1)) {
-    const cells = line.split("\t");
-    const rec: Record<string, string> = {};
-    head.forEach((h, i) => {
-      rec[h] = cells[i] ?? "";
-    });
-    if (!rec.id) continue;
-    out.push(asRow(rec, status));
-  }
+/**
+ * Обновляет книгу стола одним вызовом `JSON`. Сбой или испорченный ответ не трогает стол: пользователь видит причину в
+ * уведомлении (AUD-14, AUD-11). Запасного пути из четырёх вызовов нет: при сбое он повторил бы тот же отказ четыре раза.
+ */
+export async function refreshBook(): Promise<void> {
+  const token = bookSequence.next();
+  const out = await bridge("JSON");
+  if (!bookSequence.isLatest(token)) return;
+  applyBookReply(parseBook(out), bookSink());
+}
+
+/**
+ * Запись в стол: одна точка для кнопок и строки команд. Исход записи, в том числе отказ при коде 0, попадает в уведомление
+ * записи и не стирается обновлением книги (AUD-11, AUD-13). Книга обновляется после каждой записи.
+ */
+export async function writeDesk(
+  line: string,
+  extra?: { tape?: string; ids?: string[] },
+): Promise<BridgeOut> {
+  const out = await bridge(line, extra);
+  const outcome = writeOutcome(out);
+  useDesk.getState().setWriteNotice(outcome.ok ? (outcome.note ?? null) : outcome.message);
+  await refreshBook();
   return out;
 }
 
-export async function refreshCanon(): Promise<Row[]> {
-  const out = await bridge("CANON");
-  const rows = parseSheet(out.stdout, "accepted");
-  useDesk.getState().setCanon(rows);
-  return rows;
+/** Ждёт, пока человек подтвердит список id в панели; панель отвечает через `bulk.done`. */
+function askBulk(line: string, ids: string[]): Promise<boolean> {
+  // Прежний запрос, которого не ответили, уходит в отмену: его обещание не должно висеть вечно.
+  useDesk.getState().bulk?.done(false);
+  return new Promise((done) => useDesk.getState().setBulk({ line, ids, done }));
 }
 
-export async function refreshPlane(): Promise<Row[]> {
-  const out = await bridge("RAW");
-  const rows = parseSheet(out.stdout, "raw");
-  useDesk.getState().setPlane(rows);
-  return rows;
-}
-
-export async function refreshInstr(): Promise<void> {
-  const out = await bridge("INSTR");
-  const line = out.stdout.split("\n").find((l) => l.trim().startsWith("{"));
-  if (!line) return;
-  try {
-    useDesk.getState().setInstr(JSON.parse(line) as Instr);
-  } catch {
-    /* keep last */
+/**
+ * Массовая запись RAW или OBS (AUD-15): сначала читаем точный список id (`IDS`), человек подтверждает его в панели, и только
+ * потом пишем с этим списком; движок сверит список с набором в тот же момент. Остальные строки идут как `writeDesk`.
+ * Отмена ничего не пишет и не показывает уведомления.
+ */
+export async function writeBulk(line: string): Promise<BridgeOut> {
+  const expr = setExprOf(line);
+  if (expr === null) return writeDesk(line);
+  const listed = await bridge(`IDS ${expr}`);
+  if (!listed.ok) {
+    useDesk
+      .getState()
+      .setWriteNotice(`Список не получен: ${describeReply(listed)}. Ничего не записано.`);
+    return listed;
   }
-}
-
-export async function refreshWires(): Promise<void> {
-  const out = await bridge("PACKET");
-  const wires = [];
-  for (const line of out.stdout.split("\n")) {
-    const m = line.match(/^(\S+)\s+-([^-]+)->\s+(\S+)\s*(.*)$/);
-    if (!m) continue;
-    wires.push({ from: m[1], rel: m[2].trim(), to: m[3], note: (m[4] || "").trim() });
+  const rows = parseRows(listed.stdout);
+  const always = alwaysList(line);
+  // REPAIR без мусора пишет «clean» и без списка; пустой набор RAW или OBS — сообщаем, что писать нечего.
+  if (rows.length === 0 && always) return writeDesk(line);
+  if (rows.length === 0) {
+    useDesk.getState().setWriteNotice(`В наборе «${expr}» нет объектов: ничего не записано.`);
+    return { ok: false, stdout: "", stderr: "в наборе нет объектов" };
   }
-  useDesk.getState().setWires(wires);
-}
-
-export async function refreshBook(): Promise<void> {
-  const out = await bridge("JSON");
-  const line = (out.stdout || "").split("\n").find((l) => l.trim().startsWith("{"));
-  if (line) {
-    try {
-      const d = JSON.parse(line) as {
-        instr: Instr;
-        raw: Record<string, string>[];
-        canon: Record<string, string>[];
-        wires: { from: string; rel: string; to: string; note: string }[];
-      };
-      const s = useDesk.getState();
-      s.setPlane((d.raw || []).map((r) => asRow(r, "raw")));
-      s.setCanon((d.canon || []).map((r) => asRow(r, "accepted")));
-      s.setInstr(d.instr);
-      s.setWires(d.wires || []);
-      return;
-    } catch {
-      /* four calls */
-    }
+  // Набор из одних понятий движок пишет без списка: подтверждать нечего.
+  if (!always && !touchesBulk(rows)) return writeDesk(line);
+  if (rows.length > BULK_MAX) {
+    useDesk
+      .getState()
+      .setWriteNotice(
+        `В наборе «${expr}» ${rows.length} объектов: за один раз больше ${BULK_MAX} не принимается. Ничего не записано.`,
+      );
+    return { ok: false, stdout: "", stderr: "набор слишком велик" };
   }
-  await refreshPlane();
-  await refreshCanon();
-  await refreshInstr();
-  await refreshWires();
+  const ids = rows.map((r) => r.id);
+  if (!(await askBulk(line, ids)))
+    return { ok: false, stdout: "", stderr: "отменено: ничего не записано" };
+  return writeDesk(line, { ids });
 }
 
 export async function plantToDb(rows: Row[]): Promise<BridgeOut> {
   if (!rows.length) return { ok: true, stdout: "", stderr: "" };
-  const r = await bridge("PLANT", { tape: dumpTsv(rows) });
-  await refreshBook();
-  return r;
+  return writeDesk("PLANT", { tape: dumpTsv(rows) });
 }
 
+/** Оптимистичных изменений нет: строка меняется, когда стол ответил (AUD-13). */
 export async function acceptBoth(id: string): Promise<BridgeOut> {
-  useDesk.getState().accept(id);
-  const out = await bridge(`ACCEPT ${id}`);
-  await refreshBook();
-  return out;
+  return writeDesk(`ACCEPT ${id}`);
 }
 
 export async function takeBoth(id: string): Promise<BridgeOut> {
-  useDesk.getState().reject(id);
-  const out = await bridge(`TAKE ${id}`);
-  await refreshBook();
-  return out;
+  return writeDesk(`TAKE ${id}`);
 }
 
 export async function runBoth(id: string): Promise<BridgeOut> {
-  useDesk.getState().run(id);
-  const out = await bridge(`RUN ${id}`);
-  await refreshBook();
-  return out;
+  return writeDesk(`RUN ${id}`);
 }
 
+/** Строку вопроса в ленту добавляем только после ответа стола, что FETCH записал вопрос (AUD-31). */
 export async function fetchBoth(): Promise<BridgeOut> {
-  useDesk.getState().fetchNew();
-  const out = await bridge("FETCH");
-  await refreshBook();
+  const out = await writeDesk("FETCH");
+  if (fetchAdded(out)) useDesk.getState().fetchNew();
   return out;
 }
