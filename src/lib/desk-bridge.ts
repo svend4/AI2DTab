@@ -11,7 +11,7 @@ import {
   type BookSink,
 } from "@/lib/desk-refresh";
 import { BULK_MAX, parseRows, setExprOf, touchesBulk } from "@/lib/desk-bulk";
-import { writeOutcome } from "@/lib/desk-writes";
+import { fetchAdded, writeOutcome } from "@/lib/desk-writes";
 
 export type BridgeOut = PmReply;
 
@@ -86,6 +86,8 @@ export async function writeDesk(
 
 /** Ждёт, пока человек подтвердит список id в панели; панель отвечает через `bulk.done`. */
 function askBulk(line: string, ids: string[]): Promise<boolean> {
+  // Прежний запрос, которого не ответили, уходит в отмену: его обещание не должно висеть вечно.
+  useDesk.getState().bulk?.done(false);
   return new Promise((done) => useDesk.getState().setBulk({ line, ids, done }));
 }
 
@@ -146,6 +148,6 @@ export async function runBoth(id: string): Promise<BridgeOut> {
 /** Строку вопроса в ленту добавляем только после ответа стола, что FETCH записал вопрос (AUD-31). */
 export async function fetchBoth(): Promise<BridgeOut> {
   const out = await writeDesk("FETCH");
-  if (writeOutcome(out).ok) useDesk.getState().fetchNew();
+  if (fetchAdded(out)) useDesk.getState().fetchNew();
   return out;
 }

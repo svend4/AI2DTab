@@ -10,11 +10,13 @@ export function AccessBar() {
   const access = useDeskAccess();
   const mode = access.pending
     ? "pending"
-    : access.canWrite
-      ? "write"
-      : access.signedIn
-        ? "denied"
-        : "read";
+    : access.snapshot
+      ? "snapshot"
+      : access.canWrite
+        ? "write"
+        : access.signedIn
+          ? "denied"
+          : "read";
   return (
     <div
       data-access={mode}
@@ -26,6 +28,14 @@ export function AccessBar() {
         <>
           <span className="text-xs text-subtle">Запись открыта</span>
           <UserChip />
+        </>
+      ) : mode === "snapshot" ? (
+        <>
+          <p className="min-w-0 flex-1 text-sm leading-relaxed text-muted">
+            <span className="font-medium text-fg">Только чтение.</span> Стол опубликован как снимок:
+            записи здесь нет ни для кого.
+          </p>
+          {access.signedIn ? <UserChip /> : null}
         </>
       ) : mode === "denied" ? (
         <>

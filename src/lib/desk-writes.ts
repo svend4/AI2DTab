@@ -20,25 +20,39 @@ function objects(n: number): string {
   return n % 10 === 1 && n % 100 !== 11 ? "объекте" : "объектах";
 }
 
+/** Сводка набора `ACCEPT <набор> → ok=N refuse=N skip=N`: считает весь набор, а строки печатаются только первые восемьдесят. */
+const SUMMARY = /\bok=(\d+)\s+refuse=(\d+)\s+skip=(\d+)/;
+
 export function writeOutcome(out: PmReply): WriteOutcome {
   if (!out.ok) return { ok: false, message: `Запись не выполнена: ${describeReply(out)}.` };
   const lines = out.stdout.split("\n").map((l) => l.trim());
+  const summary = lines.map((l) => SUMMARY.exec(l)).find(Boolean);
+  if (summary && Number(summary[2]) > 0) {
+    const refusedCount = Number(summary[2]);
+    const accepted = Number(summary[1]);
+    const tail = accepted > 0 ? `; принято ${accepted}` : "";
+    return {
+      ok: false,
+      message: `Стол отказал в ${refusedCount} ${objects(refusedCount)}${tail}.`,
+    };
+  }
   const refused = lines.find((l) => l.startsWith("REFUSE "));
   if (refused) return { ok: false, message: `Стол отказал: ${refused}.` };
-  let count = 0;
-  for (const line of lines) {
-    const m = /\brefuse=(\d+)/.exec(line);
-    if (m) count += Number(m[1]);
-  }
-  if (count > 0) return { ok: false, message: `Стол отказал в ${count} ${objects(count)}.` };
   const added = lines.filter((l) => /^plant \S+$/.test(l)).length;
   const skipped = lines.filter((l) => /^skip \S+ already /.test(l)).map((l) => l.split(" ")[1]);
-  if (skipped.length === 0) return { ok: true };
+  const total = summary ? Number(summary[3]) : skipped.length;
+  if (total === 0) return { ok: true };
+  const named = skipped.slice(0, NAMED);
+  const rest = total - named.length;
   const head = added > 0 ? `Добавлено ${added}. ` : "";
-  const more = skipped.length > NAMED ? ` и ещё ${skipped.length - NAMED}` : "";
-  const named = skipped.slice(0, NAMED).join(", ");
+  const more = rest > 0 ? ` и ещё ${rest}` : "";
   return {
     ok: true,
-    note: `${head}Пропущено ${skipped.length}, уже были в столе: ${named}${more}.`,
+    note: `${head}Пропущено ${total}, уже были в столе: ${named.join(", ")}${more}.`,
   };
+}
+
+/** `FETCH` добавил строку в ленту: движок напечатал `FETCH <id>`. Пропуск уже открытого вопроса печатает `skip FETCH …` (AUD-43). */
+export function fetchAdded(out: PmReply): boolean {
+  return out.ok && /^FETCH /m.test(out.stdout);
 }

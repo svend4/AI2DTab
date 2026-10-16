@@ -19,6 +19,9 @@ const l4 = read("../routes/l4.tsx");
 const index = read("../routes/index.tsx");
 const machine = read("./machine.ts");
 const access = read("./use-desk-access.ts");
+const accessBar = read("../components/access-bar.tsx");
+const l4Route = read("../routes/l4.tsx");
+const commandBarSrc = read("../components/command-bar.tsx");
 
 /** Текст одной экспортируемой функции моста: от заголовка до закрывающей скобки на начале строки. */
 function fn(source: string, name: string): string {
@@ -92,7 +95,7 @@ describe("мост: все записи идут через одну точку 
 
   it("FETCH добавляет строку в ленту только после успешного ответа стола", () => {
     const body = fn(bridge, "fetchBoth");
-    assert.match(body, /if \(writeOutcome\(out\)\.ok\) useDesk\.getState\(\)\.fetchNew\(\);/);
+    assert.match(body, /if \(fetchAdded\(out\)\) useDesk\.getState\(\)\.fetchNew\(\);/);
   });
 
   it("стор: оптимистичных записей и мёртвого разбора строки команд больше нет", () => {
@@ -233,5 +236,22 @@ describe("массовые записи RAW и OBS: список и подтве
     assert.match(nav, /answer\(true\)/);
     assert.match(nav, /setBulk\(null\)/);
     assert.match(store, /bulk: BulkAsk \| null;/);
+  });
+});
+
+describe("исход и снимок: что видно пользователю (AUD-43, AUD-03)", () => {
+  it("полоса доступа показывает снимок отдельным режимом, а L4 не просит спецификацию на снимке", () => {
+    assert.match(accessBar, /mode === "snapshot"/);
+    assert.match(accessBar, /Только чтение\./);
+    assert.match(l4Route, /if \(access\.snapshot\) \{/);
+  });
+
+  it("FETCH добавляет строку в ленту только когда движок её завёл, и прежний запрос подтверждения не висит", () => {
+    assert.match(bridge, /if \(fetchAdded\(out\)\) useDesk\.getState\(\)\.fetchNew\(\);/);
+    assert.match(bridge, /useDesk\.getState\(\)\.bulk\?\.done\(false\);/);
+  });
+
+  it("DUMP с обрезкой файл не сохраняет", () => {
+    assert.match(commandBarSrc, /if \(out\.cut\) \{/);
   });
 });
