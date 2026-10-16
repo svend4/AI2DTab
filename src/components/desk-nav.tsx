@@ -17,6 +17,7 @@ export function DeskNav() {
   const plane = useDesk((s) => s.plane);
   const instr = useDesk((s) => s.instr);
   const notice = useDesk((s) => s.notice);
+  const writeNotice = useDesk((s) => s.writeNotice);
   const rawN = plane.length || rows.filter((r) => r.status === "raw").length;
   const counts: Record<Stage, number> = {
     L1: rows.filter((r) => r.source === "лента").length,
@@ -29,20 +30,11 @@ export function DeskNav() {
     <header className="border-b border-border bg-bg">
       <div className="mx-auto flex max-w-6xl flex-col gap-3 px-4 py-4 sm:px-6">
         <AccessBar />
+        {writeNotice ? (
+          <DeskAlert text={writeNotice} onHide={() => useDesk.getState().setWriteNotice(null)} />
+        ) : null}
         {notice ? (
-          <div
-            role="alert"
-            className="flex flex-wrap items-start justify-between gap-x-4 gap-y-2 rounded-md border border-border bg-elevated px-3 py-2"
-          >
-            <p className="min-w-0 flex-1 text-sm leading-relaxed text-fg">{notice}</p>
-            <button
-              type="button"
-              onClick={() => useDesk.getState().setNotice(null)}
-              className="inline-flex min-h-11 items-center rounded-md border border-border px-3 text-sm text-muted"
-            >
-              Скрыть
-            </button>
-          </div>
+          <DeskAlert text={notice} onHide={() => useDesk.getState().setNotice(null)} />
         ) : null}
         <InstrumentStrip instr={instr} />
         <InstrumentPanel instr={instr} />
@@ -71,6 +63,25 @@ export function DeskNav() {
         <CommandBar />
       </div>
     </header>
+  );
+}
+
+/** Уведомление стола: текст причины и кнопка «Скрыть». Для записи и для обновления — два отдельных слота. */
+function DeskAlert({ text, onHide }: { text: string; onHide: () => void }) {
+  return (
+    <div
+      role="alert"
+      className="flex flex-wrap items-start justify-between gap-x-4 gap-y-2 rounded-md border border-border bg-elevated px-3 py-2"
+    >
+      <p className="min-w-0 flex-1 text-sm leading-relaxed text-fg">{text}</p>
+      <button
+        type="button"
+        onClick={onHide}
+        className="inline-flex min-h-11 items-center rounded-md border border-border px-3 text-sm text-muted"
+      >
+        Скрыть
+      </button>
+    </div>
   );
 }
 

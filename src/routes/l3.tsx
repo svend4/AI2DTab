@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { DeskShell } from "@/components/desk-nav";
 import { refreshBook, runBoth } from "@/lib/desk-bridge";
+import { writeOutcome } from "@/lib/desk-writes";
 import { writeProps } from "@/lib/desk-access";
 import { useDesk } from "@/lib/desk-store";
 import { useDeskAccess } from "@/lib/use-desk-access";
@@ -102,7 +103,9 @@ function L3() {
                     {...writeProps(access)}
                     className="text-xs underline"
                     onClick={() => {
-                      void runBoth(r.id).then(() => nav({ to: "/l4" }));
+                      void runBoth(r.id).then((out) => {
+                        if (writeOutcome(out).ok) nav({ to: "/l4" });
+                      });
                     }}
                   >
                     RUN
