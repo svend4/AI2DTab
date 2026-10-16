@@ -86,7 +86,8 @@ function toRow(r: Record<string, string>, status: Row["status"]): Row {
 
 /** Разбор ответа `JSON`. Ошибка — если ответ не успешный, в нём нет строки книги, JSON не читается или срез испорчен. */
 export function parseBook(out: PmReply): BookReply {
-  if (out.cut) return { ok: false, reason: "ответ обрезан", cut: out.cut };
+  // Обрезка без ошибки движка — книгу не разобрать; при ошибке причина в stderr и она важнее.
+  if (out.cut && out.ok) return { ok: false, reason: "ответ обрезан", cut: out.cut };
   if (!out.ok) return { ok: false, reason: describeReply(out) };
   const line = out.stdout.split("\n").find((l) => l.trim().startsWith("{"));
   if (!line) return { ok: false, reason: "ответ стола без книги" };

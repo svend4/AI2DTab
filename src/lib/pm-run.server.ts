@@ -49,6 +49,18 @@ export function engineInstalled(): boolean {
  * Копит вывод не больше `max` байт, но считает весь размер. Текст собирается один раз, в конце: декодировать каждый кусок
  * по отдельности портит кириллицу и €, если символ разрезан границей куска (AUD-44).
  */
+/** Сколько первых байт буфера составляют целые символы UTF-8: последний неполный символ отбрасывается. */
+function wholeChars(buf: Buffer): number {
+  for (let i = buf.length - 1, back = 0; i >= 0 && back < 4; i--, back++) {
+    const b = buf[i];
+    if ((b & 0xc0) !== 0x80) {
+      const need = b >= 0xf0 ? 4 : b >= 0xe0 ? 3 : b >= 0xc0 ? 2 : 1;
+      return buf.length - i < need ? i : buf.length;
+    }
+  }
+  return buf.length;
+}
+
 function collect(max: number) {
   const parts: Buffer[] = [];
   let kept = 0;
@@ -63,8 +75,10 @@ function collect(max: number) {
       }
     },
     done(): { text: string; cut?: Cut } {
-      const text = Buffer.concat(parts).toString("utf8");
-      return total > kept ? { text, cut: { dropped: total - kept, total } } : { text };
+      if (total <= kept) return { text: Buffer.concat(parts).toString("utf8") };
+      const whole = Buffer.concat(parts);
+      const shown = whole.subarray(0, wholeChars(whole));
+      return { text: shown.toString("utf8"), cut: { dropped: total - shown.length, total } };
     },
   };
 }

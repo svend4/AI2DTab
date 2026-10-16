@@ -21,6 +21,11 @@ export function buildSnapshot({ engine, taken, python = "python3" }) {
   const pm = join(engine, "pm.py");
   if (!existsSync(pm)) throw new Error(`нет ${pm}: укажите папку движка через --engine`);
   if (!/^\d{4}-\d{2}-\d{2}$/.test(taken)) throw new Error(`дата снимка не YYYY-MM-DD: ${taken}`);
+  const [y, m, d] = taken.split("-").map(Number);
+  const day = new Date(Date.UTC(y, m - 1, d));
+  if (day.getUTCFullYear() !== y || day.getUTCMonth() !== m - 1 || day.getUTCDate() !== d) {
+    throw new Error(`такой даты нет в календаре: ${taken}`);
+  }
   const stdout = execFileSync(python, ["-B", pm, "exec", "JSON"], {
     cwd: engine,
     encoding: "utf8",

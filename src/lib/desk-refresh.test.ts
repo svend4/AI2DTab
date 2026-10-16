@@ -196,6 +196,21 @@ describe("модуль грузится под node и не тянет клие�
   });
 });
 
+describe("обрезка и ошибка движка: причина из stderr (O8)", () => {
+  it("если движок вернул ошибку и обрезанный вывод, причина — из stderr, а не «обрезан»", () => {
+    const out: PmReply = {
+      ok: false,
+      stdout: "…",
+      stderr: "стол закрыт",
+      code: "bad_args",
+      cut: { dropped: 1, total: 2 },
+    };
+    const r = recorder();
+    applyBookReply(parseBook(out), r.sink);
+    assert.match(String(r.calls.find((c) => c.name === "notice")?.arg), /стол закрыт/);
+  });
+});
+
 describe("снимок: дата из книги и текст для записи в снимке (AUD-03, O9)", () => {
   it("книга из снимка несёт дату, и успешное обновление её передаёт", () => {
     const r = recorder();
