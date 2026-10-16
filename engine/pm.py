@@ -817,6 +817,11 @@ def gap_from_warns(warns):
     return out
 
 
+# Команды, которые пишут в базу. Только им нужна миграция ячеек (`migrate_cells`); чтения базу не меняют.
+WRITE_VERBS = {"PLANT", "CUT", "ACCEPT", "FILL", "TAKE", "SWEEP", "PURGE", "REPAIR", "GAP", "RUN", "FETCH",
+               "WIRE", "PROBE", "SETTLE", "SUPERSEDE", "BATCH"}
+
+
 def cmd_exec(ns: argparse.Namespace) -> None:
     line = " ".join(ns.line or []).strip()
     parts = line.split()
@@ -825,7 +830,8 @@ def cmd_exec(ns: argparse.Namespace) -> None:
     if ns.file and not cmd:
         cmd = "PLANT"
     con = connect()
-    migrate_cells(con)
+    if cmd in WRITE_VERBS:
+        migrate_cells(con)          # миграция ячеек — только перед записью: чтения базу не меняют (решение владельца)
     if cmd == "STATUS":
         cmd_status(ns)
         log(con, "STATUS", None, "cli")
