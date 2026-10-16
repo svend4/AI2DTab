@@ -40,6 +40,8 @@ export type PmReply = {
   stdout: string;
   stderr: string;
   code?: Refusal | "engine_unavailable" | "bridge";
+  /** Ответ движка длиннее предела: сколько байт отброшено из полного размера (O8). */
+  cut?: { dropped: number; total: number };
 };
 export const LOGIN_MESSAGE = "запись в стол требует входа";
 export const NOT_WRITER_MESSAGE = "запись разрешена только допущенным аккаунтам";

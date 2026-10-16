@@ -41,6 +41,7 @@ function recorder() {
     setInstr: (instr) => calls.push({ name: "instr", arg: instr }),
     setWires: (wires) => calls.push({ name: "wires", arg: wires }),
     setNotice: (notice) => calls.push({ name: "notice", arg: notice }),
+    setCut: (cut) => calls.push({ name: "cut", arg: cut }),
   };
   return { sink, calls, names: () => calls.map((c) => c.name) };
 }
@@ -50,8 +51,8 @@ describe("ответ с книгой стола (AUD-14)", () => {
     const r = recorder();
     const out: PmReply = { ...failed("стол закрыт", "bad_args"), stdout: JSON.stringify(BOOK) };
     applyBookReply(parseBook(out), r.sink);
-    assert.deepEqual(r.names(), ["notice"]);
-    assert.match(String(r.calls[0].arg), /стол закрыт/);
+    assert.deepEqual(r.names(), ["cut", "notice"]);
+    assert.match(String(r.calls.find((c) => c.name === "notice")?.arg), /стол закрыт/);
   });
 
   it("ok:true без строки книги — ошибка, а не пустой стол", () => {
@@ -60,7 +61,7 @@ describe("ответ с книгой стола (AUD-14)", () => {
       assert.equal(p.ok, false, JSON.stringify(stdout));
       const r = recorder();
       applyBookReply(p, r.sink);
-      assert.deepEqual(r.names(), ["notice"], JSON.stringify(stdout));
+      assert.deepEqual(r.names(), ["cut", "notice"], JSON.stringify(stdout));
     }
   });
 
@@ -87,7 +88,7 @@ describe("ответ с книгой стола (AUD-14)", () => {
   it("пустая, но корректная книга — это книга: срезы применяются и уведомление снимается", () => {
     const r = recorder();
     applyBookReply(parseBook(reply('{"instr":{},"raw":[],"canon":[],"wires":[]}')), r.sink);
-    assert.deepEqual(r.names(), ["plane", "canon", "instr", "wires", "notice"]);
+    assert.deepEqual(r.names(), ["plane", "canon", "instr", "wires", "cut", "notice"]);
     assert.equal(r.calls[4].arg, null);
   });
 
@@ -113,8 +114,41 @@ describe("ответ с книгой стола (AUD-14)", () => {
   it("при успехе применяются все срезы и уведомление снимается", () => {
     const r = recorder();
     applyBookReply(parseBook(reply(JSON.stringify(BOOK))), r.sink);
-    assert.deepEqual(r.names(), ["plane", "canon", "instr", "wires", "notice"]);
+    assert.deepEqual(r.names(), ["plane", "canon", "instr", "wires", "cut", "notice"]);
     assert.equal(r.calls[4].arg, null);
+  });
+});
+
+describe("ответ длиннее предела: обрезка названа числами, без баннера (O8)", () => {
+  const cut = { dropped: 402848, total: 2500000 };
+  const TEXT = "Ответ стола обрезан: обрезано 402848 из 2500000 байт. Показано прежнее состояние.";
+
+  it("обрезанный ответ не разбирается, а пометка называет N и M; уведомления-баннера нет", () => {
+    const r = recorder();
+    const out: PmReply = { ...reply(JSON.stringify(BOOK)), cut };
+    applyBookReply(parseBook(out), r.sink);
+    assert.deepEqual(r.calls, [
+      { name: "notice", arg: null },
+      { name: "cut", arg: TEXT },
+    ]);
+  });
+
+  it("успешный ответ снимает пометку обрезки", () => {
+    const r = recorder();
+    applyBookReply(parseBook(reply(JSON.stringify(BOOK))), r.sink);
+    assert.deepEqual(
+      r.calls.find((c) => c.name === "cut"),
+      { name: "cut", arg: null },
+    );
+  });
+
+  it("обычный сбой тоже снимает старую пометку, иначе она останется навсегда", () => {
+    const r = recorder();
+    applyBookReply(parseBook(failed("стол закрыт", "bad_args")), r.sink);
+    assert.deepEqual(
+      r.calls.find((c) => c.name === "cut"),
+      { name: "cut", arg: null },
+    );
   });
 });
 

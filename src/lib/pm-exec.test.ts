@@ -22,6 +22,15 @@ function fake(ready: boolean, answer: Partial<PmRun> = {}) {
 }
 
 describe("execute", () => {
+  it("обрезку ответа движка (O8) сайт передаёт дальше: пометка с числами не теряется", async () => {
+    const cut = { dropped: 402848, total: 2500000 };
+    const { engine } = fake(true, { code: 0, stdout: "{}", stderr: "", cut });
+    const r = await execute({ line: "JSON" }, null, engine);
+    assert.deepEqual(r.cut, cut);
+    const plain = await execute({ line: "JSON" }, null, fake(true).engine);
+    assert.equal("cut" in plain, false);
+  });
+
   it("отказ разбора не доходит до движка и возвращает код отказа", async () => {
     const { engine, calls } = fake(true);
     const r = await execute({ line: "PLANT --file /etc/passwd" }, USER, engine);

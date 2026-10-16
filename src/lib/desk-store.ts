@@ -36,6 +36,9 @@ type Desk = {
   /** Причина, почему стол не обновился (чтение); пусто, когда всё в порядке. В сохранённое состояние не входит. */
   notice: string | null;
   setNotice: (notice: string | null) => void;
+  /** Пометка «ответ обрезан» (O8): тихая строка, не уведомление. В сохранённое состояние не входит. */
+  bookCut: string | null;
+  setBookCut: (cut: string | null) => void;
   /** Исход последней записи: отказ, сбой или пометка о пропусках. Не стирается обновлением книги, только следующей записью или «Скрыть». */
   writeNotice: string | null;
   setWriteNotice: (notice: string | null) => void;
@@ -61,6 +64,8 @@ export const useDesk = create<Desk>()(
       setWires: (wires) => set({ wires }),
       notice: null,
       setNotice: (notice) => set({ notice }),
+      bookCut: null,
+      setBookCut: (bookCut) => set({ bookCut }),
       writeNotice: null,
       setWriteNotice: (writeNotice) => set({ writeNotice }),
 

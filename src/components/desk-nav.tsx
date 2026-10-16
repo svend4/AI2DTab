@@ -16,6 +16,7 @@ export function DeskNav() {
   const plane = useDesk((s) => s.plane);
   const instr = useDesk((s) => s.instr);
   const notice = useDesk((s) => s.notice);
+  const bookCut = useDesk((s) => s.bookCut);
   const writeNotice = useDesk((s) => s.writeNotice);
   /** L1 — лента: у неё нет счётчика, книга не хранит строк ленты (AUD-26). */
   const counts: Partial<Record<Stage, number>> = {
@@ -34,6 +35,7 @@ export function DeskNav() {
         {notice ? (
           <DeskAlert text={notice} onHide={() => useDesk.getState().setNotice(null)} />
         ) : null}
+        {bookCut ? <p className="text-xs text-subtle">{bookCut}</p> : null}
         <InstrumentStrip instr={instr} />
         <InstrumentPanel instr={instr} />
         <nav className="grid grid-cols-2 gap-2 sm:grid-cols-4">
