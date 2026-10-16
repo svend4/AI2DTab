@@ -18,6 +18,7 @@ const l3 = read("../routes/l3.tsx");
 const l4 = read("../routes/l4.tsx");
 const index = read("../routes/index.tsx");
 const machine = read("./machine.ts");
+const access = read("./use-desk-access.ts");
 
 /** Текст одной экспортируемой функции моста: от заголовка до закрывающей скобки на начале строки. */
 function fn(source: string, name: string): string {
@@ -179,5 +180,18 @@ describe("кнопки и переходы: при сбое пользовате
 
   it("SETTLE (L4) идёт через writeDesk и затем перечитывает спецификацию", () => {
     assert.match(l4, /await writeDesk\("SETTLE"\);/);
+  });
+});
+
+describe("снимок стола: дата в шапке, запись в снимке закрыта на интерфейсе", () => {
+  it("стор держит дату снимка, мост её передаёт, шапка показывает метку", () => {
+    assert.match(store, /snapshot: string \| null;/);
+    assert.match(bridge, /setSnapshot: s\.setSnapshot/);
+    assert.match(nav, /snapshotLabel\(snapshot\)/);
+  });
+
+  it("доступ к записи учитывает снимок", () => {
+    assert.match(access, /const snapshot = useDesk\(\(s\) => s\.snapshot !== null\)/);
+    assert.match(access, /deskAccess\(\{ user, isPending, writer, snapshot \}\)/);
   });
 });

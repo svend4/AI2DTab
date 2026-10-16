@@ -1,0 +1,882 @@
+{
+  "taken": "2026-10-16",
+  "instr": {
+    "charge": 0.5417,
+    "raw": 22,
+    "canon": 26,
+    "neq": 12,
+    "packets": 17,
+    "objects": 78,
+    "cshare": 0.6154,
+    "junk": 0,
+    "sparse": 0.002831,
+    "cluster": {
+      "A": 16,
+      "B": 6,
+      "C": 48,
+      "D": 8
+    },
+    "hops": {
+      "A": {
+        "A": 6,
+        "B": 0,
+        "C": 0,
+        "D": 0
+      },
+      "B": {
+        "A": 1,
+        "B": 2,
+        "C": 0,
+        "D": 0
+      },
+      "C": {
+        "A": 0,
+        "B": 0,
+        "C": 1,
+        "D": 0
+      },
+      "D": {
+        "A": 1,
+        "B": 2,
+        "C": 0,
+        "D": 4
+      }
+    },
+    "warns": [
+      "C без пакетов"
+    ],
+    "notes": [
+      "масса C = ячейки OS, не перекос"
+    ]
+  },
+  "raw": [
+    {
+      "id": "B8",
+      "cluster": "C",
+      "layer": "2",
+      "type": "observation",
+      "title": "информация",
+      "status": "raw",
+      "body": "информация",
+      "pred": "",
+      "rel": "",
+      "obj": ""
+    },
+    {
+      "id": "B9",
+      "cluster": "C",
+      "layer": "2",
+      "type": "observation",
+      "title": "информация",
+      "status": "raw",
+      "body": "информация",
+      "pred": "",
+      "rel": "",
+      "obj": ""
+    },
+    {
+      "id": "O001",
+      "cluster": "D",
+      "layer": "2",
+      "type": "observation",
+      "title": "Inbusiness 17.09.2026",
+      "status": "raw",
+      "body": "https://inbusiness.kz/ru/news/rabotu-kazahstancam-budet-podbirat-ii-kak-izmenitsya-sistema-zanyatosti",
+      "pred": "",
+      "rel": "",
+      "obj": ""
+    },
+    {
+      "id": "O002",
+      "cluster": "D",
+      "layer": "2",
+      "type": "observation",
+      "title": "TimesCA 11.08.2026 Павлодар 39000/962",
+      "status": "raw",
+      "body": "причинность трудоустройств не доказана",
+      "pred": "",
+      "rel": "",
+      "obj": ""
+    },
+    {
+      "id": "Q-FETCH-193145",
+      "cluster": "C",
+      "layer": "2",
+      "type": "question",
+      "title": "чего нет в каноне?",
+      "status": "raw",
+      "body": "FETCH с L4 на L1",
+      "pred": "",
+      "rel": "",
+      "obj": ""
+    },
+    {
+      "id": "Q-FETCH-193911",
+      "cluster": "C",
+      "layer": "2",
+      "type": "question",
+      "title": "чего нет в каноне?",
+      "status": "raw",
+      "body": "FETCH с L4 на L1",
+      "pred": "",
+      "rel": "",
+      "obj": ""
+    },
+    {
+      "id": "Q-GAP-C-HOP",
+      "cluster": "C",
+      "layer": "2",
+      "type": "question",
+      "title": "какой морфизм C→A или C→B допустим?",
+      "status": "raw",
+      "body": "GAP из приборов",
+      "pred": "",
+      "rel": "",
+      "obj": ""
+    },
+    {
+      "id": "ont-S17041",
+      "cluster": "C",
+      "layer": "2",
+      "type": "observation",
+      "title": "Главный переход",
+      "status": "raw",
+      "body": "До сих пор Innovation OS уже умеет: /  / ```text / обмениваться State / объявлять Capabilities / передавать Claims / передавать Evidence / запрашивать Actions / договариваться о Schema / ``` /  / Теперь возникает более глубокий вопрос: /  / ```text / Что именно означают используемые понятия? / ``` /  / ---",
+      "pred": "",
+      "rel": "",
+      "obj": ""
+    },
+    {
+      "id": "ont-S17059",
+      "cluster": "C",
+      "layer": "2",
+      "type": "observation",
+      "title": "Это важное различие",
+      "status": "raw",
+      "body": "```text / rename / ≠ / semantic change / ``` /  / ---",
+      "pred": "",
+      "rel": "",
+      "obj": ""
+    },
+    {
+      "id": "ont-S17298",
+      "cluster": "C",
+      "layer": "2",
+      "type": "observation",
+      "title": "Semantic Linting",
+      "status": "raw",
+      "body": "Could detect: /  / ```text / undefined concept / deprecated predicate / wrong relation direction / unit mismatch / ``` /  / ---",
+      "pred": "",
+      "rel": "",
+      "obj": ""
+    },
+    {
+      "id": "ont-S17320",
+      "cluster": "C",
+      "layer": "2",
+      "type": "observation",
+      "title": "Same UI invariant as elsewhere.",
+      "status": "raw",
+      "body": "---",
+      "pred": "",
+      "rel": "",
+      "obj": ""
+    },
+    {
+      "id": "ont-S17547",
+      "cluster": "C",
+      "layer": "2",
+      "type": "observation",
+      "title": "This is Core invariant reused.",
+      "status": "raw",
+      "body": "---",
+      "pred": "",
+      "rel": "",
+      "obj": ""
+    },
+    {
+      "id": "ont-S17736",
+      "cluster": "C",
+      "layer": "2",
+      "type": "observation",
+      "title": "Generated test protects invariant.",
+      "status": "raw",
+      "body": "---",
+      "pred": "",
+      "rel": "",
+      "obj": ""
+    },
+    {
+      "id": "ont-S17793",
+      "cluster": "C",
+      "layer": "2",
+      "type": "observation",
+      "title": "Need protected semantic invariants.",
+      "status": "raw",
+      "body": "---",
+      "pred": "",
+      "rel": "",
+      "obj": ""
+    },
+    {
+      "id": "ont-S17795",
+      "cluster": "C",
+      "layer": "2",
+      "type": "observation",
+      "title": "Extensions may refine,",
+      "status": "raw",
+      "body": "but not contradict kernel invariants. /  / ---",
+      "pred": "",
+      "rel": "",
+      "obj": ""
+    },
+    {
+      "id": "ont-S17799",
+      "cluster": "C",
+      "layer": "2",
+      "type": "observation",
+      "title": "Extension violating invariant:",
+      "status": "raw",
+      "body": "```text / rejected / ``` /  / ---",
+      "pred": "",
+      "rel": "",
+      "obj": ""
+    },
+    {
+      "id": "ont-S17801",
+      "cluster": "C",
+      "layer": "2",
+      "type": "observation",
+      "title": "Kernel Invariant Validator",
+      "status": "raw",
+      "body": "Runs on: /  / ```text / profile install / ontology update / schema update / ``` /  / ---",
+      "pred": "",
+      "rel": "",
+      "obj": ""
+    },
+    {
+      "id": "ont-S17924",
+      "cluster": "C",
+      "layer": "2",
+      "type": "observation",
+      "title": "These should become standard semantic invariants.",
+      "status": "raw",
+      "body": "---",
+      "pred": "",
+      "rel": "",
+      "obj": ""
+    },
+    {
+      "id": "ont-S18265",
+      "cluster": "C",
+      "layer": "2",
+      "type": "observation",
+      "title": "But core invariants protect consistency.",
+      "status": "raw",
+      "body": "---",
+      "pred": "",
+      "rel": "",
+      "obj": ""
+    },
+    {
+      "id": "ont-S18271",
+      "cluster": "C",
+      "layer": "2",
+      "type": "observation",
+      "title": "Example invariant test:",
+      "status": "raw",
+      "body": "```python / assert proposal.type != decision.type / ``` /  / conceptually. /  / ---",
+      "pred": "",
+      "rel": "",
+      "obj": ""
+    },
+    {
+      "id": "ont-S18278",
+      "cluster": "C",
+      "layer": "2",
+      "type": "observation",
+      "title": "Contains:",
+      "status": "raw",
+      "body": "```text / root types / core predicates / invariants / ``` /  / ---",
+      "pred": "",
+      "rel": "",
+      "obj": ""
+    },
+    {
+      "id": "ont-S18432",
+      "cluster": "C",
+      "layer": "2",
+      "type": "observation",
+      "title": "Example OCR returns valid JSON but wrong text.",
+      "status": "raw",
+      "body": "---",
+      "pred": "",
+      "rel": "",
+      "obj": ""
+    }
+  ],
+  "canon": [
+    {
+      "id": "D001",
+      "cluster": "A",
+      "layer": "1",
+      "type": "decision",
+      "title": "датой выплаты считать 01.01.2027",
+      "status": "canon",
+      "body": "пока нет нового письма Минтруда",
+      "pred": "",
+      "rel": "",
+      "obj": ""
+    },
+    {
+      "id": "D002",
+      "cluster": "A",
+      "layer": "1",
+      "type": "decision",
+      "title": "ИИ не заменяет карьерные центры",
+      "status": "canon",
+      "body": "гибрид",
+      "pred": "",
+      "rel": "",
+      "obj": ""
+    },
+    {
+      "id": "D003",
+      "cluster": "A",
+      "layer": "1",
+      "type": "decision",
+      "title": "foresight-спека не принадлежит проекту A",
+      "status": "canon",
+      "body": "",
+      "pred": "",
+      "rel": "",
+      "obj": ""
+    },
+    {
+      "id": "D101",
+      "cluster": "B",
+      "layer": "1",
+      "type": "decision",
+      "title": "первая волна: person skill task artifact decision",
+      "status": "canon",
+      "body": "",
+      "pred": "",
+      "rel": "",
+      "obj": ""
+    },
+    {
+      "id": "D102",
+      "cluster": "B",
+      "layer": "1",
+      "type": "decision",
+      "title": "сдача = task + accepted artifact",
+      "status": "canon",
+      "body": "",
+      "pred": "",
+      "rel": "",
+      "obj": ""
+    },
+    {
+      "id": "D103",
+      "cluster": "D",
+      "layer": "2",
+      "type": "decision",
+      "title": "вторая волна: observation signal signpost",
+      "status": "canon",
+      "body": "",
+      "pred": "",
+      "rel": "",
+      "obj": ""
+    },
+    {
+      "id": "F001",
+      "cluster": "A",
+      "layer": "1",
+      "type": "fact",
+      "title": "13 дней до статуса, пилот 01.10.2026",
+      "status": "canon",
+      "body": "оргреформа, не сама модель ИИ",
+      "pred": "",
+      "rel": "",
+      "obj": ""
+    },
+    {
+      "id": "F002",
+      "cluster": "A",
+      "layer": "1",
+      "type": "fact",
+      "title": "выплата max 3 мес с 01.01.2027",
+      "status": "canon",
+      "body": "центральная линия Минтруда",
+      "pred": "",
+      "rel": "",
+      "obj": ""
+    },
+    {
+      "id": "F003",
+      "cluster": "A",
+      "layer": "1",
+      "type": "fact",
+      "title": "потолок выплаты 45% от 7 МЗП",
+      "status": "canon",
+      "body": "",
+      "pred": "",
+      "rel": "",
+      "obj": ""
+    },
+    {
+      "id": "F004",
+      "cluster": "A",
+      "layer": "1",
+      "type": "fact",
+      "title": "840,6 тыс вакансий / 1,022 млн резюме в 2026",
+      "status": "canon",
+      "body": "",
+      "pred": "",
+      "rel": "",
+      "obj": ""
+    },
+    {
+      "id": "F005",
+      "cluster": "A",
+      "layer": "1",
+      "type": "fact",
+      "title": "пилот Павлодар, масштаб на страну 2026",
+      "status": "canon",
+      "body": "",
+      "pred": "",
+      "rel": "",
+      "obj": ""
+    },
+    {
+      "id": "F006",
+      "cluster": "A",
+      "layer": "1",
+      "type": "fact",
+      "title": "заявленные функции ИИ Enbek",
+      "status": "canon",
+      "body": "профиль, резюме, вакансии, gap, Skills Enbek",
+      "pred": "",
+      "rel": "",
+      "obj": ""
+    },
+    {
+      "id": "Q10",
+      "cluster": "C",
+      "layer": "2",
+      "type": "question",
+      "title": "FETCH 19:38:35: what is missing in canon for sense?",
+      "status": "canon",
+      "body": "FETCH 19:38:35: what is missing in canon for sense?",
+      "pred": "",
+      "rel": "",
+      "obj": ""
+    },
+    {
+      "id": "S17042",
+      "cluster": "C",
+      "layer": "2",
+      "type": "observation",
+      "title": "слово ≠ смысл",
+      "status": "canon",
+      "body": "Одинаковое слово не гарантирует одинаковый смысл. id стабилен, title может смениться.",
+      "pred": "слово",
+      "rel": "≠",
+      "obj": "смысл"
+    },
+    {
+      "id": "ont-S17042",
+      "cluster": "C",
+      "layer": "2",
+      "type": "observation",
+      "title": "Потому что одинаковое слово не гарантирует одинаковый смысл",
+      "status": "canon",
+      "body": "Например: /  / ```text / Project / ``` /  / в одной системе может означать: /  / ```text / любую рабочую задачу / ``` /  / а в другой: /  / ```text / долгосрочную инициативу с бюджетом / ``` /  / ---",
+      "pred": "",
+      "rel": "",
+      "obj": ""
+    },
+    {
+      "id": "ont-S17084",
+      "cluster": "C",
+      "layer": "2",
+      "type": "observation",
+      "title": "Translation ≠ guaranteed equivalence",
+      "status": "canon",
+      "body": "---",
+      "pred": "Translation",
+      "rel": "≠",
+      "obj": "guaranteed equivalence"
+    },
+    {
+      "id": "ont-S17326",
+      "cluster": "C",
+      "layer": "2",
+      "type": "observation",
+      "title": "Discussion ≠ Decision.",
+      "status": "canon",
+      "body": "---",
+      "pred": "Discussion",
+      "rel": "≠",
+      "obj": "Decision"
+    },
+    {
+      "id": "ont-S17451",
+      "cluster": "C",
+      "layer": "2",
+      "type": "observation",
+      "title": "Contract ≠ implementation.",
+      "status": "canon",
+      "body": "---",
+      "pred": "Contract",
+      "rel": "≠",
+      "obj": "implementation"
+    },
+    {
+      "id": "ont-S17490",
+      "cluster": "C",
+      "layer": "2",
+      "type": "observation",
+      "title": "Sunset Date ≠ automatic deletion.",
+      "status": "canon",
+      "body": "---",
+      "pred": "Sunset Date",
+      "rel": "≠",
+      "obj": "automatic deletion"
+    },
+    {
+      "id": "ont-S17576",
+      "cluster": "C",
+      "layer": "2",
+      "type": "observation",
+      "title": "Canonicalization ≠ semantic rewriting.",
+      "status": "canon",
+      "body": "---",
+      "pred": "Canonicalization",
+      "rel": "≠",
+      "obj": "semantic rewriting"
+    },
+    {
+      "id": "ont-S17611",
+      "cluster": "C",
+      "layer": "2",
+      "type": "observation",
+      "title": "Event ≠ Claim.",
+      "status": "canon",
+      "body": "---",
+      "pred": "Event",
+      "rel": "≠",
+      "obj": "Claim"
+    },
+    {
+      "id": "ont-S17636",
+      "cluster": "C",
+      "layer": "2",
+      "type": "observation",
+      "title": "But composite definition ≠ current system instance.",
+      "status": "canon",
+      "body": "---",
+      "pred": "composite definition",
+      "rel": "≠",
+      "obj": "current system instance"
+    },
+    {
+      "id": "ont-S17647",
+      "cluster": "C",
+      "layer": "2",
+      "type": "observation",
+      "title": "Archetype ≠ Root Type.",
+      "status": "canon",
+      "body": "---",
+      "pred": "Archetype",
+      "rel": "≠",
+      "obj": "Root Type"
+    },
+    {
+      "id": "ont-S18059",
+      "cluster": "C",
+      "layer": "2",
+      "type": "observation",
+      "title": "But widespread usage ≠ best design automatically.",
+      "status": "canon",
+      "body": "---",
+      "pred": "widespread usage",
+      "rel": "≠",
+      "obj": "best design automatically"
+    },
+    {
+      "id": "ont-S18195",
+      "cluster": "C",
+      "layer": "2",
+      "type": "observation",
+      "title": "Ontology Change ≠ Historical Reality Change",
+      "status": "canon",
+      "body": "Important invariant. /  / ---",
+      "pred": "Ontology Change",
+      "rel": "≠",
+      "obj": "Historical Reality Change"
+    },
+    {
+      "id": "ont-S18241",
+      "cluster": "C",
+      "layer": "2",
+      "type": "observation",
+      "title": "But frequency alone ≠ semantic necessity.",
+      "status": "canon",
+      "body": "---",
+      "pred": "frequency alone",
+      "rel": "≠",
+      "obj": "semantic necessity"
+    }
+  ],
+  "wires": [
+    {
+      "from": "A001",
+      "rel": "derived_from",
+      "to": "P001",
+      "note": ""
+    },
+    {
+      "from": "D001",
+      "rel": "cites",
+      "to": "F002",
+      "note": "дата из факта"
+    },
+    {
+      "from": "D002",
+      "rel": "refines",
+      "to": "F006",
+      "note": "заявка ИИ не равна замене центров"
+    },
+    {
+      "from": "D003",
+      "rel": "derived_from",
+      "to": "P001",
+      "note": "отделение хвоста"
+    },
+    {
+      "from": "D101",
+      "rel": "replaces",
+      "to": "Q101",
+      "note": "закрыл вопрос"
+    },
+    {
+      "from": "D102",
+      "rel": "cites",
+      "to": "P001",
+      "note": "контур сдачи из пакета"
+    },
+    {
+      "from": "D103",
+      "rel": "replaces",
+      "to": "Q102",
+      "note": ""
+    },
+    {
+      "from": "F002",
+      "rel": "contradicts",
+      "to": "Q002",
+      "note": "региональные даты"
+    },
+    {
+      "from": "O001",
+      "rel": "feeds",
+      "to": "SIG001",
+      "note": ""
+    },
+    {
+      "from": "O002",
+      "rel": "cites",
+      "to": "F005",
+      "note": "WIRE"
+    },
+    {
+      "from": "O002",
+      "rel": "feeds",
+      "to": "SIG001",
+      "note": ""
+    },
+    {
+      "from": "Q001",
+      "rel": "refines",
+      "to": "F001",
+      "note": ""
+    },
+    {
+      "from": "S17042",
+      "rel": "same_as",
+      "to": "ont-S17042",
+      "note": "WIRE"
+    },
+    {
+      "from": "SIG001",
+      "rel": "relevant_to",
+      "to": "D102",
+      "note": "контур проверки факта"
+    },
+    {
+      "from": "SIG001",
+      "rel": "raises",
+      "to": "SP001",
+      "note": ""
+    },
+    {
+      "from": "SP001",
+      "rel": "triggers",
+      "to": "T201",
+      "note": "запрет копии Enbek"
+    },
+    {
+      "from": "T101",
+      "rel": "derived_from",
+      "to": "S002",
+      "note": ""
+    }
+  ],
+  "cells": [
+    {
+      "id": "S17042",
+      "cluster": "C",
+      "layer": "2",
+      "type": "observation",
+      "title": "слово ≠ смысл",
+      "status": "canon",
+      "body": "",
+      "pred": "слово",
+      "rel": "≠",
+      "obj": "смысл"
+    },
+    {
+      "id": "ont-S17084",
+      "cluster": "C",
+      "layer": "2",
+      "type": "observation",
+      "title": "Translation ≠ guaranteed equivalence",
+      "status": "canon",
+      "body": "",
+      "pred": "Translation",
+      "rel": "≠",
+      "obj": "guaranteed equivalence"
+    },
+    {
+      "id": "ont-S17326",
+      "cluster": "C",
+      "layer": "2",
+      "type": "observation",
+      "title": "Discussion ≠ Decision.",
+      "status": "canon",
+      "body": "",
+      "pred": "Discussion",
+      "rel": "≠",
+      "obj": "Decision"
+    },
+    {
+      "id": "ont-S17451",
+      "cluster": "C",
+      "layer": "2",
+      "type": "observation",
+      "title": "Contract ≠ implementation.",
+      "status": "canon",
+      "body": "",
+      "pred": "Contract",
+      "rel": "≠",
+      "obj": "implementation"
+    },
+    {
+      "id": "ont-S17490",
+      "cluster": "C",
+      "layer": "2",
+      "type": "observation",
+      "title": "Sunset Date ≠ automatic deletion.",
+      "status": "canon",
+      "body": "",
+      "pred": "Sunset Date",
+      "rel": "≠",
+      "obj": "automatic deletion"
+    },
+    {
+      "id": "ont-S17576",
+      "cluster": "C",
+      "layer": "2",
+      "type": "observation",
+      "title": "Canonicalization ≠ semantic rewriting.",
+      "status": "canon",
+      "body": "",
+      "pred": "Canonicalization",
+      "rel": "≠",
+      "obj": "semantic rewriting"
+    },
+    {
+      "id": "ont-S17611",
+      "cluster": "C",
+      "layer": "2",
+      "type": "observation",
+      "title": "Event ≠ Claim.",
+      "status": "canon",
+      "body": "",
+      "pred": "Event",
+      "rel": "≠",
+      "obj": "Claim"
+    },
+    {
+      "id": "ont-S17636",
+      "cluster": "C",
+      "layer": "2",
+      "type": "observation",
+      "title": "But composite definition ≠ current system instance.",
+      "status": "canon",
+      "body": "",
+      "pred": "composite definition",
+      "rel": "≠",
+      "obj": "current system instance"
+    },
+    {
+      "id": "ont-S17647",
+      "cluster": "C",
+      "layer": "2",
+      "type": "observation",
+      "title": "Archetype ≠ Root Type.",
+      "status": "canon",
+      "body": "",
+      "pred": "Archetype",
+      "rel": "≠",
+      "obj": "Root Type"
+    },
+    {
+      "id": "ont-S18059",
+      "cluster": "C",
+      "layer": "2",
+      "type": "observation",
+      "title": "But widespread usage ≠ best design automatically.",
+      "status": "canon",
+      "body": "",
+      "pred": "widespread usage",
+      "rel": "≠",
+      "obj": "best design automatically"
+    },
+    {
+      "id": "ont-S18195",
+      "cluster": "C",
+      "layer": "2",
+      "type": "observation",
+      "title": "Ontology Change ≠ Historical Reality Change",
+      "status": "canon",
+      "body": "",
+      "pred": "Ontology Change",
+      "rel": "≠",
+      "obj": "Historical Reality Change"
+    },
+    {
+      "id": "ont-S18241",
+      "cluster": "C",
+      "layer": "2",
+      "type": "observation",
+      "title": "But frequency alone ≠ semantic necessity.",
+      "status": "canon",
+      "body": "",
+      "pred": "frequency alone",
+      "rel": "≠",
+      "obj": "semantic necessity"
+    }
+  ]
+}

@@ -44,6 +44,7 @@ function bookSink(): BookSink {
     setWires: s.setWires,
     setNotice: s.setNotice,
     setCut: s.setBookCut,
+    setSnapshot: s.setSnapshot,
   };
 }
 

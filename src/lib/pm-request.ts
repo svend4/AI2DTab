@@ -39,12 +39,14 @@ export type PmReply = {
   ok: boolean;
   stdout: string;
   stderr: string;
-  code?: Refusal | "engine_unavailable" | "bridge";
+  code?: Refusal | "engine_unavailable" | "bridge" | "read_only";
   /** Ответ движка длиннее предела: сколько байт отброшено из полного размера (O8). */
   cut?: { dropped: number; total: number };
 };
 export const LOGIN_MESSAGE = "запись в стол требует входа";
 export const NOT_WRITER_MESSAGE = "запись разрешена только допущенным аккаунтам";
+/** Опубликованный снимок стола только читается: записи нет ни для кого (AUD-03, вариант 3). */
+export const READ_ONLY_MESSAGE = "в опубликованной версии стол только для чтения: записи нет";
 export const BAD_ACTOR_MESSAGE = "номер пользователя не годится для журнала стола";
 /** Метка в журнале стола (`pm.py --actor`, AUD-15): `web:` и номер пользователя. Знаки — те же, что в `engine/pm.py: ACTOR_RE`. */
 export const ACTOR_PREFIX = "web:";

@@ -2,6 +2,7 @@ import { describe, it } from "node:test";
 import assert from "node:assert/strict";
 import {
   NOT_WRITER_HINT,
+  READ_ONLY_HINT,
   WRITE_HINT,
   deniedMessage,
   deskAccess,
@@ -10,6 +11,7 @@ import {
 import {
   LOGIN_MESSAGE,
   NOT_WRITER_MESSAGE,
+  READ_ONLY_MESSAGE,
   VERBS,
   buildPmArgs,
   kindOf,
@@ -40,22 +42,58 @@ const ARGS: Record<string, string> = {
 
 describe("deskAccess: что показать посетителю", () => {
   it("гость — режим просмотра; пока сессия не определилась — ни то ни другое", () => {
-    assert.deepEqual(GUEST, { canWrite: false, signedIn: false, pending: false, readOnly: true });
-    assert.deepEqual(LOADING, { canWrite: false, signedIn: false, pending: true, readOnly: false });
+    assert.deepEqual(GUEST, {
+      canWrite: false,
+      signedIn: false,
+      pending: false,
+      readOnly: true,
+      snapshot: false,
+    });
+    assert.deepEqual(LOADING, {
+      canWrite: false,
+      signedIn: false,
+      pending: true,
+      readOnly: false,
+      snapshot: false,
+    });
   });
 
   it("вошёл, а допуск ещё спрашиваем — ожидание, писать пока нельзя", () => {
-    assert.deepEqual(ASKING, { canWrite: false, signedIn: true, pending: true, readOnly: false });
+    assert.deepEqual(ASKING, {
+      canWrite: false,
+      signedIn: true,
+      pending: true,
+      readOnly: false,
+      snapshot: false,
+    });
   });
 
   it("вошёл без допуска — режим просмотра, но он вошёл", () => {
-    assert.deepEqual(READER, { canWrite: false, signedIn: true, pending: false, readOnly: true });
+    assert.deepEqual(READER, {
+      canWrite: false,
+      signedIn: true,
+      pending: false,
+      readOnly: true,
+      snapshot: false,
+    });
   });
 
   it("допущенный пишет, даже если сессия обновляется в фоне", () => {
-    assert.deepEqual(WRITER, { canWrite: true, signedIn: true, pending: false, readOnly: false });
+    assert.deepEqual(WRITER, {
+      canWrite: true,
+      signedIn: true,
+      pending: false,
+      readOnly: false,
+      snapshot: false,
+    });
     const refetch = deskAccess({ user: { id: "u" }, isPending: true, writer: true });
-    assert.deepEqual(refetch, { canWrite: true, signedIn: true, pending: false, readOnly: false });
+    assert.deepEqual(refetch, {
+      canWrite: true,
+      signedIn: true,
+      pending: false,
+      readOnly: false,
+      snapshot: false,
+    });
   });
 
   it("допуск без пользователя не считается: писать нельзя", () => {
@@ -152,5 +190,28 @@ describe("интерфейс и сервер решают одинаково", (
     assert.ok(!reader.ok && reader.code === "not_writer");
     assert.equal(deniedMessage(verbKind("PLANT"), GUEST), LOGIN_MESSAGE);
     assert.equal(deniedMessage(verbKind("PLANT"), READER), NOT_WRITER_MESSAGE);
+  });
+});
+
+describe("снимок: опубликованный сайт только читает (AUD-03, вариант 3)", () => {
+  const writer = { user: { id: "u" }, isPending: false, writer: true };
+
+  it("даже допущенный не пишет: кнопки серые с пометкой про снимок", () => {
+    const access = deskAccess({ ...writer, snapshot: true });
+    assert.equal(access.canWrite, false);
+    assert.deepEqual(writeProps(access), { disabled: true, title: READ_ONLY_HINT });
+  });
+
+  it("без снимка всё как прежде", () => {
+    const access = deskAccess(writer);
+    assert.equal(access.snapshot, false);
+    assert.deepEqual(writeProps(access), { disabled: false, title: undefined });
+  });
+
+  it("строка команд отказывает записи тем же текстом, что сервер; чтение проходит", () => {
+    const access = deskAccess({ ...writer, snapshot: true });
+    assert.equal(deniedMessage("write", access), READ_ONLY_MESSAGE);
+    assert.equal(deniedMessage("bulk", access), READ_ONLY_MESSAGE);
+    assert.equal(deniedMessage("read", access), null);
   });
 });

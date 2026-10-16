@@ -1,18 +1,40 @@
 /**
  * Что делает сервер с командой стола: проверить (`pm-request.ts`), убедиться, что движок на месте, выполнить (`pm-run.server.ts`).
- * Вынесено из `pm-api.ts` без фреймворка, чтобы это проверял `node --test` с подставным движком.
+ * Вынесено из `pm-api.ts` без фреймворка, чтобы это проверял `node --test` с подставным движком. Там, где `pm.py` нет (опубликованный
+ * сайт), стол читается снимком, а запись закрыта (AUD-03, вариант 3).
  */
-import { actorArgs, buildPmArgs } from "./pm-request.ts";
+import { snapshotRun } from "./desk-snapshot.ts";
+import { actorArgs, buildPmArgs, READ_ONLY_MESSAGE } from "./pm-request.ts";
 import type { PmInput, PmReply, PmUser } from "./pm-request.ts";
-import { engineReady, runPm } from "./pm-run.server.ts";
+import { engineInstalled, engineReady, runPm } from "./pm-run.server.ts";
 import type { PmRun } from "./pm-run.server.ts";
 
 export type Engine = {
   ready: () => boolean;
   run: (argv: string[], tape?: string) => Promise<PmRun>;
+  /** `false` — только чтение (снимок). Не задано — запись разрешена. */
+  writable?: boolean;
 };
 
 export const realEngine: Engine = { ready: engineReady, run: (argv, tape) => runPm(argv, tape) };
+
+/** Опубликованный сайт: книга из снимка `src/data/desk-snapshot.json`, записи нет (AUD-03, вариант 3). */
+export const snapshotEngine: Engine = {
+  ready: () => true,
+  writable: false,
+  run: async (argv) => {
+    const { default: book } = await import("@/data/desk-snapshot.json");
+    return snapshotRun(book, argv);
+  },
+};
+
+/** Где стол: при наличии `pm.py` — живой движок, иначе — снимок. */
+export function currentEngine(): Engine {
+  return engineInstalled() ? realEngine : snapshotEngine;
+}
+
+/** Класс команды не зависит от пользователя, поэтому его берём у допущенного: отказ разбора у всех одинаков. */
+const WRITER_PROBE = { id: "probe", writer: true };
 
 /**
  * `user === null` — гость, `user.writer === false` — вошедший без допуска: им доступно только чтение, и базу они не создают.
@@ -21,8 +43,13 @@ export const realEngine: Engine = { ready: engineReady, run: (argv, tape) => run
 export async function execute(
   input: PmInput,
   user: PmUser,
-  engine: Engine = realEngine,
+  engine: Engine = currentEngine(),
 ): Promise<PmReply> {
+  // Снимок только читается: запись отказывает раньше проверки допуска и не будит движок (AUD-03, вариант 3).
+  const probe = buildPmArgs(input, WRITER_PROBE);
+  if (probe.ok && probe.kind !== "read" && engine.writable === false) {
+    return { ok: false, stdout: "", stderr: READ_ONLY_MESSAGE, code: "read_only" };
+  }
   const decision = buildPmArgs(input, user);
   if (!decision.ok) {
     return { ok: false, stdout: "", stderr: decision.message, code: decision.code };

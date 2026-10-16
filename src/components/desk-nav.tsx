@@ -7,6 +7,7 @@ import { CommandBar } from "@/components/command-bar";
 import { refreshBook } from "@/lib/desk-bridge";
 import { InstrumentPanel, InstrumentStrip } from "@/components/instruments";
 import { cn } from "@/lib/utils";
+import { snapshotLabel } from "@/lib/desk-snapshot";
 
 const HREF: Record<Stage, string> = { L1: "/", L2: "/l2", L3: "/l3", L4: "/l4" };
 
@@ -17,6 +18,7 @@ export function DeskNav() {
   const instr = useDesk((s) => s.instr);
   const notice = useDesk((s) => s.notice);
   const bookCut = useDesk((s) => s.bookCut);
+  const snapshot = useDesk((s) => s.snapshot);
   const writeNotice = useDesk((s) => s.writeNotice);
   /** L1 — лента: у неё нет счётчика, книга не хранит строк ленты (AUD-26). */
   const counts: Partial<Record<Stage, number>> = {
@@ -36,6 +38,7 @@ export function DeskNav() {
           <DeskAlert text={notice} onHide={() => useDesk.getState().setNotice(null)} />
         ) : null}
         {bookCut ? <p className="text-xs text-subtle">{bookCut}</p> : null}
+        {snapshot ? <p className="text-xs text-subtle">{snapshotLabel(snapshot)}</p> : null}
         <InstrumentStrip instr={instr} />
         <InstrumentPanel instr={instr} />
         <nav className="grid grid-cols-2 gap-2 sm:grid-cols-4">

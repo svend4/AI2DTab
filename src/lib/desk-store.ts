@@ -36,6 +36,9 @@ type Desk = {
   /** Причина, почему стол не обновился (чтение); пусто, когда всё в порядке. В сохранённое состояние не входит. */
   notice: string | null;
   setNotice: (notice: string | null) => void;
+  /** Дата снимка (`YYYY-MM-DD`), если стол показан снимком (AUD-03, вариант 3). В сохранённое состояние не входит. */
+  snapshot: string | null;
+  setSnapshot: (taken: string | null) => void;
   /** Пометка «ответ обрезан» (O8): тихая строка, не уведомление. В сохранённое состояние не входит. */
   bookCut: string | null;
   setBookCut: (cut: string | null) => void;
@@ -64,6 +67,8 @@ export const useDesk = create<Desk>()(
       setWires: (wires) => set({ wires }),
       notice: null,
       setNotice: (notice) => set({ notice }),
+      snapshot: null,
+      setSnapshot: (snapshot) => set({ snapshot }),
       bookCut: null,
       setBookCut: (bookCut) => set({ bookCut }),
       writeNotice: null,

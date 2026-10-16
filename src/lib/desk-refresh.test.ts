@@ -1,7 +1,12 @@
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
-import { BAD_ACTOR_MESSAGE, LOGIN_MESSAGE, NOT_WRITER_MESSAGE } from "./pm-request.ts";
+import {
+  BAD_ACTOR_MESSAGE,
+  LOGIN_MESSAGE,
+  NOT_WRITER_MESSAGE,
+  READ_ONLY_MESSAGE,
+} from "./pm-request.ts";
 import type { PmReply } from "./pm-request.ts";
 import { applyBookReply, createSequencer, describeReply, parseBook } from "./desk-refresh.ts";
 import type { BookSink } from "./desk-refresh.ts";
@@ -42,6 +47,7 @@ function recorder() {
     setWires: (wires) => calls.push({ name: "wires", arg: wires }),
     setNotice: (notice) => calls.push({ name: "notice", arg: notice }),
     setCut: (cut) => calls.push({ name: "cut", arg: cut }),
+    setSnapshot: (taken) => calls.push({ name: "snapshot", arg: taken }),
   };
   return { sink, calls, names: () => calls.map((c) => c.name) };
 }
@@ -88,7 +94,7 @@ describe("ответ с книгой стола (AUD-14)", () => {
   it("пустая, но корректная книга — это книга: срезы применяются и уведомление снимается", () => {
     const r = recorder();
     applyBookReply(parseBook(reply('{"instr":{},"raw":[],"canon":[],"wires":[]}')), r.sink);
-    assert.deepEqual(r.names(), ["plane", "canon", "instr", "wires", "cut", "notice"]);
+    assert.deepEqual(r.names(), ["plane", "canon", "instr", "wires", "snapshot", "cut", "notice"]);
     assert.equal(r.calls[4].arg, null);
   });
 
@@ -114,7 +120,7 @@ describe("ответ с книгой стола (AUD-14)", () => {
   it("при успехе применяются все срезы и уведомление снимается", () => {
     const r = recorder();
     applyBookReply(parseBook(reply(JSON.stringify(BOOK))), r.sink);
-    assert.deepEqual(r.names(), ["plane", "canon", "instr", "wires", "cut", "notice"]);
+    assert.deepEqual(r.names(), ["plane", "canon", "instr", "wires", "snapshot", "cut", "notice"]);
     assert.equal(r.calls[4].arg, null);
   });
 });
@@ -181,11 +187,41 @@ describe("тексты для пользователя", () => {
 describe("модуль грузится под node и не тянет клиентские или серверные зависимости", () => {
   it("импорты только относительные; значения берутся лишь из pm-request.ts", () => {
     const src = readFileSync(new URL("./desk-refresh.ts", import.meta.url), "utf8");
-    const imports = src.split("\n").filter((l) => /^import /.test(l));
+    const imports = [...src.matchAll(/^import [\s\S]*?;$/gm)].map((m) => m[0]);
     assert.ok(imports.length >= 3);
-    for (const line of imports) {
-      assert.doesNotMatch(line, /zustand|@\//, line);
-      assert.ok(line.startsWith("import type ") || line.includes('from "./pm-request.ts"'), line);
+    for (const stmt of imports) {
+      assert.doesNotMatch(stmt, /zustand|@\//, stmt);
+      assert.ok(stmt.startsWith("import type ") || stmt.includes('from "./pm-request.ts"'), stmt);
     }
+  });
+});
+
+describe("снимок: дата из книги и текст для записи в снимке (AUD-03, O9)", () => {
+  it("книга из снимка несёт дату, и успешное обновление её передаёт", () => {
+    const r = recorder();
+    applyBookReply(parseBook(reply(JSON.stringify({ ...BOOK, taken: "2026-10-16" }))), r.sink);
+    assert.deepEqual(
+      r.calls.find((c) => c.name === "snapshot"),
+      {
+        name: "snapshot",
+        arg: "2026-10-16",
+      },
+    );
+  });
+
+  it("книга без даты (живой движок) — снимка нет", () => {
+    const r = recorder();
+    applyBookReply(parseBook(reply(JSON.stringify(BOOK))), r.sink);
+    assert.deepEqual(
+      r.calls.find((c) => c.name === "snapshot"),
+      { name: "snapshot", arg: null },
+    );
+  });
+
+  it("отказ «только чтение» говорит по-русски, без сырого кода", () => {
+    assert.equal(
+      describeReply({ ok: false, stdout: "", stderr: "", code: "read_only" }),
+      READ_ONLY_MESSAGE,
+    );
   });
 });
