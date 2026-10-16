@@ -229,9 +229,9 @@ def cmd_add(ns: argparse.Namespace) -> None:
 
 NO_CANON = {"session", "tape"}
 
-# Что принимает ACCEPT (AUD-15): понятия, которые стол ведёт в каноне, и объекты, которые ещё можно принять (сырые, открытые
-# вопросы, черновики). Снятые (rejected), закрытые и служебные типы возвращаются только новым объектом. NO_CANON выше — другое правило.
-ACCEPT_TYPES = {"fact", "decision", "observation", "question", "artifact"}
+# Что принимает ACCEPT (AUD-15): понятия, которые стол ведёт в каноне. Вопрос в канон не принимают — на него отвечают (AUD-22).
+# Снятые (rejected), закрытые и служебные типы возвращаются только новым объектом. NO_CANON выше — другое правило.
+ACCEPT_TYPES = {"fact", "decision", "observation", "artifact"}
 ACCEPT_STATUSES = {"raw", "open", "draft"}
 
 
