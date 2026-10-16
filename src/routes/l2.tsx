@@ -126,7 +126,7 @@ function L2() {
           type="button"
           {...writeProps(access)}
           className="h-10 rounded-md border border-border px-3 text-xs"
-          onClick={() => void writeDesk("SWEEP")}
+          onClick={() => void writeBulk("SWEEP")}
         >
           SWEEP SESSION
         </button>
@@ -142,7 +142,7 @@ function L2() {
           type="button"
           {...writeProps(access)}
           className="h-10 rounded-md border border-border px-3 text-xs"
-          onClick={() => void writeDesk("PURGE")}
+          onClick={() => void writeBulk("PURGE")}
         >
           PURGE JUNK
         </button>

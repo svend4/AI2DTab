@@ -1,6 +1,7 @@
 import { useState, type FormEvent } from "react";
 import { acceptBoth, bridge, fetchBoth, runBoth, takeBoth, writeBulk, writeDesk } from "@/lib/desk-bridge";
 import { downloadText } from "@/lib/machine";
+import { setExprOf } from "@/lib/desk-bulk";
 import { useDesk } from "@/lib/desk-store";
 import { deniedMessage } from "@/lib/desk-access";
 import { verbKind } from "@/lib/pm-request";
@@ -49,11 +50,11 @@ export function CommandBar() {
       setEcho(tail(out));
       return;
     }
-    if (C === "ACCEPT" && arg && !/[∩∪\\|&]/.test(arg) && !/^(NEQ|RAW|CANON|SESSION|A|B|C|D|OBS|JUNK)$/i.test(arg)) {
+    if (C === "ACCEPT" && arg && !setExprOf(t)) {
       setEcho(tail(await acceptBoth(arg)));
       return;
     }
-    if (C === "TAKE" && arg && !/[∩∪\\|&]/.test(arg) && !/^(NEQ|RAW|CANON|SESSION|A|B|C|D|OBS|JUNK)$/i.test(arg)) {
+    if (C === "TAKE" && arg && !setExprOf(t)) {
       setEcho(tail(await takeBoth(arg)));
       return;
     }

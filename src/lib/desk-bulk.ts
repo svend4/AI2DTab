@@ -1,28 +1,47 @@
 /**
- * Массовые записи RAW и OBS (AUD-15): принимать или снимать можно только список id, который подтвердил человек. Здесь правило
- * «какая строка массовая» и разбор ответа `IDS`; оно повторяет `touches_bulk` в engine/pm.py. Чистый модуль: без стора и без `@/`.
+ * Массовые записи (AUD-15): набор, в котором есть сырые объекты или наблюдения, пишется только со списком id, который подтвердил
+ * человек. Правило повторяет `pm.py` (`bulk_rows`): признак — строки набора, а не его имя. Здесь: какая строка — запись над набором,
+ * разбор ответа `IDS` (id, тип, статус по табуляции) и проверка, затрагивает ли набор сырое или наблюдение. Чистый модуль: без стора
+ * и без `@/`, его проверяет `node --test`.
  */
-
-/** Имена наборов, которые считаются массовыми (как `BULK_SETS` в движке). */
-const BULK_SETS = ["RAW", "OBS", "OBSERVATION"];
+import { isSetExpr } from "./pm-request.ts";
 
 /** Больше этого за один раз не принимаем (как `BULK_MAX` в движке). */
 export const BULK_MAX = 500;
 
-/** Выражение набора, если строка — массовая запись (ACCEPT, TAKE или FILL над RAW или OBS); иначе `null`. */
-export function bulkExpr(line: string): string | null {
-  const m = /^\s*(ACCEPT|TAKE|FILL)\b\s*(.*)$/i.exec(line);
+export type BulkRow = { id: string; type: string; status: string };
+
+/** Выражение набора, если строка — запись над набором (ACCEPT, TAKE, FILL, PURGE, SWEEP); иначе `null`. */
+export function setExprOf(line: string): string | null {
+  const m = /^\s*(ACCEPT|TAKE|FILL|PURGE|SWEEP)\b\s*(.*)$/i.exec(line);
   if (!m) return null;
-  const expr = m[2].trim() || (m[1].toUpperCase() === "FILL" ? "NEQ ∩ RAW" : "");
-  if (!expr) return null;
-  const names = expr.split(/[∩∪\\|&\s]+/).map((w) => w.toUpperCase().replace("≠", "NEQ"));
-  return names.some((w) => BULK_SETS.includes(w)) ? expr : null;
+  const verb = m[1].toUpperCase();
+  const arg = m[2].trim();
+  const expr =
+    verb === "FILL"
+      ? arg || "NEQ ∩ RAW"
+      : verb === "PURGE"
+        ? "JUNK"
+        : verb === "SWEEP"
+          ? arg || "SESSION"
+          : arg;
+  return expr && isSetExpr(expr) ? expr : null;
 }
 
-/** Ответ `IDS`: по одному идентификатору в строке. */
-export function parseIds(stdout: string): string[] {
+/** Ответ `IDS`: строка на объект — id, тип, статус. */
+export function parseRows(stdout: string): BulkRow[] {
   return stdout
     .split("\n")
-    .map((l) => l.trim())
-    .filter(Boolean);
+    .map((l) => l.split("\t"))
+    .filter((c) => c[0]?.trim())
+    .map(([id, type = "", status = ""]) => ({
+      id: id.trim(),
+      type: type.trim(),
+      status: status.trim(),
+    }));
+}
+
+/** Затрагивает ли набор сырое или наблюдение: тогда движок требует список id. */
+export function touchesBulk(rows: BulkRow[]): boolean {
+  return rows.some((r) => r.status === "raw" || r.type === "observation");
 }

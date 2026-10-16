@@ -10,7 +10,7 @@ import {
   parseBook,
   type BookSink,
 } from "@/lib/desk-refresh";
-import { BULK_MAX, bulkExpr, parseIds } from "@/lib/desk-bulk";
+import { BULK_MAX, parseRows, setExprOf, touchesBulk } from "@/lib/desk-bulk";
 import { writeOutcome } from "@/lib/desk-writes";
 
 export type BridgeOut = PmReply;
@@ -95,7 +95,7 @@ function askBulk(line: string, ids: string[]): Promise<boolean> {
  * Отмена ничего не пишет и не показывает уведомления.
  */
 export async function writeBulk(line: string): Promise<BridgeOut> {
-  const expr = bulkExpr(line);
+  const expr = setExprOf(line);
   if (expr === null) return writeDesk(line);
   const listed = await bridge(`IDS ${expr}`);
   if (!listed.ok) {
@@ -104,20 +104,24 @@ export async function writeBulk(line: string): Promise<BridgeOut> {
       .setWriteNotice(`Список не получен: ${describeReply(listed)}. Ничего не записано.`);
     return listed;
   }
-  const ids = parseIds(listed.stdout);
-  if (ids.length === 0) {
+  const rows = parseRows(listed.stdout);
+  if (rows.length === 0) {
     useDesk.getState().setWriteNotice(`В наборе «${expr}» нет объектов: ничего не записано.`);
-    return { ok: true, stdout: "", stderr: "" };
+    return { ok: false, stdout: "", stderr: "в наборе нет объектов" };
   }
-  if (ids.length > BULK_MAX) {
+  // Набор из одних понятий движок пишет без списка: подтверждать нечего.
+  if (!touchesBulk(rows)) return writeDesk(line);
+  if (rows.length > BULK_MAX) {
     useDesk
       .getState()
       .setWriteNotice(
-        `В наборе «${expr}» ${ids.length} объектов: за один раз больше ${BULK_MAX} не принимается. Ничего не записано.`,
+        `В наборе «${expr}» ${rows.length} объектов: за один раз больше ${BULK_MAX} не принимается. Ничего не записано.`,
       );
-    return { ok: false, stdout: "", stderr: "набор слишком велик", code: "bridge" };
+    return { ok: false, stdout: "", stderr: "набор слишком велик" };
   }
-  if (!(await askBulk(line, ids))) return { ok: true, stdout: "", stderr: "" };
+  const ids = rows.map((r) => r.id);
+  if (!(await askBulk(line, ids)))
+    return { ok: false, stdout: "", stderr: "отменено: ничего не записано" };
   return writeDesk(line, { ids });
 }
 

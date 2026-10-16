@@ -738,6 +738,11 @@ class OwnerOfObjects(Desk):
         self.assertEqual(self.field("A1", "owner"), "web:user-2")
         self.assertEqual(self.field("A1", "status"), "canon")
 
+    def test_a_canon_object_of_another_type_is_skipped_not_refused(self):
+        self.add("CT1", typ="task", status="canon", cluster="A")
+        self.assertIn("skip CT1 already canon", self.out("ACCEPT", "CT1"))
+        self.assertEqual(self.field("CT1", "status"), "canon")
+
     def test_accept_without_flag_keeps_the_terminal_owner(self):
         self.out("ACCEPT", "A1")
         self.assertEqual(self.field("A1", "owner"), "machine:exec")
@@ -786,7 +791,17 @@ class BulkConfirm(Desk):
             self.add(f"R{i}", typ="observation", status="raw", cluster="A")
 
     def ids(self, expr):
-        return self.out("IDS", expr).split()
+        """Идентификаторы набора из `IDS`: первый столбец строки (id, тип, статус)."""
+        return [line.split("\t")[0] for line in self.out("IDS", expr).splitlines() if line.strip()]
+
+    def set_fields(self, oid, **fields):
+        con = self.db()
+        try:
+            for k, v in fields.items():
+                con.execute(f"UPDATE objects SET {k}=? WHERE id=?", (v, oid))
+            con.commit()
+        finally:
+            con.close()
 
     def status_of(self, oid):
         con = self.db()
@@ -841,6 +856,50 @@ class BulkConfirm(Desk):
     def test_single_object_accept_needs_no_list(self):
         self.assertIn("ACCEPT R1", self.out("ACCEPT", "R1"))
         self.assertEqual(self.status_of("R1"), "canon")
+
+    def test_a_set_that_holds_raw_or_observations_needs_the_list_whatever_its_name(self):
+        """NEQ, кластер и прочие имена наборов затрагивают сырые и наблюдения: список нужен так же, как для RAW и OBS."""
+        self.add("N1", typ="observation", status="raw", cluster="A")
+        self.set_fields("N1", pred="стабильность", rel="≠", obj="надёжность")
+        for words in (["ACCEPT", "NEQ"], ["TAKE", "NEQ"], ["ACCEPT", "A"], ["TAKE", "A"]):
+            r = self.run_pm(*words)
+            self.assertEqual(r.returncode, 0, r.stderr)
+            self.assertIn("нужно подтверждение", r.stdout, " ".join(words))
+        self.assertEqual(self.status_of("N1"), "raw")
+        self.assertEqual(self.status_of("R1"), "raw")
+
+    def test_an_empty_set_needs_no_list_and_changes_nothing(self):
+        r = self.run_pm("ACCEPT", "SESSION", "∩", "RAW")
+        self.assertEqual(r.returncode, 0, r.stderr)
+        self.assertNotIn("нужно подтверждение", r.stdout)
+        self.assertIn("ACCEPT SESSION ∩ RAW → ok=0", r.stdout)
+
+    def test_a_bulk_write_inside_a_batch_is_refused_with_the_reason(self):
+        r = self.run_pm("--ids", ",".join(self.ids("RAW")), "BATCH", "ACCEPT", "RAW")
+        self.assertIn("в пакете массовая запись не принимается", r.stdout)
+        self.assertNotIn("нужно подтверждение", r.stdout)
+        self.assertEqual(self.status_of("R1"), "raw")
+
+    def test_an_id_longer_than_forty_characters_can_be_confirmed(self):
+        long_id = "L" * 60
+        self.add(long_id, typ="observation", status="raw", cluster="A")
+        ids = self.ids("RAW")
+        self.assertIn(long_id, ids)
+        r = self.run_pm("--ids", ",".join(ids), "ACCEPT", "RAW")
+        self.assertEqual(r.returncode, 0, r.stderr)
+        self.assertEqual(self.status_of(long_id), "canon")
+
+    def test_purge_needs_the_list_too_and_takes_it_when_given(self):
+        """PURGE — это TAKE JUNK: JUNK состоит из сырых объектов, поэтому без списка он не проходит; со списком проходит."""
+        self.add("J1", typ="observation", status="raw", cluster="A", title="example")
+        r = self.run_pm("PURGE")
+        self.assertIn("нужно подтверждение", r.stdout)
+        self.assertEqual(self.status_of("J1"), "raw")
+        listed = self.ids("JUNK")
+        self.assertIn("J1", listed)
+        r = self.run_pm("--ids", ",".join(listed), "PURGE")
+        self.assertEqual(r.returncode, 0, r.stderr)
+        self.assertNotIn("нужно подтверждение", r.stdout)
 
     def test_the_list_is_checked_by_the_engine(self):
         r = self.run_pm("--ids", "плохой id", "ACCEPT", "R1")

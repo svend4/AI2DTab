@@ -161,8 +161,10 @@ describe("строка команд: исход записи виден, обн�
 
 describe("кнопки и переходы: при сбое пользователь остаётся на месте", () => {
   it("L2: FILL, SWEEP, GAP, PURGE и PROBE идут через мост записи, мимо стора не пишут", () => {
-    assert.match(l2, /writeBulk\("FILL"\)/);
-    for (const verb of ["SWEEP", "GAP", "PURGE", "PROBE C A"]) {
+    for (const verb of ["FILL", "SWEEP", "PURGE"]) {
+      assert.match(l2, new RegExp(`writeBulk\\("${verb}"\\)`), verb);
+    }
+    for (const verb of ["GAP", "PROBE C A"]) {
       assert.match(l2, new RegExp(`writeDesk\\("${verb}"\\)`), verb);
     }
     assert.doesNotMatch(l2, /bridge\("(FILL|SWEEP|GAP|PURGE|PROBE)/);
@@ -201,7 +203,7 @@ describe("массовые записи RAW и OBS: список и подтве
   it("мост берёт список через IDS и ждёт подтверждения до записи со списком", () => {
     const body = fn(bridge, "writeBulk");
     const order = [
-      "bulkExpr(line)",
+      "setExprOf(line)",
       "bridge(`IDS ${expr}`)",
       "askBulk(line, ids)",
       "writeDesk(line, { ids })",
