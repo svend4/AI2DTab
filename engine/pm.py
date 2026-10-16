@@ -272,10 +272,11 @@ def bulk_rows(rows) -> bool:
     return any(r["status"] == "raw" or r["type"] == "observation" for r in rows)
 
 
-def bulk_refusal(ns, verb: str, name: str, rows):
-    """Отказ строкой, если массовая запись набора с сырым или наблюдением идёт без списка, внутри пакета или со списком, которого в
-    столе сейчас нет. Иначе None. Пустой набор ничего не меняет и списка не требует. `getattr`: пакет BATCH собирает свой `Namespace`."""
-    if not rows or not bulk_rows(rows):
+def bulk_refusal(ns, verb: str, name: str, rows, always: bool = False):
+    """Отказ строкой, если массовая запись идёт без списка, внутри пакета или со списком, которого в столе сейчас нет. Иначе None.
+    Набор с сырым или наблюдением требует списка; `always` — требует всегда (возврат из канона, REPAIR). Пустой набор списка не
+    требует. `getattr`: пакет BATCH собирает свой `Namespace`."""
+    if not rows or not (always or bulk_rows(rows)):
         return None
     if getattr(ns, "in_batch", False):
         return f"REFUSE {verb} {name}: в пакете массовая запись не принимается — запустите её отдельной командой"
@@ -822,6 +823,12 @@ WRITE_VERBS = {"PLANT", "CUT", "ACCEPT", "FILL", "TAKE", "SWEEP", "PURGE", "REPA
                "WIRE", "PROBE", "SETTLE", "SUPERSEDE", "BATCH"}
 
 
+def repair_rows(con) -> list:
+    """Канон-объекты с мусорным заголовком: их REPAIR вернёт в сырые."""
+    rows = list(con.execute("SELECT id, cluster, type, status, title FROM objects WHERE status='canon'"))
+    return [r for r in rows if is_junk_cell(r)]
+
+
 def cmd_exec(ns: argparse.Namespace) -> None:
     line = " ".join(ns.line or []).strip()
     parts = line.split()
@@ -1138,7 +1145,7 @@ def cmd_exec(ns: argparse.Namespace) -> None:
         con.commit()
         return
     if cmd == "IDS":
-        _, rows = eval_set_expr(con, arg)
+        rows = repair_rows(con) if arg.strip().upper() == "REPAIR" else eval_set_expr(con, arg)[1]
         print("\n".join(f"{r['id']}\t{r['type']}\t{r['status']}" for r in rows))
         return
     if cmd == "SET":
@@ -1172,10 +1179,11 @@ def cmd_exec(ns: argparse.Namespace) -> None:
         con.commit()
         return
     if cmd == "REPAIR":
-        rows = list(con.execute(
-            "SELECT id, cluster, type, status, title FROM objects WHERE status='canon'"
-        ))
-        junk = [r for r in rows if is_junk_cell(r)]
+        junk = repair_rows(con)
+        refusal = bulk_refusal(ns, "REPAIR", "REPAIR", junk, always=True)
+        if refusal:
+            print(refusal)
+            return
         notes = []
         for r in junk:
             con.execute(
