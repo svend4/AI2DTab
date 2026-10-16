@@ -71,6 +71,13 @@ describe("мост: все записи идут через одну точку 
     );
   });
 
+  it("пометка о пропусках (AUD-43) попадает в уведомление записи, а не теряется", () => {
+    assert.match(
+      fn(bridge, "writeDesk"),
+      /setWriteNotice\(outcome\.ok \? \(outcome\.note \?\? null\) : outcome\.message\)/,
+    );
+  });
+
   it("каждая пишущая функция идёт через writeDesk и не трогает стор до ответа стола", () => {
     for (const name of ["plantToDb", "acceptBoth", "takeBoth", "runBoth", "fetchBoth"]) {
       assert.match(fn(bridge, name), /writeDesk\(/, name);

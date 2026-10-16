@@ -64,7 +64,7 @@ export async function refreshBook(): Promise<void> {
 export async function writeDesk(line: string, extra?: { tape?: string }): Promise<BridgeOut> {
   const out = await bridge(line, extra);
   const outcome = writeOutcome(out);
-  useDesk.getState().setWriteNotice(outcome.ok ? null : outcome.message);
+  useDesk.getState().setWriteNotice(outcome.ok ? (outcome.note ?? null) : outcome.message);
   await refreshBook();
   return out;
 }
