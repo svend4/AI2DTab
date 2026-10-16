@@ -6,7 +6,12 @@
  * остаётся, а пользователь видит, почему обновления не было. Пустая, но правильная книга — это книга, а не сбой. Ответ
  * отстающего запроса не применяется: важен только последний.
  */
-import { BAD_ACTOR_MESSAGE, LOGIN_MESSAGE, NOT_WRITER_MESSAGE } from "./pm-request.ts";
+import {
+  BAD_ACTOR_MESSAGE,
+  LOGIN_MESSAGE,
+  NOT_WRITER_MESSAGE,
+  READ_ONLY_MESSAGE,
+} from "./pm-request.ts";
 import type { PmReply } from "./pm-request.ts";
 import type { Row, Wire } from "./desk-store.ts";
 
@@ -19,9 +24,18 @@ export type BookSink = {
   setNotice: (notice: string | null) => void;
   /** Пометка «ответ обрезан»: тихая строка в шапке, не уведомление (O8). */
   setCut: (cut: string | null) => void;
+  /** Дата снимка (`YYYY-MM-DD`) или `null` для живого стола (AUD-03, вариант 3). */
+  setSnapshot: (taken: string | null) => void;
 };
 
-export type Book = { ok: true; raw: Row[]; canon: Row[]; wires: Wire[]; instr: unknown };
+export type Book = {
+  ok: true;
+  raw: Row[];
+  canon: Row[];
+  wires: Wire[];
+  instr: unknown;
+  taken: string | null;
+};
 /** Обрезка — отдельный случай: книгу не разобрать, поэтому называем размер, а не причину (O8). */
 export type BookFailure = { ok: false; reason: string; cut?: { dropped: number; total: number } };
 export type BookReply = Book | BookFailure;
@@ -31,6 +45,7 @@ const CODE_TEXT: Partial<Record<NonNullable<PmReply["code"]>, string>> = {
   not_writer: NOT_WRITER_MESSAGE,
   bad_actor: BAD_ACTOR_MESSAGE,
   engine_unavailable: "движок недоступен",
+  read_only: READ_ONLY_MESSAGE,
   bridge: "сервер не ответил, попробуйте ещё раз",
 };
 
@@ -86,6 +101,8 @@ export function parseBook(out: PmReply): BookReply {
     if (!Array.isArray(data[key])) return { ok: false, reason: `в книге нет списка «${key}»` };
   }
   if (!isRecord(data.instr)) return { ok: false, reason: "в книге нет раздела instr" };
+  const taken =
+    typeof data.taken === "string" && /^\d{4}-\d{2}-\d{2}$/.test(data.taken) ? data.taken : null;
   const rowsOk = (list: unknown[]) => list.every((r) => isRecord(r) && typeof r.id === "string");
   if (!rowsOk(data.raw as unknown[]) || !rowsOk(data.canon as unknown[])) {
     return { ok: false, reason: "в книге испорчена строка" };
@@ -96,6 +113,7 @@ export function parseBook(out: PmReply): BookReply {
     canon: (data.canon as Record<string, string>[]).map((r) => toRow(r, "accepted")),
     wires: data.wires as Wire[],
     instr: data.instr,
+    taken,
   };
 }
 
@@ -118,6 +136,7 @@ export function applyBookReply(parsed: BookReply, sink: BookSink): boolean {
   sink.setCanon(parsed.canon);
   sink.setInstr(parsed.instr);
   sink.setWires(parsed.wires);
+  sink.setSnapshot(parsed.taken);
   sink.setCut(null);
   sink.setNotice(null);
   return true;

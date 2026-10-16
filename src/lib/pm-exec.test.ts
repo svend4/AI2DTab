@@ -199,3 +199,41 @@ describe("кто записал (AUD-15)", () => {
     );
   });
 });
+
+describe("опубликованный снимок: только чтение (AUD-03, вариант 3)", () => {
+  it("запись отказывает до проверки допуска и не зовёт снимок, даже для допущенного", async () => {
+    const { engine, calls } = fake(true);
+    const snap = { ...engine, writable: false };
+    for (const line of ["TAKE RAW", "PLANT текст", "PURGE", "BATCH TAKE RAW; PURGE"]) {
+      const r = await execute({ line }, USER, snap);
+      assert.equal(r.ok, false, line);
+      assert.equal(r.code, "read_only", line);
+    }
+    assert.deepEqual(calls, []);
+  });
+
+  it("гость и вошедший без допуска получают «только чтение», а не «войдите»", async () => {
+    const snap = { ...fake(true).engine, writable: false };
+    for (const user of [null, READER]) {
+      const r = await execute({ line: "TAKE RAW" }, user, snap);
+      assert.equal(r.code, "read_only");
+    }
+  });
+
+  it("чтение идёт в снимок для всех; ошибка разбора важнее режима", async () => {
+    const { engine, calls } = fake(true, { stdout: "{}\n" });
+    const snap = { ...engine, writable: false };
+    const r = await execute({ line: "JSON" }, null, snap);
+    assert.equal(r.ok, true);
+    assert.deepEqual(calls[0].argv, ["exec", "JSON"]);
+    const bad = await execute({ line: "PLANT --file /etc/passwd" }, USER, snap);
+    assert.equal(bad.code, "bad_token");
+  });
+
+  it("живой движок пишет как прежде: режим не задан", async () => {
+    const { engine, calls } = fake(true);
+    const r = await execute({ line: "TAKE RAW" }, USER, engine);
+    assert.notEqual(r.code, "read_only");
+    assert.ok(calls.length > 0);
+  });
+});
