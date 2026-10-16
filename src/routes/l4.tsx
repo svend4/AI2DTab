@@ -3,12 +3,21 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import archive from "@/data/archive.json";
 import { DeskShell } from "@/components/desk-nav";
 import { readKitFile } from "@/lib/kit-api";
-import { bridge, fetchBoth, refreshBook } from "@/lib/desk-bridge";
+import { bridge, fetchBoth, writeDesk } from "@/lib/desk-bridge";
+import { writeOutcome } from "@/lib/desk-writes";
+import { writeProps } from "@/lib/desk-access";
+import { useDeskAccess } from "@/lib/use-desk-access";
 
 export const Route = createFileRoute("/l4")({ component: L4 });
 
+/** На опубликованном снимке спецификация и файлы стола не выводятся: их собирают в рабочей копии (AUD-03, вариант 3). */
+const SNAPSHOT_L4 =
+  "В опубликованной версии спецификация и файлы стола не выводятся: они есть в рабочей копии.";
+
 function L4() {
   const nav = useNavigate();
+  const access = useDeskAccess();
+  const { canWrite, pending } = access;
   const [spec, setSpec] = useState("снимаю SPEC…");
   const [port, setPort] = useState("");
   const [preview, setPreview] = useState<{ path: string; preview: string; bytes: number } | null>(
@@ -19,9 +28,14 @@ function L4() {
   const files = [{ path: "LANG-FROM-DB.md", bytes: 0, kind: "съём" as const }, ...archive];
   const shown = kind === "все" ? files : files.filter((f) => f.kind === kind);
 
-  async function loadSpec() {
-    const [a, b] = await Promise.all([bridge("SPEC"), bridge("PORT C A")]);
-    setSpec((a.stdout || a.stderr || "пусто").trim());
+  /** SPEC пересобирает файл на сервере, поэтому его зовёт только допущенный к записи; остальные читают последнюю собранную спецификацию. */
+  async function loadSpec(write: boolean) {
+    const [a, b] = await Promise.all([write ? bridge("SPEC") : null, bridge("PORT C A")]);
+    setSpec(
+      a
+        ? (a.stdout || a.stderr || "пусто").trim()
+        : "Спецификацию пересобирают допущенные к записи (SPEC). Ниже — последняя собранная.",
+    );
     setPort((b.stdout || b.stderr || "").trim());
     const c = await bridge("CAT LANG-FROM-DB.md");
     if (c.ok && c.stdout.trim()) {
@@ -30,10 +44,20 @@ function L4() {
   }
 
   useEffect(() => {
-    void loadSpec();
-  }, []);
+    if (pending) return;
+    if (access.snapshot) {
+      setSpec(SNAPSHOT_L4);
+      setPort("");
+      return;
+    }
+    void loadSpec(canWrite);
+  }, [pending, canWrite, access.snapshot]);
 
   async function openFile(p: string) {
+    if (access.snapshot) {
+      setPreview({ path: p, bytes: 0, preview: SNAPSHOT_L4 });
+      return;
+    }
     if (p.endsWith("LANG-FROM-DB.md") || p.endsWith("LANG.md")) {
       const c = await bridge(`CAT ${p.split("/").pop()}`);
       setPreview({ path: p, bytes: (c.stdout || "").length, preview: c.stdout || c.stderr || "пусто" });
@@ -41,9 +65,9 @@ function L4() {
     }
     try {
       const data = await readKitFile({ data: { path: p } });
-      setPreview(data);
+      setPreview(data.ok ? data : { path: p, bytes: -1, preview: data.message });
     } catch {
-      setPreview({ path: p, bytes: 0, preview: "не удалось прочитать файл" });
+      setPreview({ path: p, bytes: -1, preview: "не удалось прочитать файл" });
     }
   }
 
@@ -60,19 +84,20 @@ function L4() {
         <div className="flex flex-wrap gap-2">
           <button
             type="button"
+            {...writeProps(access)}
             className="h-11 rounded-md border border-border px-4 text-sm"
-            onClick={() => void loadSpec()}
+            onClick={() => void loadSpec(true)}
           >
             SPEC
           </button>
           <button
             type="button"
+            {...writeProps(access)}
             className="h-11 rounded-md border border-border px-4 text-sm"
             onClick={() => {
               void (async () => {
-                await bridge("SETTLE");
-                await refreshBook();
-                await loadSpec();
+                await writeDesk("SETTLE");
+                await loadSpec(true);
               })();
             }}
           >
@@ -80,9 +105,12 @@ function L4() {
           </button>
           <button
             type="button"
+            {...writeProps(access)}
             className="h-11 rounded-md bg-fg px-4 text-sm text-accent-fg"
             onClick={() => {
-              void fetchBoth().then(() => nav({ to: "/" }));
+              void fetchBoth().then((out) => {
+                if (writeOutcome(out).ok) nav({ to: "/" });
+              });
             }}
           >
             FETCH → L1
@@ -138,7 +166,9 @@ function L4() {
           ))}
         </ul>
         <pre className="max-h-[28rem] overflow-auto whitespace-pre-wrap rounded-lg border border-border bg-elevated p-4 font-mono text-xs leading-relaxed text-muted">
-          {preview ? `${preview.path} (${preview.bytes} байт)\n\n${preview.preview}` : "Выберите файл."}
+          {preview
+            ? `${preview.bytes >= 0 ? `${preview.path} (${preview.bytes} байт)` : preview.path}\n\n${preview.preview}`
+            : "Выберите файл."}
         </pre>
       </div>
     </DeskShell>

@@ -1,0 +1,27 @@
+{
+ "turns": 81,
+ "proposed": 2466,
+ "grounded": 2459,
+ "grounded_pct": 99.7,
+ "failed_turns": [],
+ "distinct_names": 990,
+ "merged_aliases": 30,
+ "pages": {
+  "digest": 81,
+  "sources": 12265,
+  "concept": 109
+ },
+ "concept_pages": 109,
+ "lint": {
+  "info": 3
+ },
+ "usd_est": 2.317,
+ "usd_cli_reported": 46.34,
+ "calls": 580,
+ "tokens": {
+  "input_tokens": 1160,
+  "cache_creation_input_tokens": 2096708,
+  "cache_read_input_tokens": 29028,
+  "output_tokens": 3794636
+ }
+}

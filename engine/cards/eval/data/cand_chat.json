@@ -1,0 +1,1518 @@
+[
+ {
+  "id": "c_t002_108_lex",
+  "type": "lexical",
+  "text": "Какое значение technical fit система выставляет для Repo A в примере анализа GitHub-репозитория?",
+  "answer": "technical fit: 0.91",
+  "card": "t002",
+  "group": "g1",
+  "heading": "# 1. Не «биржа людей», а биржа любых ресурсов",
+  "occurrences": 1,
+  "turns_with_answer": [
+   "t002"
+  ],
+  "check": [
+   "technical\\ fit:\\ 0\\.91"
+  ]
+ },
+ {
+  "id": "c_t002_108_sem",
+  "type": "semantic",
+  "text": "В примере оценки найденного open-source репозитория для сенсорной кожи робота, какая числовая оценка указана за соответствие технологическим требованиям?",
+  "answer": "technical fit: 0.91",
+  "card": "t002",
+  "group": "g1",
+  "heading": "# 1. Не «биржа людей», а биржа любых ресурсов",
+  "occurrences": 1,
+  "turns_with_answer": [
+   "t002"
+  ],
+  "check": [
+   "technical\\ fit:\\ 0\\.91"
+  ]
+ },
+ {
+  "id": "c_t001_47_lex",
+  "type": "lexical",
+  "text": "На какой платформе ИИ должен подбирать обучение для устранения недостатка компетенций?",
+  "answer": "Skills.Enbek",
+  "card": "t001",
+  "group": "g1",
+  "heading": "## 1. Что такое «цифровой профиль гражданина»",
+  "occurrences": 4,
+  "turns_with_answer": [
+   "t001"
+  ],
+  "check": [
+   "skills\\.enbek"
+  ]
+ },
+ {
+  "id": "c_t001_47_sem",
+  "type": "semantic",
+  "text": "Какой государственный ресурс упоминается как место, где человеку подбирают курсы после выявления нехватки навыков?",
+  "answer": "Skills.Enbek",
+  "card": "t001",
+  "group": "g1",
+  "heading": "## 1. Что такое «цифровой профиль гражданина»",
+  "occurrences": 4,
+  "turns_with_answer": [
+   "t001"
+  ],
+  "check": [
+   "skills\\.enbek"
+  ]
+ },
+ {
+  "id": "c_t003_558_lex",
+  "type": "lexical",
+  "text": "Как более точно, чем просто innovation management software, предлагалось назвать новую категорию платформы?",
+  "answer": "Autonomous Innovation Orchestration Platform",
+  "card": "t003",
+  "group": "g1",
+  "heading": "# 12. Если собрать существующие системы вместе",
+  "occurrences": 1,
+  "turns_with_answer": [
+   "t003"
+  ],
+  "check": [
+   "autonomous\\ innovation\\ orchestration\\ platform"
+  ]
+ },
+ {
+  "id": "c_t003_558_sem",
+  "type": "semantic",
+  "text": "Какое название для новой коммерческой категории системы, где базовым объектом является проблема, а не вакансия или проект, предложил ассистент?",
+  "answer": "Autonomous Innovation Orchestration Platform",
+  "card": "t003",
+  "group": "g1",
+  "heading": "# 12. Если собрать существующие системы вместе",
+  "occurrences": 1,
+  "turns_with_answer": [
+   "t003"
+  ],
+  "check": [
+   "autonomous\\ innovation\\ orchestration\\ platform"
+  ]
+ },
+ {
+  "id": "c_t004_229_lex",
+  "type": "lexical",
+  "text": "Сколько специалистов, по данным Upwork, доступно на платформе после интеграции marketplace с ChatGPT, наряду с 130 категориями и 10 000 навыками?",
+  "answer": "18 млн специалистов",
+  "card": "t004",
+  "group": "g2",
+  "heading": "# 5. Upwork тоже двигается именно в эту сторону",
+  "occurrences": 1,
+  "turns_with_answer": [
+   "t004"
+  ],
+  "check": [
+   "18\\ млн\\ специалистов"
+  ]
+ },
+ {
+  "id": "c_t004_229_sem",
+  "type": "semantic",
+  "text": "Какую цифру по размеру базы фрилансеров приводила крупная биржа удалённой работы, когда заказчики получили возможность описывать задачу в чат-ассистенте обычным языком?",
+  "answer": "18 млн специалистов",
+  "card": "t004",
+  "group": "g2",
+  "heading": "# 5. Upwork тоже двигается именно в эту сторону",
+  "occurrences": 1,
+  "turns_with_answer": [
+   "t004"
+  ],
+  "check": [
+   "18\\ млн\\ специалистов"
+  ]
+ },
+ {
+  "id": "c_t006_29_lex",
+  "type": "lexical",
+  "text": "Из какого города специалист в HN-треде, подходящий под вакансию Squoosh с TypeScript, Python, React, Playwright и 13 годами full-stack опыта?",
+  "answer": "New Orleans",
+  "card": "t006",
+  "group": "g2",
+  "heading": "## Первый реальный результат",
+  "occurrences": 12,
+  "turns_with_answer": [
+   "t005",
+   "t006",
+   "t008",
+   "t009",
+   "t017",
+   "t030"
+  ],
+  "check": [
+   "new\\ orleans"
+  ]
+ },
+ {
+  "id": "c_t006_29_sem",
+  "type": "semantic",
+  "text": "Где находится кандидат с большим full-stack опытом и навыками агентов и автоматизации браузера, которого приводили как почти образцовый пример двустороннего подбора для компании, ищущей full-stack инженера?",
+  "answer": "New Orleans",
+  "card": "t006",
+  "group": "g2",
+  "heading": "## Первый реальный результат",
+  "occurrences": 12,
+  "turns_with_answer": [
+   "t005",
+   "t006",
+   "t008",
+   "t009",
+   "t017",
+   "t030"
+  ],
+  "check": [
+   "new\\ orleans"
+  ]
+ },
+ {
+  "id": "c_t008_186_lex",
+  "type": "lexical",
+  "text": "Какое требование к языку AREO указывает как блокирующий вопрос для кандидата из Zagreb, несмотря на сильное техническое совпадение по Rails?",
+  "answer": "professional German",
+  "card": "t008",
+  "group": "g2",
+  "heading": "# 3. Pango показывает, почему должность менее важна, чем сама задача",
+  "occurrences": 5,
+  "turns_with_answer": [
+   "t005",
+   "t008",
+   "t009",
+   "t029"
+  ],
+  "check": [
+   "professional\\ german"
+  ]
+ },
+ {
+  "id": "c_t008_186_sem",
+  "type": "semantic",
+  "text": "В примере с вакансией Ruby on Rails в ЕС какой неуказанный в профиле кандидата навык оказался неизвестным и мешает считать совпадение полным?",
+  "answer": "professional German",
+  "card": "t008",
+  "group": "g2",
+  "heading": "# 3. Pango показывает, почему должность менее важна, чем сама задача",
+  "occurrences": 5,
+  "turns_with_answer": [
+   "t005",
+   "t008",
+   "t009",
+   "t029"
+  ],
+  "check": [
+   "professional\\ german"
+  ]
+ },
+ {
+  "id": "c_t009_866_lex",
+  "type": "lexical",
+  "text": "Какой RESOURCE GAP автоматически создаётся Team Builder для проекта Production Agentic AI Platform, где Security помечен как PARTIAL?",
+  "answer": "AI / application security specialist",
+  "card": "t009",
+  "group": "g2",
+  "heading": "# 14. Новое: Explicit Interest Signal",
+  "occurrences": 1,
+  "turns_with_answer": [
+   "t009"
+  ],
+  "check": [
+   "ai\\ /\\ application\\ security\\ specialist"
+  ]
+ },
+ {
+  "id": "c_t009_866_sem",
+  "type": "semantic",
+  "text": "Какого недостающего специалиста система определяет для гипотетической команды проекта агентной AI-платформы и предлагает искать следующим?",
+  "answer": "AI / application security specialist",
+  "card": "t009",
+  "group": "g2",
+  "heading": "# 14. Новое: Explicit Interest Signal",
+  "occurrences": 1,
+  "turns_with_answer": [
+   "t009"
+  ],
+  "check": [
+   "ai\\ /\\ application\\ security\\ specialist"
+  ]
+ },
+ {
+  "id": "c_t012_131_lex",
+  "type": "lexical",
+  "text": "Какой half-life указан для параметра availability в примерах decay_rate?",
+  "answer": "half-life: 30 days",
+  "card": "t012",
+  "group": "g3",
+  "heading": "## 24. Capability — это не просто знание технологии",
+  "occurrences": 1,
+  "turns_with_answer": [
+   "t012"
+  ],
+  "check": [
+   "half\\-life:\\ 30\\ days"
+  ]
+ },
+ {
+  "id": "c_t012_131_sem",
+  "type": "semantic",
+  "text": "Через какой срок, по примеру из обсуждения, устаревает наполовину информация о том, что кандидат сейчас свободен для работы?",
+  "answer": "half-life: 30 days",
+  "card": "t012",
+  "group": "g3",
+  "heading": "## 24. Capability — это не просто знание технологии",
+  "occurrences": 1,
+  "turns_with_answer": [
+   "t012"
+  ],
+  "check": [
+   "half\\-life:\\ 30\\ days"
+  ]
+ },
+ {
+  "id": "c_t014_1168_lex",
+  "type": "lexical",
+  "text": "Как правильнее назвать Autonomous Project Assembly с человеком в контуре?",
+  "answer": "Human-supervised Autonomous Project Assembly",
+  "card": "t014",
+  "group": "g3",
+  "heading": "# 44. Потом при росте можно добавить graph DB",
+  "occurrences": 1,
+  "turns_with_answer": [
+   "t014"
+  ],
+  "check": [
+   "human\\-supervised\\ autonomous\\ project\\ assembly"
+  ]
+ },
+ {
+  "id": "c_t014_1168_sem",
+  "type": "semantic",
+  "text": "Какое название предложено для подхода, где система сама собирает проект, но финальные решения по найму и финансированию подтверждает человек?",
+  "answer": "Human-supervised Autonomous Project Assembly",
+  "card": "t014",
+  "group": "g3",
+  "heading": "# 44. Потом при росте можно добавить graph DB",
+  "occurrences": 1,
+  "turns_with_answer": [
+   "t014"
+  ],
+  "check": [
+   "human\\-supervised\\ autonomous\\ project\\ assembly"
+  ]
+ },
+ {
+  "id": "c_t011_263_lex",
+  "type": "lexical",
+  "text": "Какая комбинация навыков с Rails и product ownership приводится в примере реальных проблем, требующих комбинаций?",
+  "answer": "Rails + product ownership + German",
+  "card": "t011",
+  "group": "g3",
+  "heading": "# Например три вакансии могут на самом деле быть одной проблемой",
+  "occurrences": 1,
+  "turns_with_answer": [
+   "t011"
+  ],
+  "check": [
+   "rails\\ \\+\\ product\\ ownership\\ \\+\\ german"
+  ]
+ },
+ {
+  "id": "c_t011_263_sem",
+  "type": "semantic",
+  "text": "Какой пример сочетания навыков с языком общения и веб-фреймворком упоминался как пример того, что рынок нужно считать по комбинациям, а не по отдельным технологиям?",
+  "answer": "Rails + product ownership + German",
+  "card": "t011",
+  "group": "g3",
+  "heading": "# Например три вакансии могут на самом деле быть одной проблемой",
+  "occurrences": 1,
+  "turns_with_answer": [
+   "t011"
+  ],
+  "check": [
+   "rails\\ \\+\\ product\\ ownership\\ \\+\\ german"
+  ]
+ },
+ {
+  "id": "c_t015_467_lex",
+  "type": "lexical",
+  "text": "Какое условие verification типа automated_test приведено в примере для DONE_IF задачи?",
+  "answer": "20/20 benchmark cases pass",
+  "card": "t015",
+  "group": "g3",
+  "heading": "# 11. Resource должен объявлять capabilities",
+  "occurrences": 1,
+  "turns_with_answer": [
+   "t015"
+  ],
+  "check": [
+   "20/20\\ benchmark\\ cases\\ pass"
+  ]
+ },
+ {
+  "id": "c_t015_467_sem",
+  "type": "semantic",
+  "text": "Какой пример критерия завершённости задачи с автоматической проверкой был дан для оценки того, что работа выполнена?",
+  "answer": "20/20 benchmark cases pass",
+  "card": "t015",
+  "group": "g3",
+  "heading": "# 11. Resource должен объявлять capabilities",
+  "occurrences": 1,
+  "turns_with_answer": [
+   "t015"
+  ],
+  "check": [
+   "20/20\\ benchmark\\ cases\\ pass"
+  ]
+ },
+ {
+  "id": "c_t018_1301_lex",
+  "type": "lexical",
+  "text": "Какой id указан в YAML-объекте scenario с budget_multiplier 0.7?",
+  "answer": "scenario_budget_minus_30",
+  "card": "t018",
+  "group": "g3",
+  "heading": "# 50. Аналогия с программированием становится почти полной",
+  "occurrences": 1,
+  "turns_with_answer": [
+   "t018"
+  ],
+  "check": [
+   "scenario_budget_minus_30"
+  ]
+ },
+ {
+  "id": "c_t018_1301_sem",
+  "type": "semantic",
+  "text": "Как назван идентификатор сценария, моделирующего урезание бюджета на треть в симуляции проекта?",
+  "answer": "scenario_budget_minus_30",
+  "card": "t018",
+  "group": "g3",
+  "heading": "# 50. Аналогия с программированием становится почти полной",
+  "occurrences": 1,
+  "turns_with_answer": [
+   "t018"
+  ],
+  "check": [
+   "scenario_budget_minus_30"
+  ]
+ },
+ {
+  "id": "c_t020_2290_lex",
+  "type": "lexical",
+  "text": "Какой модуль предлагается строить следующим уровнем после World State, чтобы он находил повторяющиеся gaps и формировал гипотезы новых проектов?",
+  "answer": "Opportunity Engine + Emergent Project Generator",
+  "card": "t020",
+  "group": "g4",
+  "heading": "# 99. World State v0.1 итог",
+  "occurrences": 2,
+  "turns_with_answer": [
+   "t020",
+   "t021"
+  ],
+  "check": [
+   "opportunity\\ engine\\ \\+\\ emergent\\ project\\ generator"
+  ]
+ },
+ {
+  "id": "c_t020_2290_sem",
+  "type": "semantic",
+  "text": "Что в итоге планируется сделать на следующем этапе развития виртуального технопарка, чтобы система сама предлагала идеи новых проектов на основе накопленной модели мира?",
+  "answer": "Opportunity Engine + Emergent Project Generator",
+  "card": "t020",
+  "group": "g4",
+  "heading": "# 99. World State v0.1 итог",
+  "occurrences": 2,
+  "turns_with_answer": [
+   "t020",
+   "t021"
+  ],
+  "check": [
+   "opportunity\\ engine\\ \\+\\ emergent\\ project\\ generator"
+  ]
+ },
+ {
+  "id": "c_t026_555_lex",
+  "type": "lexical",
+  "text": "Какой реестр нужен Semantic Language, чтобы не разрешать бесконечные predicates вроде requires, needs, depends_on, needs_access_to?",
+  "answer": "Canonical Predicate Registry",
+  "card": "t026",
+  "group": "g4",
+  "heading": "# 20. EVENT",
+  "occurrences": 2,
+  "turns_with_answer": [
+   "t026",
+   "t050"
+  ],
+  "check": [
+   "canonical\\ predicate\\ registry"
+  ]
+ },
+ {
+  "id": "c_t026_555_sem",
+  "type": "semantic",
+  "text": "Как называется механизм, который не даёт плодить почти одинаковые по смыслу связи с разными названиями в языке описания?",
+  "answer": "Canonical Predicate Registry",
+  "card": "t026",
+  "group": "g4",
+  "heading": "# 20. EVENT",
+  "occurrences": 2,
+  "turns_with_answer": [
+   "t026",
+   "t050"
+  ],
+  "check": [
+   "canonical\\ predicate\\ registry"
+  ]
+ },
+ {
+  "id": "c_t028_1196_lex",
+  "type": "lexical",
+  "text": "Какой алгоритм добавляется в Phase 4 — Team Builder вместе с capability coverage, hard constraints и redundancy analysis?",
+  "answer": "greedy set cover",
+  "card": "t028",
+  "group": "g4",
+  "heading": "# 56. Demo Step 4",
+  "occurrences": 5,
+  "turns_with_answer": [
+   "t015",
+   "t017",
+   "t028",
+   "t050",
+   "t053"
+  ],
+  "check": [
+   "greedy\\ set\\ cover"
+  ]
+ },
+ {
+  "id": "c_t028_1196_sem",
+  "type": "semantic",
+  "text": "На этапе построения команды какой жадный метод покрытия набора требований планировалось использовать для выбора людей?",
+  "answer": "greedy set cover",
+  "card": "t028",
+  "group": "g4",
+  "heading": "# 56. Demo Step 4",
+  "occurrences": 5,
+  "turns_with_answer": [
+   "t015",
+   "t017",
+   "t028",
+   "t050",
+   "t053"
+  ],
+  "check": [
+   "greedy\\ set\\ cover"
+  ]
+ },
+ {
+  "id": "c_t021_868_lex",
+  "type": "lexical",
+  "text": "Какой пример бюджета в евро на исследование (Validation Budget) приводился для каждой opportunity до перехода в полноценный проект?",
+  "answer": "€500",
+  "card": "t021",
+  "group": "g4",
+  "heading": "# 30. Очень важно — generator создаёт draft",
+  "occurrences": 15,
+  "turns_with_answer": [
+   "t021",
+   "t023",
+   "t026",
+   "t034",
+   "t046",
+   "t055",
+   "t056",
+   "t071",
+   "t080",
+   "t081"
+  ],
+  "check": [
+   "€500"
+  ]
+ },
+ {
+  "id": "c_t021_868_sem",
+  "type": "semantic",
+  "text": "Какую денежную сумму предлагалось ограничивать расходы на предварительную проверку идеи, прежде чем превращать её в настоящий проект?",
+  "answer": "€500",
+  "card": "t021",
+  "group": "g4",
+  "heading": "# 30. Очень важно — generator создаёт draft",
+  "occurrences": 15,
+  "turns_with_answer": [
+   "t021",
+   "t023",
+   "t026",
+   "t034",
+   "t046",
+   "t055",
+   "t056",
+   "t071",
+   "t080",
+   "t081"
+  ],
+  "check": [
+   "€500"
+  ]
+ },
+ {
+  "id": "c_t027_600_lex",
+  "type": "lexical",
+  "text": "Что происходит с Task Lease, если агент завис, и задача возвращается в очередь?",
+  "answer": "lease expires",
+  "card": "t027",
+  "group": "g4",
+  "heading": "# 25. Agent Mailbox",
+  "occurrences": 7,
+  "turns_with_answer": [
+   "t027",
+   "t041",
+   "t047",
+   "t048",
+   "t076"
+  ],
+  "check": [
+   "lease\\ expires"
+  ]
+ },
+ {
+  "id": "c_t027_600_sem",
+  "type": "semantic",
+  "text": "Какое событие возвращает задачу в очередь, когда исполнитель, занявший её на время, перестал отвечать?",
+  "answer": "lease expires",
+  "card": "t027",
+  "group": "g4",
+  "heading": "# 25. Agent Mailbox",
+  "occurrences": 7,
+  "turns_with_answer": [
+   "t027",
+   "t041",
+   "t047",
+   "t048",
+   "t076"
+  ],
+  "check": [
+   "lease\\ expires"
+  ]
+ },
+ {
+  "id": "c_t037_750_lex",
+  "type": "lexical",
+  "text": "Какая ёмкость Security Pool приведена в примере, когда Universal Capability Market видит Pool capacity как Supply?",
+  "answer": "120 h/week",
+  "card": "t037",
+  "group": "g5",
+  "heading": "# 191. Project Cluster ≠ Program",
+  "occurrences": 1,
+  "turns_with_answer": [
+   "t037"
+  ],
+  "check": [
+   "120\\ h/week"
+  ]
+ },
+ {
+  "id": "c_t037_750_sem",
+  "type": "semantic",
+  "text": "Какой объём недельной мощности указан в примере для пула специалистов по безопасности, который рынок возможностей рассматривает как предложение?",
+  "answer": "120 h/week",
+  "card": "t037",
+  "group": "g5",
+  "heading": "# 191. Project Cluster ≠ Program",
+  "occurrences": 1,
+  "turns_with_answer": [
+   "t037"
+  ],
+  "check": [
+   "120\\ h/week"
+  ]
+ },
+ {
+  "id": "c_t033_2392_lex",
+  "type": "lexical",
+  "text": "Какая Translation Opportunity ожидается, если у метода сильные научные доказательства, нет кода и высокий спрос?",
+  "answer": "Reference Implementation Project",
+  "card": "t033",
+  "group": "g5",
+  "heading": "# 124. Acceptance test",
+  "occurrences": 1,
+  "turns_with_answer": [
+   "t033"
+  ],
+  "check": [
+   "reference\\ implementation\\ project"
+  ]
+ },
+ {
+  "id": "c_t033_2392_sem",
+  "type": "semantic",
+  "text": "Какой вид проекта система должна предложить, когда метод хорошо подтверждён наукой и востребован, но готовой программной реализации у него нет?",
+  "answer": "Reference Implementation Project",
+  "card": "t033",
+  "group": "g5",
+  "heading": "# 124. Acceptance test",
+  "occurrences": 1,
+  "turns_with_answer": [
+   "t033"
+  ],
+  "check": [
+   "reference\\ implementation\\ project"
+  ]
+ },
+ {
+  "id": "c_t036_2349_lex",
+  "type": "lexical",
+  "text": "Какой результат в примере с Human + AI указан для отчётов в неделю, если он подтверждён (verified), в отличие от 10 reports/week у человека одного?",
+  "answer": "25 reports/week",
+  "card": "t036",
+  "group": "g5",
+  "heading": "# 134. Augmented Resource",
+  "occurrences": 1,
+  "turns_with_answer": [
+   "t036"
+  ],
+  "check": [
+   "25\\ reports/week"
+  ]
+ },
+ {
+  "id": "c_t036_2349_sem",
+  "type": "semantic",
+  "text": "В примере, где сравнивается производительность человека в одиночку и в паре с ИИ, какая недельная выработка отчётов приводится для связки при условии проверки?",
+  "answer": "25 reports/week",
+  "card": "t036",
+  "group": "g5",
+  "heading": "# 134. Augmented Resource",
+  "occurrences": 1,
+  "turns_with_answer": [
+   "t036"
+  ],
+  "check": [
+   "25\\ reports/week"
+  ]
+ },
+ {
+  "id": "c_t034_2626_lex",
+  "type": "lexical",
+  "text": "Какой type указывается в ARTIFACT для полного досье проекта, генерируемого из World State, где все Claims имеют provenance?",
+  "answer": "project_dossier",
+  "card": "t034",
+  "group": "g5",
+  "heading": "# 136. Funding Drift",
+  "occurrences": 1,
+  "turns_with_answer": [
+   "t034"
+  ],
+  "check": [
+   "project_dossier"
+  ]
+ },
+ {
+  "id": "c_t034_2626_sem",
+  "type": "semantic",
+  "text": "Каким типом артефакта обозначается итоговый сводный документ по проекту, который собирается из состояния мира с указанием источников всех утверждений?",
+  "answer": "project_dossier",
+  "card": "t034",
+  "group": "g5",
+  "heading": "# 136. Funding Drift",
+  "occurrences": 1,
+  "turns_with_answer": [
+   "t034"
+  ],
+  "check": [
+   "project_dossier"
+  ]
+ },
+ {
+  "id": "c_t042_267_lex",
+  "type": "lexical",
+  "text": "Какое значение в списке Goal Source обозначает цель, предложенную в виде гипотезы ИИ, рядом с HUMAN, ORGANIZATION, POLICY, PROJECT и EVENT?",
+  "answer": "AI_HYPOTHESIS",
+  "card": "t042",
+  "group": "g6",
+  "heading": "# 1365. Goal dependency",
+  "occurrences": 1,
+  "turns_with_answer": [
+   "t042"
+  ],
+  "check": [
+   "ai_hypothesis"
+  ]
+ },
+ {
+  "id": "c_t042_267_sem",
+  "type": "semantic",
+  "text": "Каким идентификатором помечается происхождение цели, если её выдвинула сама система искусственного интеллекта, а не человек или организация?",
+  "answer": "AI_HYPOTHESIS",
+  "card": "t042",
+  "group": "g6",
+  "heading": "# 1365. Goal dependency",
+  "occurrences": 1,
+  "turns_with_answer": [
+   "t042"
+  ],
+  "check": [
+   "ai_hypothesis"
+  ]
+ },
+ {
+  "id": "c_t044_2321_lex",
+  "type": "lexical",
+  "text": "Какое количество завершений задач в разделе Change Aggregation может превратиться в событие «Milestone achieved»?",
+  "answer": "100 task completions",
+  "card": "t044",
+  "group": "g6",
+  "heading": "# 2230. Partial Asset Salvage",
+  "occurrences": 1,
+  "turns_with_answer": [
+   "t044"
+  ],
+  "check": [
+   "100\\ task\\ completions"
+  ]
+ },
+ {
+  "id": "c_t044_2321_sem",
+  "type": "semantic",
+  "text": "Сколько мелких выполненных рабочих элементов в примере объединяются в одно значимое достижение, чтобы не засорять отображение для руководства?",
+  "answer": "100 task completions",
+  "card": "t044",
+  "group": "g6",
+  "heading": "# 2230. Partial Asset Salvage",
+  "occurrences": 1,
+  "turns_with_answer": [
+   "t044"
+  ],
+  "check": [
+   "100\\ task\\ completions"
+  ]
+ },
+ {
+  "id": "c_t040_498_lex",
+  "type": "lexical",
+  "text": "Какой тип записи нужно создать, если Package A требует ontology v1, а Package B несовместимую ontology v2, вместо молчаливого обновления всего?",
+  "answer": "DEPENDENCY_CONFLICT",
+  "card": "t040",
+  "group": "g6",
+  "heading": "# 811. Package Lifecycle",
+  "occurrences": 1,
+  "turns_with_answer": [
+   "t040"
+  ],
+  "check": [
+   "dependency_conflict"
+  ]
+ },
+ {
+  "id": "c_t040_498_sem",
+  "type": "semantic",
+  "text": "Что система должна зафиксировать, когда два пакета требуют несовместимые версии одной и той же зависимости, вместо того чтобы автоматически всё обновлять?",
+  "answer": "DEPENDENCY_CONFLICT",
+  "card": "t040",
+  "group": "g6",
+  "heading": "# 811. Package Lifecycle",
+  "occurrences": 1,
+  "turns_with_answer": [
+   "t040"
+  ],
+  "check": [
+   "dependency_conflict"
+  ]
+ },
+ {
+  "id": "c_t043_5080_lex",
+  "type": "lexical",
+  "text": "Что нужно проверять в сценарии «Package update» (Fourth) при оценке эпистемического качества?",
+  "answer": "benchmark regression",
+  "card": "t043",
+  "group": "g6",
+  "heading": "# 2035. First MVP scenario",
+  "occurrences": 2,
+  "turns_with_answer": [
+   "t043"
+  ],
+  "check": [
+   "benchmark\\ regression"
+  ]
+ },
+ {
+  "id": "c_t043_5080_sem",
+  "type": "semantic",
+  "text": "Какую единственную проверку предполагал четвёртый сценарий, связанный с обновлением программного пакета?",
+  "answer": "benchmark regression",
+  "card": "t043",
+  "group": "g6",
+  "heading": "# 2035. First MVP scenario",
+  "occurrences": 2,
+  "turns_with_answer": [
+   "t043"
+  ],
+  "check": [
+   "benchmark\\ regression"
+  ]
+ },
+ {
+  "id": "c_t047_1697_lex",
+  "type": "lexical",
+  "text": "Какое состояние создаётся при конфликтующих Claims (Conflicting Claims) в Multi-Agent Merge?",
+  "answer": "CONTESTED",
+  "card": "t047",
+  "group": "g6",
+  "heading": "# 3081. Agent Pool",
+  "occurrences": 21,
+  "turns_with_answer": [
+   "t033",
+   "t039",
+   "t042",
+   "t043",
+   "t044",
+   "t045",
+   "t047",
+   "t049",
+   "t055",
+   "t060",
+   "t065"
+  ],
+  "check": [
+   "contested"
+  ]
+ },
+ {
+  "id": "c_t047_1697_sem",
+  "type": "semantic",
+  "text": "Какую метку получает утверждение, когда результаты нескольких агентов противоречат друг другу при слиянии?",
+  "answer": "CONTESTED",
+  "card": "t047",
+  "group": "g6",
+  "heading": "# 3081. Agent Pool",
+  "occurrences": 21,
+  "turns_with_answer": [
+   "t033",
+   "t039",
+   "t042",
+   "t043",
+   "t044",
+   "t045",
+   "t047",
+   "t049",
+   "t055",
+   "t060",
+   "t065"
+  ],
+  "check": [
+   "contested"
+  ]
+ },
+ {
+  "id": "c_t052_2972_lex",
+  "type": "lexical",
+  "text": "Какое значение availability указывается при создании ResourceRow с resource_type PERSON в application function?",
+  "answer": "availability=\"UNKNOWN",
+  "card": "t052",
+  "group": "g7",
+  "heading": "# 5810. Application function",
+  "occurrences": 1,
+  "turns_with_answer": [
+   "t052"
+  ],
+  "check": [
+   "availability=\"unknown"
+  ]
+ },
+ {
+  "id": "c_t052_2972_sem",
+  "type": "semantic",
+  "text": "При создании записи о человеке-ресурсе в сервисной функции, какое начальное значение доступности ему задаётся?",
+  "answer": "availability=\"UNKNOWN",
+  "card": "t052",
+  "group": "g7",
+  "heading": "# 5810. Application function",
+  "occurrences": 1,
+  "turns_with_answer": [
+   "t052"
+  ],
+  "check": [
+   "availability=\"unknown"
+  ]
+ },
+ {
+  "id": "c_t053_2465_lex",
+  "type": "lexical",
+  "text": "Какие пять gold labels предлагается использовать вместо простого good / bad для Gold Case?",
+  "answer": "STRONG POSSIBLE INVESTIGATE BLOCKED ROLE_MISMATCH",
+  "card": "t053",
+  "group": "g7",
+  "heading": "# 6210. Latent Team detector",
+  "occurrences": 0,
+  "turns_with_answer": [],
+  "check": [
+   "strong\\ possible\\ investigate\\ blocked\\ role_mismatch"
+  ]
+ },
+ {
+  "id": "c_t053_2465_sem",
+  "type": "semantic",
+  "text": "Какой набор из нескольких категорий оценки предлагается для ручной разметки пар проект–ресурс в эталонном датасете, вместо бинарной оценки?",
+  "answer": "STRONG POSSIBLE INVESTIGATE BLOCKED ROLE_MISMATCH",
+  "card": "t053",
+  "group": "g7",
+  "heading": "# 6210. Latent Team detector",
+  "occurrences": 0,
+  "turns_with_answer": [],
+  "check": [
+   "strong\\ possible\\ investigate\\ blocked\\ role_mismatch"
+  ]
+ },
+ {
+  "id": "c_t050_2045_lex",
+  "type": "lexical",
+  "text": "Как называется третья часть рекомендуемого первого frontend layout после Left Navigation и Main Workspace, где показываются детали выбранного объекта?",
+  "answer": "Right Inspector",
+  "card": "t050",
+  "group": "g7",
+  "heading": "# 4688. Human должен понять:",
+  "occurrences": 2,
+  "turns_with_answer": [
+   "t050"
+  ],
+  "check": [
+   "right\\ inspector"
+  ]
+ },
+ {
+  "id": "c_t050_2045_sem",
+  "type": "semantic",
+  "text": "В предложенной раскладке интерфейса для первой версии, как называется правая панель, в которой отображается информация о выделенном элементе?",
+  "answer": "Right Inspector",
+  "card": "t050",
+  "group": "g7",
+  "heading": "# 4688. Human должен понять:",
+  "occurrences": 2,
+  "turns_with_answer": [
+   "t050"
+  ],
+  "check": [
+   "right\\ inspector"
+  ]
+ },
+ {
+  "id": "c_t049_1482_lex",
+  "type": "lexical",
+  "text": "Какой пример выбора даты показан для Historical Mode, когда пользователь выбирает состояние мира на определённый момент?",
+  "answer": "World as of 2026-06-01",
+  "card": "t049",
+  "group": "g7",
+  "heading": "# 3939. Command Palette",
+  "occurrences": 1,
+  "turns_with_answer": [
+   "t049"
+  ],
+  "check": [
+   "world\\ as\\ of\\ 2026\\-06\\-01"
+  ]
+ },
+ {
+  "id": "c_t049_1482_sem",
+  "type": "semantic",
+  "text": "Какую конкретную дату в качестве примера приводили для режима просмотра интерфейса в прошлом, чтобы увидеть прежнее состояние системы?",
+  "answer": "World as of 2026-06-01",
+  "card": "t049",
+  "group": "g7",
+  "heading": "# 3939. Command Palette",
+  "occurrences": 1,
+  "turns_with_answer": [
+   "t049"
+  ],
+  "check": [
+   "world\\ as\\ of\\ 2026\\-06\\-01"
+  ]
+ },
+ {
+  "id": "c_t055_2823_lex",
+  "type": "lexical",
+  "text": "Какую узкую первую научную тему предлагалось выбрать для MVP, например tactile sensing и что ещё?",
+  "answer": "tactile sensing / optical fiber sensing",
+  "card": "t055",
+  "group": "g8",
+  "heading": "# 7393. Knowledge Resolution API",
+  "occurrences": 1,
+  "turns_with_answer": [
+   "t055"
+  ],
+  "check": [
+   "tactile\\ sensing\\ /\\ optical\\ fiber\\ sensing"
+  ]
+ },
+ {
+  "id": "c_t055_2823_sem",
+  "type": "semantic",
+  "text": "Какой конкретный нишевый научный домен был приведён как пример для начала проекта, связанный с датчиками?",
+  "answer": "tactile sensing / optical fiber sensing",
+  "card": "t055",
+  "group": "g8",
+  "heading": "# 7393. Knowledge Resolution API",
+  "occurrences": 1,
+  "turns_with_answer": [
+   "t055"
+  ],
+  "check": [
+   "tactile\\ sensing\\ /\\ optical\\ fiber\\ sensing"
+  ]
+ },
+ {
+  "id": "c_t054_3686_lex",
+  "type": "lexical",
+  "text": "Что использовать в v0.1 для частоты обновления данных GitHub Observatory: on-demand и что ещё?",
+  "answer": "on-demand + periodic refresh",
+  "card": "t054",
+  "group": "g8",
+  "heading": "# 6877. Human reviewer",
+  "occurrences": 1,
+  "turns_with_answer": [
+   "t054"
+  ],
+  "check": [
+   "on\\-demand\\ \\+\\ periodic\\ refresh"
+  ]
+ },
+ {
+  "id": "c_t054_3686_sem",
+  "type": "semantic",
+  "text": "Какую стратегию обновления данных о репозиториях выбрали для самой первой версии, пока вебхуки не подключены?",
+  "answer": "on-demand + periodic refresh",
+  "card": "t054",
+  "group": "g8",
+  "heading": "# 6877. Human reviewer",
+  "occurrences": 1,
+  "turns_with_answer": [
+   "t054"
+  ],
+  "check": [
+   "on\\-demand\\ \\+\\ periodic\\ refresh"
+  ]
+ },
+ {
+  "id": "c_t056_2368_lex",
+  "type": "lexical",
+  "text": "Какая общая потребность (Total need) указана в примере проектного funding view, где Secured 300k, Applied 500k, Conditional 200k и Uncovered 400k?",
+  "answer": "Total need: 1.2M",
+  "card": "t056",
+  "group": "g8",
+  "heading": "# 7993. System derives:",
+  "occurrences": 1,
+  "turns_with_answer": [
+   "t056"
+  ],
+  "check": [
+   "total\\ need:\\ 1\\.2m"
+  ]
+ },
+ {
+  "id": "c_t056_2368_sem",
+  "type": "semantic",
+  "text": "В примере финансирования проекта с разбивкой на полученное, поданное, условное и непокрытое — какая сумма была указана как полная потребность проекта?",
+  "answer": "Total need: 1.2M",
+  "card": "t056",
+  "group": "g8",
+  "heading": "# 7993. System derives:",
+  "occurrences": 1,
+  "turns_with_answer": [
+   "t056"
+  ],
+  "check": [
+   "total\\ need:\\ 1\\.2m"
+  ]
+ },
+ {
+  "id": "c_t058_4998_lex",
+  "type": "lexical",
+  "text": "Какое поле приводится как пример плохого дизайна, когда сущность в ядре IIR хранит свойство, специфичное для рендерера Unity?",
+  "answer": "UnityGameObjectId",
+  "card": "t058",
+  "group": "g8",
+  "heading": "# 9416. Frontend architecture",
+  "occurrences": 1,
+  "turns_with_answer": [
+   "t058"
+  ],
+  "check": [
+   "unitygameobjectid"
+  ]
+ },
+ {
+  "id": "c_t058_4998_sem",
+  "type": "semantic",
+  "text": "Какой пример идентификатора, привязанного к конкретному игровому движку, приводился как то, чего не должно быть в сущности базового ядра системы?",
+  "answer": "UnityGameObjectId",
+  "card": "t058",
+  "group": "g8",
+  "heading": "# 9416. Frontend architecture",
+  "occurrences": 1,
+  "turns_with_answer": [
+   "t058"
+  ],
+  "check": [
+   "unitygameobjectid"
+  ]
+ },
+ {
+  "id": "c_t057_609_lex",
+  "type": "lexical",
+  "text": "Какой пример концепта Material Type приведён в разделе 8292?",
+  "answer": "Aluminum 7075",
+  "card": "t057",
+  "group": "g8",
+  "heading": "# 8291. Material Resource",
+  "occurrences": 1,
+  "turns_with_answer": [
+   "t057"
+  ],
+  "check": [
+   "aluminum\\ 7075"
+  ]
+ },
+ {
+  "id": "c_t057_609_sem",
+  "type": "semantic",
+  "text": "Какой конкретный сплав был назван примером типа материала, в отличие от конкретной партии?",
+  "answer": "Aluminum 7075",
+  "card": "t057",
+  "group": "g8",
+  "heading": "# 8291. Material Resource",
+  "occurrences": 1,
+  "turns_with_answer": [
+   "t057"
+  ],
+  "check": [
+   "aluminum\\ 7075"
+  ]
+ },
+ {
+  "id": "c_t059_4015_lex",
+  "type": "lexical",
+  "text": "Какая роль в списке Knowledge Governance (возможные роли) стоит последней, после MODERATOR?",
+  "answer": "RELEASE_MANAGER",
+  "card": "t059",
+  "group": "g9",
+  "heading": "# 10019. This is extremely useful",
+  "occurrences": 1,
+  "turns_with_answer": [
+   "t059"
+  ],
+  "check": [
+   "release_manager"
+  ]
+ },
+ {
+  "id": "c_t059_4015_sem",
+  "type": "semantic",
+  "text": "В системе управления знаниями перечислялись роли участников; как называлась роль, идущая последней в этом перечне и связанная с выпуском версий?",
+  "answer": "RELEASE_MANAGER",
+  "card": "t059",
+  "group": "g9",
+  "heading": "# 10019. This is extremely useful",
+  "occurrences": 1,
+  "turns_with_answer": [
+   "t059"
+  ],
+  "check": [
+   "release_manager"
+  ]
+ },
+ {
+  "id": "c_t062_3464_lex",
+  "type": "lexical",
+  "text": "Какую сумму может переместить Program manager между двумя утверждёнными work packages в рамках Program Autonomy Envelope?",
+  "answer": "€20k between two approved work packages",
+  "card": "t062",
+  "group": "g9",
+  "heading": "# 12362. Talent Radar",
+  "occurrences": 1,
+  "turns_with_answer": [
+   "t062"
+  ],
+  "check": [
+   "€20k\\ between\\ two\\ approved\\ work\\ packages"
+  ]
+ },
+ {
+  "id": "c_t062_3464_sem",
+  "type": "semantic",
+  "text": "Какой пример небольшого перераспределения денег приводился, чтобы показать, что руководитель программы может действовать самостоятельно без одобрения высшего уровня?",
+  "answer": "€20k between two approved work packages",
+  "card": "t062",
+  "group": "g9",
+  "heading": "# 12362. Talent Radar",
+  "occurrences": 1,
+  "turns_with_answer": [
+   "t062"
+  ],
+  "check": [
+   "€20k\\ between\\ two\\ approved\\ work\\ packages"
+  ]
+ },
+ {
+  "id": "c_t063_331_lex",
+  "type": "lexical",
+  "text": "Как в примере Horizon Classes определяется граница класса NEAR?",
+  "answer": "NEAR = months",
+  "card": "t063",
+  "group": "g9",
+  "heading": "# 12661. MONITORING",
+  "occurrences": 1,
+  "turns_with_answer": [
+   "t063"
+  ],
+  "check": [
+   "near\\ =\\ months"
+  ]
+ },
+ {
+  "id": "c_t063_331_sem",
+  "type": "semantic",
+  "text": "Какой временной масштаб в примере отнесён к самому короткому классу горизонта планирования?",
+  "answer": "NEAR = months",
+  "card": "t063",
+  "group": "g9",
+  "heading": "# 12661. MONITORING",
+  "occurrences": 1,
+  "turns_with_answer": [
+   "t063"
+  ],
+  "check": [
+   "near\\ =\\ months"
+  ]
+ },
+ {
+  "id": "c_t060_5484_lex",
+  "type": "lexical",
+  "text": "Какую карту целиком может иметь Virtual Technopark, при том что каждая организация сохраняет суверенитет?",
+  "answer": "Federated Capability Map",
+  "card": "t060",
+  "group": "g9",
+  "heading": "# 10943. L5 — Adaptive Portfolio",
+  "occurrences": 1,
+  "turns_with_answer": [
+   "t060"
+  ],
+  "check": [
+   "federated\\ capability\\ map"
+  ]
+ },
+ {
+  "id": "c_t060_5484_sem",
+  "type": "semantic",
+  "text": "Какой общий обзор возможностей участников может вести вся распределённая технопарковая система, не требуя от узлов раскрытия внутренностей?",
+  "answer": "Federated Capability Map",
+  "card": "t060",
+  "group": "g9",
+  "heading": "# 10943. L5 — Adaptive Portfolio",
+  "occurrences": 1,
+  "turns_with_answer": [
+   "t060"
+  ],
+  "check": [
+   "federated\\ capability\\ map"
+  ]
+ },
+ {
+  "id": "c_t061_645_lex",
+  "type": "lexical",
+  "text": "Сколько времени занимает grant application вручную до создания reusable workflow в примере про Process Capital?",
+  "answer": "3 weeks",
+  "card": "t061",
+  "group": "g9",
+  "heading": "# 11266. Dataset с benchmark/procedure",
+  "occurrences": 4,
+  "turns_with_answer": [
+   "t035",
+   "t061",
+   "t073",
+   "t080"
+  ],
+  "check": [
+   "3\\ weeks"
+  ]
+ },
+ {
+  "id": "c_t061_645_sem",
+  "type": "semantic",
+  "text": "В примере с процессным капиталом, за какое время раньше вручную готовилась заявка на грант, прежде чем появился повторно используемый процесс?",
+  "answer": "3 weeks",
+  "card": "t061",
+  "group": "g9",
+  "heading": "# 11266. Dataset с benchmark/procedure",
+  "occurrences": 4,
+  "turns_with_answer": [
+   "t035",
+   "t061",
+   "t073",
+   "t080"
+  ],
+  "check": [
+   "3\\ weeks"
+  ]
+ },
+ {
+  "id": "c_t081_4879_lex",
+  "type": "lexical",
+  "text": "Какой пример приведён для риска концентрации финансирования: какая доля портфеля зависит от одной схемы финансирования?",
+  "answer": "80% portfolio",
+  "card": "t081",
+  "group": "g10",
+  "heading": "# 29878. Consortium Synthesis",
+  "occurrences": 1,
+  "turns_with_answer": [
+   "t081"
+  ],
+  "check": [
+   "80%\\ portfolio"
+  ]
+ },
+ {
+  "id": "c_t081_4879_sem",
+  "type": "semantic",
+  "text": "Какой числовой пример привели, чтобы показать опасность зависимости почти всех программ от единственного источника денег?",
+  "answer": "80% portfolio",
+  "card": "t081",
+  "group": "g10",
+  "heading": "# 29878. Consortium Synthesis",
+  "occurrences": 1,
+  "turns_with_answer": [
+   "t081"
+  ],
+  "check": [
+   "80%\\ portfolio"
+  ]
+ },
+ {
+  "id": "c_t074_4078_lex",
+  "type": "lexical",
+  "text": "Как называется пример Capability Capital для симуляции, в состав которого входят model, data pipeline, validation и operators?",
+  "answer": "LAB_NETWORK_SIMULATION",
+  "card": "t074",
+  "group": "g10",
+  "heading": "# 22948. STRUCTURAL",
+  "occurrences": 1,
+  "turns_with_answer": [
+   "t074"
+  ],
+  "check": [
+   "lab_network_simulation"
+  ]
+ },
+ {
+  "id": "c_t074_4078_sem",
+  "type": "semantic",
+  "text": "Какое имя было приведено в качестве примера возможности-актива, когда сама способность моделирования сети лабораторий становится капиталом?",
+  "answer": "LAB_NETWORK_SIMULATION",
+  "card": "t074",
+  "group": "g10",
+  "heading": "# 22948. STRUCTURAL",
+  "occurrences": 1,
+  "turns_with_answer": [
+   "t074"
+  ],
+  "check": [
+   "lab_network_simulation"
+  ]
+ },
+ {
+  "id": "c_t080_4760_lex",
+  "type": "lexical",
+  "text": "Какой пример требования с подстановкой приведён вместо жёсткой привязки к GPU-07 в Substitution Contract?",
+  "answer": "GPU >= profile X",
+  "card": "t080",
+  "group": "g10",
+  "heading": "# 28938. Mission Lock",
+  "occurrences": 1,
+  "turns_with_answer": [
+   "t080"
+  ],
+  "check": [
+   "gpu\\ >=\\ profile\\ x"
+  ]
+ },
+ {
+  "id": "c_t080_4760_sem",
+  "type": "semantic",
+  "text": "Как записать требование к видеокарте через допустимый профиль, чтобы не привязываться к конкретному экземпляру оборудования?",
+  "answer": "GPU >= profile X",
+  "card": "t080",
+  "group": "g10",
+  "heading": "# 28938. Mission Lock",
+  "occurrences": 1,
+  "turns_with_answer": [
+   "t080"
+  ],
+  "check": [
+   "gpu\\ >=\\ profile\\ x"
+  ]
+ },
+ {
+  "id": "c_t075_7484_lex",
+  "type": "lexical",
+  "text": "Что должно произойти с чистым вычислением, если ноутбук отключается посреди батча (Demonstrator 5)?",
+  "answer": "rerun on x86 node",
+  "card": "t075",
+  "group": "g10",
+  "heading": "# 24264.",
+  "occurrences": 1,
+  "turns_with_answer": [
+   "t075"
+  ],
+  "check": [
+   "rerun\\ on\\ x86\\ node"
+  ]
+ },
+ {
+  "id": "c_t075_7484_sem",
+  "type": "semantic",
+  "text": "Как система должна продолжить работу, когда портативный узел пропадает во время обработки пакета, если задача не имеет побочных эффектов?",
+  "answer": "rerun on x86 node",
+  "card": "t075",
+  "group": "g10",
+  "heading": "# 24264.",
+  "occurrences": 1,
+  "turns_with_answer": [
+   "t075"
+  ],
+  "check": [
+   "rerun\\ on\\ x86\\ node"
+  ]
+ },
+ {
+  "id": "c_t069_573_lex",
+  "type": "lexical",
+  "text": "Чем, кроме force_torque_sensor, можно заменить TACTILE_FEEDBACK в некоторых contexts?",
+  "answer": "vision-based slip detection",
+  "card": "t069",
+  "group": "g10",
+  "heading": "# 18578. Example:",
+  "occurrences": 1,
+  "turns_with_answer": [
+   "t069"
+  ],
+  "check": [
+   "vision\\-based\\ slip\\ detection"
+  ]
+ },
+ {
+  "id": "c_t069_573_sem",
+  "type": "semantic",
+  "text": "Какой альтернативный вариант на основе камеры упоминался для замены тактильной обратной связи при определении проскальзывания?",
+  "answer": "vision-based slip detection",
+  "card": "t069",
+  "group": "g10",
+  "heading": "# 18578. Example:",
+  "occurrences": 1,
+  "turns_with_answer": [
+   "t069"
+  ],
+  "check": [
+   "vision\\-based\\ slip\\ detection"
+  ]
+ }
+]

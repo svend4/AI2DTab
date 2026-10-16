@@ -1,0 +1,1082 @@
+{
+ "claims": [
+  {
+   "turn": "t035",
+   "concept": "Physical Resource Resolver",
+   "text": "Lead time должен быть отдельным property физического ресурса.",
+   "quote": "Lead time должен быть отдельным property.",
+   "l1": 655,
+   "l2": 655,
+   "verdict": "partial",
+   "reason": "The source says lead time should be a separate property, but the visible lines don't state it is specifically a property of the physical resource; examples (sensor fabrication, clean-room queue) are only implied to be about resources."
+  },
+  {
+   "turn": "t080",
+   "concept": "Minimum Viable Mission",
+   "text": "При сокращении scope MUST-критерии остаются, а NICE_TO_HAVE отбрасываются первыми.",
+   "quote": "Mission MUST criteria remain.",
+   "l1": 4175,
+   "l2": 4175,
+   "verdict": "supported",
+   "reason": "Source says under Scope Reduction 'Mission MUST criteria remain' and 'Drop: NICE_TO_HAVE first', matching the claim."
+  },
+  {
+   "turn": "t075",
+   "concept": "Compute Node State",
+   "text": "Node Health отделяется от capacity availability: здоровый узел может быть полностью занят, поэтому Health ≠ Availability.",
+   "quote": "Node Health отдельно от:",
+   "l1": 313,
+   "l2": 313,
+   "verdict": "supported",
+   "reason": "Source says Node Health is separate from capacity availability, with example of a HEALTHY node 100% allocated, concluding Health ≠ Availability."
+  },
+  {
+   "turn": "t020",
+   "concept": "Capability Registry",
+   "text": "Одна capability может принадлежать нескольким областям одновременно.",
+   "quote": "Одна capability может принадлежать нескольким областям.",
+   "l1": 99,
+   "l2": 99,
+   "verdict": "supported",
+   "reason": "Line 99 states directly: 'Одна capability может принадлежать нескольким областям', and the WebAssembly example and the domains list illustrate it."
+  },
+  {
+   "turn": "t054",
+   "concept": "CAPABILITY ACQUISITION ENGINE",
+   "text": "Project Gap не должен автоматически означать необходимость нанять человека, так как capability может быть получена через open source, сервис, AI-агента, интеграцию или автоматизацию.",
+   "quote": "Project Gap не должен автоматически означать:",
+   "l1": 52,
+   "l2": 52,
+   "verdict": "supported",
+   "reason": "Lines 52-66 state that Project Gap should not automatically mean hiring a person and that capability can be obtained via open source, service, AI agent, integration, or automation."
+  },
+  {
+   "turn": "t065",
+   "concept": "Promotion Pipeline",
+   "text": "Путь продвижения: Candidate, затем Schema Validation, Semantic Validation, Policy и только потом Canonical Object.",
+   "quote": "Promotion Pipeline remains:",
+   "l1": 1297,
+   "l2": 1297,
+   "verdict": "supported",
+   "reason": "Lines 14198 list the Promotion Pipeline exactly as Candidate → Schema Validation → Semantic Validation → Policy → Canonical Object."
+  },
+  {
+   "turn": "t079",
+   "concept": "Production Readiness Matrix",
+   "text": "Cutover Completed не равно Migration Completed: миграция завершается после стабилизации, вывода старой системы и обновления документации.",
+   "quote": "Cutover Completed ≠ Migration Completed.",
+   "l1": 5056,
+   "l2": 5056,
+   "verdict": "supported",
+   "reason": "Source states Cutover Completed ≠ Migration Completed, and migration is completed only after stabilization, old system retirement, and documentation update (per program criteria)."
+  },
+  {
+   "turn": "t010",
+   "concept": "Автоматические контакты",
+   "text": "Система не выполняет автоматических контактов с кандидатами или компаниями.",
+   "quote": "Автоматических контактов с кандидатами или компаниями не будет.",
+   "l1": 28,
+   "l2": 28,
+   "verdict": "supported",
+   "reason": "Line 28 states directly: 'Автоматических контактов с кандидатами или компаниями не будет.'"
+  },
+  {
+   "turn": "t002",
+   "concept": "One-click Project Formation",
+   "text": "Система за 30 секунд формирует PROJECT PACKAGE: проблему, prior art, статьи и патенты, решение, команду, AI-агентов, репозитории, датасеты, оборудование, лабораторию, оценку стоимости, гранты, timeline, анализ рисков, IP/licensing и первые эксперименты.",
+   "quote": "Через 30 секунд система формирует",
+   "l1": 940,
+   "l2": 940,
+   "verdict": "supported",
+   "reason": "The source says that for a new problem the system forms a PROJECT PACKAGE in 30 seconds, and the listed items match the claim's list one-to-one."
+  },
+  {
+   "turn": "t065",
+   "concept": "Universal Data, Perception & Evidence Fabric",
+   "text": "Любой внешний вход должен пройти явную цепочку преобразований до World State.",
+   "quote": "Любой внешний вход",
+   "l1": 34,
+   "l2": 34,
+   "verdict": "supported",
+   "reason": "Lines 34-38 state exactly this: any external input must pass an explicit chain of transformations to World State."
+  },
+  {
+   "turn": "t038",
+   "concept": "Organization Capability Balance Sheet",
+   "text": "Organization Capability Balance Sheet не является бухгалтерским балансом, а служит операционной картой способности организации действовать.",
+   "quote": "Это не бухгалтерский баланс",
+   "l1": 1983,
+   "l2": 1983,
+   "verdict": "supported",
+   "reason": "Section 438 says \"Это не бухгалтерский баланс\" and calls it \"операционная карта способности организации действовать\"; the preceding Liabilities list implies the referent is the capability balance sheet, though its full name isn't shown in these lines."
+  },
+  {
+   "turn": "t076",
+   "concept": "Source of Truth",
+   "text": "CACHE: временная локальная копия для performance и offline use.",
+   "quote": "Временная локальная копия для:",
+   "l1": 260,
+   "l2": 260,
+   "verdict": "supported",
+   "reason": "Source line 24458 defines CACHE as a temporary local copy for performance and offline use, matching the claim exactly."
+  },
+  {
+   "turn": "t035",
+   "concept": "Physical Resource",
+   "text": "Подтипы Physical Resource: LAB, EQUIPMENT, FACILITY, MANUFACTURER, WORKSHOP, WAREHOUSE, VEHICLE, ROBOT, TEST_SITE, COMPUTE_INFRASTRUCTURE.",
+   "quote": "Подтипы Resource:",
+   "l1": 77,
+   "l2": 77,
+   "verdict": "partial",
+   "reason": "The list of ten subtypes matches the source exactly, but the source calls the parent type just \"Resource\", not \"Physical Resource\"."
+  },
+  {
+   "turn": "t028",
+   "concept": "Gap Analyzer",
+   "text": "Gap Analyzer вычисляет Required Capabilities − Covered Capabilities = Gaps, и каждый Gap снова поступает в Resolver.",
+   "quote": "Каждый Gap снова поступает Resolver.",
+   "l1": 595,
+   "l2": 595,
+   "verdict": "supported",
+   "reason": "Lines 587-595 give the formula Required − Covered = Gaps and say each Gap goes back to the Resolver. The name 'Gap Analyzer' is not in the shown lines, but it is the likely owner of the section."
+  },
+  {
+   "turn": "t065",
+   "concept": "Source",
+   "text": "Source может быть FILE, WEB, API, DATABASE, MESSAGE, SENSOR, CAMERA, AUDIO, VIDEO, HUMAN, AGENT, DEVICE.",
+   "quote": "Source может быть:",
+   "l1": 152,
+   "l2": 152,
+   "verdict": "supported",
+   "reason": "Lines 152-167 list exactly these 12 source types: FILE, WEB, API, DATABASE, MESSAGE, SENSOR, CAMERA, AUDIO, VIDEO, HUMAN, AGENT, DEVICE."
+  },
+  {
+   "turn": "t074",
+   "concept": "Policy conflict",
+   "text": "Policy conflict не решается автоматически: precedence определяет governance.",
+   "quote": "Policy conflict ≠ automatically resolvable.",
+   "l1": 1041,
+   "l2": 1041,
+   "verdict": "supported",
+   "reason": "Lines 22564-22565 state that policy conflict is not automatically resolvable and that governance decides precedence, which matches the claim."
+  },
+  {
+   "turn": "t076",
+   "concept": "Architecture Invariants",
+   "text": "Синхронизация не равна глобальному консенсусу.",
+   "quote": "Synchronization ≠ Global Consensus.",
+   "l1": 155,
+   "l2": 155,
+   "verdict": "supported",
+   "reason": "Line 155 states 'Synchronization ≠ Global Consensus', which is exactly the claim in Russian."
+  },
+  {
+   "turn": "t066",
+   "concept": "Semantic Execution Placement",
+   "text": "Placement — это разрешение контрактов (contract resolution), а не только планирование процессов.",
+   "quote": "not just process scheduling.",
+   "l1": 1085,
+   "l2": 1085,
+   "verdict": "supported",
+   "reason": "Lines 15139-15085 state 'Placement is therefore: contract resolution, not just process scheduling', which matches the claim directly."
+  },
+  {
+   "turn": "t056",
+   "concept": "Главные invariants",
+   "text": "Инварианты: Funding opportunity ≠ funding; Application ≠ award; Award ≠ cash received; Eligible ≠ good strategic fit; Candidate partner ≠ committed partner; Funding availability ≠ unrestricted spending; Aggregator ≠ authoritative source; AI draft ≠ authorized submission.",
+   "quote": "Funding opportunity ≠ funding.",
+   "l1": 4611,
+   "l2": 4611,
+   "verdict": "supported",
+   "reason": "All eight invariants listed in the claim appear verbatim in the source lines 4611-4639, in the same order."
+  },
+  {
+   "turn": "t022",
+   "concept": "Solution Space Generator",
+   "text": "Intervention Selection выбирает тип вмешательства до создания проекта; Validation Engine сравнивает варианты, и самым дешёвым может оказаться общий формат данных.",
+   "quote": "What kind of intervention is needed?",
+   "l1": 1275,
+   "l2": 1275,
+   "verdict": "unsupported",
+   "reason": "The first half is stated (intervention type is chosen before creating a project), but the source never says Validation Engine compares options or that a common data format could be the cheapest; its example is a shared expert pool, and 'common data format' (STANDARD/DATASET) is not mentioned."
+  },
+  {
+   "turn": "t034",
+   "concept": "Call Artifact",
+   "text": "Каждое наблюдение имеет observed_at и source_version, а старые claims при изменении условий не стираются.",
+   "quote": "и старые claims не стираются.",
+   "l1": 448,
+   "l2": 448,
+   "verdict": "partial",
+   "reason": "Source confirms each observation has observed_at and source_version and that old claims are not erased, but the qualifier \"при изменении условий\" is not stated in these lines."
+  },
+  {
+   "turn": "t023",
+   "concept": "Portfolio",
+   "text": "Portfolio и Program — не одно и то же.",
+   "quote": "# 3. Portfolio и Program — не одно и то же",
+   "l1": 99,
+   "l2": 99,
+   "verdict": "supported",
+   "reason": "Line 99 is a heading stating 'Portfolio и Program — не одно и то же', and the following lines define them differently (Portfolio as a set of initiatives for resource/strategy management, Program as a group of dependent projects)."
+  },
+  {
+   "turn": "t072",
+   "concept": "Capability Gap Accounting",
+   "text": "Категории gap: ABSENT, UNVERIFIED, UNAVAILABLE, FRAGILE, INSUFFICIENT_CAPACITY; они по-разному влияют на ответ системы.",
+   "quote": "INSUFFICIENT_CAPACITY",
+   "l1": 1876,
+   "l2": 1876,
+   "verdict": "supported",
+   "reason": "The source lists exactly these five gap categories and states that these distinctions critically affect the response, with examples of differing responses (research/build, benchmark/test, reschedule/provider switch)."
+  },
+  {
+   "turn": "t056",
+   "concept": "Lifecycle",
+   "text": "Award ≠ cash received: одобренное финансирование и фактически полученные средства различаются.",
+   "quote": "Award ≠ cash received",
+   "l1": 234,
+   "l2": 234,
+   "verdict": "supported",
+   "reason": "Line 234 states 'Award ≠ cash received', and the claim's Russian gloss (approved funding differs from funds actually received) is a direct, faithful interpretation of it."
+  },
+  {
+   "turn": "t003",
+   "concept": "ESCO",
+   "text": "ESCO встроен в EURES и используется для автоматизированного сопоставления профилей соискателей и вакансий.",
+   "quote": "ESCO встроен в EURES и используется для автоматизированного сопоставления профилей соискателей и вакансий",
+   "l1": 63,
+   "l2": 63,
+   "verdict": "supported",
+   "reason": "Line 63 states verbatim that ESCO is embedded in EURES and used for automated matching of job seekers' profiles and vacancies."
+  },
+  {
+   "turn": "t010",
+   "concept": "Explicit interest",
+   "text": "Отдельно фиксируются случаи explicit interest, то есть явно выраженного интереса.",
+   "quote": "случаи `explicit interest`",
+   "l1": 22,
+   "l2": 22,
+   "verdict": "supported",
+   "reason": "Line 22 lists `explicit interest` cases as a separate item in the report contents, and the Russian gloss 'явно выраженный интерес' is a direct translation."
+  },
+  {
+   "turn": "t024",
+   "concept": "Unlock Graph",
+   "text": "Unlock Graph — это машиночитаемый граф разблокировки, а не обычная roadmap.",
+   "quote": "Это уже не обычная roadmap.",
+   "l1": 215,
+   "l2": 215,
+   "verdict": "supported",
+   "reason": "Lines 215-217 say the unlock chain is 'не обычная roadmap' but a 'машиночитаемый граф разблокировки'; only the name 'Unlock Graph' is not in the visible lines and is inferred from context."
+  },
+  {
+   "turn": "t080",
+   "concept": "Mission Outcome States",
+   "text": "Все задачи выполнены не означает, что Mission достигнута.",
+   "quote": "All Tasks Done ≠ Mission Achieved.",
+   "l1": 7478,
+   "l2": 7478,
+   "verdict": "supported",
+   "reason": "Line 7478 states 'All Tasks Done ≠ Mission Achieved.', which the claim translates directly into Russian."
+  },
+  {
+   "turn": "t007",
+   "concept": "Evidence levels",
+   "text": "Уровни доказательств навыка: 0 — buzzword, 1 — used, 2 — production, 3 — deep expertise, 4 — publicly demonstrated expertise.",
+   "quote": "0 — buzzword",
+   "l1": 463,
+   "l2": 463,
+   "verdict": "supported",
+   "reason": "The source lists exactly these five levels (0 buzzword, 1 used, 2 production, 3 deep expertise, 4 publicly demonstrated expertise) as a scale of confidence in a skill."
+  },
+  {
+   "turn": "t045",
+   "concept": "Три типа связи",
+   "text": "Structural dependency (например, Task B DEPENDS_ON Task A) означает, что B не может продвигаться, пока A не выполнена; это operational dependency.",
+   "quote": "B cannot proceed",
+   "l1": 144,
+   "l2": 144,
+   "verdict": "partial",
+   "reason": "The source says B cannot proceed until A is satisfied and calls this an operational dependency, but the lines shown never use the label \"Structural dependency\", and \"satisfied\" is rendered as \"выполнена\"."
+  },
+  {
+   "turn": "t005",
+   "concept": "HARD FILTERS",
+   "text": "При нарушении обязательного условия матч получает статус MATCH = BLOCKED или MATCH = NEEDS VERIFICATION.",
+   "quote": "MATCH = BLOCKED",
+   "l1": 319,
+   "l2": 319,
+   "verdict": "supported",
+   "reason": "Lines 316-326 state that if a mandatory condition is violated, the result is MATCH = BLOCKED or MATCH = NEEDS VERIFICATION."
+  },
+  {
+   "turn": "t040",
+   "concept": "Package Signature",
+   "text": "Каждый package release желательно подписывать; подпись содержит content hash, issuer, version и signature.",
+   "quote": "Каждый package release желательно подписывать.",
+   "l1": 666,
+   "l2": 666,
+   "verdict": "supported",
+   "reason": "Lines 666-675 state that each package release should be signed and list the fields content hash, issuer, version, and signature, exactly as the claim says."
+  },
+  {
+   "turn": "t065",
+   "concept": "Evidence Locator",
+   "text": "Класс EvidenceLocator содержит artifact_id, locator_type и locator_data.",
+   "quote": "class EvidenceLocator(BaseModel):",
+   "l1": 746,
+   "l2": 746,
+   "verdict": "supported",
+   "reason": "Lines 746-750 define EvidenceLocator with exactly the fields artifact_id (UUID), locator_type (str) and locator_data (dict)."
+  },
+  {
+   "turn": "t081",
+   "concept": "Demand Breadth",
+   "text": "Demand Breadth — сколько разных Missions/Programs нуждаются в capability.",
+   "quote": "how many distinct Missions/Programs need it.",
+   "l1": 548,
+   "l2": 548,
+   "verdict": "supported",
+   "reason": "Source defines Demand Breadth as 'how many distinct Missions/Programs need it', matching the claim (capability = 'it' in context)."
+  },
+  {
+   "turn": "t055",
+   "concept": "Scientific Claim lifecycle",
+   "text": "Core TruthState остаётся YES, NO и UNKNOWN, а научный lifecycle добавляет контекст процесса.",
+   "quote": "Core TruthState still:",
+   "l1": 1036,
+   "l2": 1036,
+   "verdict": "supported",
+   "reason": "Source states 'Core TruthState still: YES, NO, UNKNOWN' and 'Scientific lifecycle adds process context', matching the claim directly."
+  },
+  {
+   "turn": "t060",
+   "concept": "Self Model",
+   "text": "Self Model не является одним JSON-файлом, а представляет собой projection over World State, где subject — сам Innovation OS.",
+   "quote": "Self Model — не один JSON-файл.",
+   "l1": 252,
+   "l2": 252,
+   "verdict": "supported",
+   "reason": "Source states Self Model is not a single JSON file but a projection over World State, where the subject is Innovation OS itself."
+  },
+  {
+   "turn": "t056",
+   "concept": "Consortium Builder",
+   "text": "Для начального алгоритма подбора партнёров предлагается constraint-aware set cover.",
+   "quote": "constraint-aware set cover",
+   "l1": 1086,
+   "l2": 1086,
+   "verdict": "supported",
+   "reason": "The source says the Consortium algorithm can start with constraint-aware set cover, with later optimization considering country balance, budget, etc., which matches the claim about the initial partner-selection algorithm."
+  },
+  {
+   "turn": "t079",
+   "concept": "Transition Architecture",
+   "text": "Transition Architecture — временная архитектура между CURRENT и TARGET, которая может существовать недели, месяцы или годы.",
+   "quote": "Transition Architecture",
+   "l1": 955,
+   "l2": 955,
+   "verdict": "supported",
+   "reason": "The source says TRANSITION exists between CURRENT and TARGET, can last weeks, months or years, and is explicitly called a temporary architecture."
+  },
+  {
+   "turn": "t061",
+   "concept": "Structural Gap",
+   "text": "Structural Gap определяется как повторяющийся межпроектный разрыв, сохраняющийся во времени, в отличие от индивидуального gap одного проекта.",
+   "quote": "repeated cross-project gap",
+   "l1": 3771,
+   "l2": 3771,
+   "verdict": "supported",
+   "reason": "Source defines Structural Gap as a repeated cross-project gap persisting over time and contrasts it with an Individual Gap (Project A needs X)."
+  },
+  {
+   "turn": "t020",
+   "concept": "Technology",
+   "text": "Технология, например Rust, — это не capability; matching должен работать прежде всего по capabilities, а технологии используются как evidence и implementation mechanisms.",
+   "quote": "Поэтому matching должен работать прежде всего по capabilities, а технологии использовать как evidence и implementation mechanisms.",
+   "l1": 218,
+   "l2": 218,
+   "verdict": "supported",
+   "reason": "Строка 218 говорит, что matching идёт прежде всего по capabilities, а технологии (C, C++, Rust, Zig) служат как evidence и implementation mechanisms; из этого прямо следует, что Rust не capability, хотя явной фразы об этом в данных строках нет."
+  },
+  {
+   "turn": "t053",
+   "concept": "MatchDirection",
+   "text": "MatchDirection принимает значения PROJECT_TO_RESOURCE, RESOURCE_TO_PROJECT и BIDIRECTIONAL, а MatchResult должен хранить direction.",
+   "quote": "MatchResult должен хранить",
+   "l1": 1378,
+   "l2": 1378,
+   "verdict": "supported",
+   "reason": "Lines 1378-1392 state that MatchResult should store direction and list MatchDirection values PROJECT_TO_RESOURCE, RESOURCE_TO_PROJECT, BIDIRECTIONAL."
+  },
+  {
+   "turn": "t015",
+   "concept": "matching",
+   "text": "Embedding только находит кандидатов, а окончательное решение принимает обычная логика проверки evidence.",
+   "quote": "embedding finds candidates",
+   "l1": 957,
+   "l2": 957,
+   "verdict": "supported",
+   "reason": "The source says embedding finds candidates, not the final decision, and that after this ordinary logic verifies the evidence."
+  },
+  {
+   "turn": "t006",
+   "concept": "двусторонний поиск",
+   "text": "Поиск выполняется в обе стороны: от вакансии к кандидатам и от профиля кандидата к вакансиям, что позволяет находить людей, которых поиск по названию должности пропускает.",
+   "quote": "двусторонний поиск действительно находит кандидатов",
+   "l1": 13,
+   "l2": 13,
+   "verdict": "supported",
+   "reason": "Line 13 says two-sided search finds candidates a simple job-title search would miss, and line 80 heading says search must be done in both directions; the demand-to-candidate and candidate-to-vacancy directions are implied by the paired HN threads context."
+  },
+  {
+   "turn": "t020",
+   "concept": "Global Opportunity Detector",
+   "text": "Global Opportunity Detector ищет интересные комбинации в World State без внешнего запроса и создаёт объекты OPPORTUNITY.",
+   "quote": "Он не ждёт запроса.",
+   "l1": 1424,
+   "l2": 1424,
+   "verdict": "supported",
+   "reason": "The source says the module doesn't wait for a request, searches for interesting combinations in World State, and the system creates an OPPORTUNITY object."
+  },
+  {
+   "turn": "t068",
+   "concept": "Ontology Mapping",
+   "text": "Классы сохранения информации: LOSSLESS, CONSERVATIVE, LOSSY, UNKNOWN; CONSERVATIVE может отбрасывать детали, но не выдумывает более сильное утверждение.",
+   "quote": "May discard detail but never invent stronger claim.",
+   "l1": 3789,
+   "l2": 3789,
+   "verdict": "supported",
+   "reason": "The source defines CONSERVATIVE as \"May discard detail but never invent stronger claim\" and lists LOSSY and UNKNOWN in the same class list. LOSSLESS is not visible in these lines, but the list block clearly starts before them."
+  },
+  {
+   "turn": "t032",
+   "concept": "Composite Resolution",
+   "text": "Capability Package равен Resources + Integration Actions + Verification.",
+   "quote": "Capability Package",
+   "l1": 630,
+   "l2": 630,
+   "verdict": "supported",
+   "reason": "Lines 634-642 define Capability Package as Resources + Integration Actions + Verification, exactly as the claim states."
+  },
+  {
+   "turn": "t038",
+   "concept": "Strategic Asset",
+   "text": "Resource становится стратегическим, если он обслуживает много проектов, трудно заменим и создаёт значительный unlock.",
+   "quote": "# 367. Strategic Asset",
+   "l1": 837,
+   "l2": 837,
+   "verdict": "supported",
+   "reason": "Section 367 states a resource becomes strategic if it serves many projects, is hard to replace, and creates a significant unlock — matching the claim exactly."
+  },
+  {
+   "turn": "t060",
+   "concept": "Failure taxonomy",
+   "text": "Система должна отличать capable but unauthorized от incapable.",
+   "quote": "capable but unauthorized",
+   "l1": 4182,
+   "l2": 4182,
+   "verdict": "supported",
+   "reason": "Source states the Self Model must answer 'capable but unauthorized' rather than 'incapable', and that this distinction improves explanations and governance."
+  },
+  {
+   "turn": "t059",
+   "concept": "Semantic diff",
+   "text": "Пример: переход от «Method A is faster than B» к «only on Dataset D» — текстовый diff мал, а semantic change («scope narrowed») велик.",
+   "quote": "scope narrowed",
+   "l1": 1146,
+   "l2": 1146,
+   "verdict": "partial",
+   "reason": "The source says the text diff is small, the semantic change is huge, and gives \"scope narrowed\", but the specific example (\"Method A is faster than B\" → \"only on Dataset D\") does not appear in these lines."
+  },
+  {
+   "turn": "t070",
+   "concept": "Opportunity Quality Dimensions",
+   "text": "Глобального инновационного скора нет; качество Opportunity раскрывается по измерениям: Novelty, Problem Evidence, Technical Plausibility, Resource Availability, Evidence Gaps, Implementation Burden, Strategic Fit.",
+   "quote": "No global innovation score.",
+   "l1": 1200,
+   "l2": 1200,
+   "verdict": "supported",
+   "reason": "The source states 'No global innovation score' and lists exactly these seven dimensions to expose (Novelty, Problem Evidence, Technical Plausibility, Resource Availability, Evidence Gaps, Implementation Burden, Strategic Fit)."
+  },
+  {
+   "turn": "t055",
+   "concept": "Method Concept",
+   "text": "Разделяются три слоя: Method (Concept), Implementation (Resource) и Procedure (procedural graph или package).",
+   "quote": "These are three separate layers:",
+   "l1": 1674,
+   "l2": 1674,
+   "verdict": "partial",
+   "reason": "The source names the three layers Method, Implementation and Procedure, and links Procedure to 'Procedural Graph/Package'. It never labels Method as 'Concept' or Implementation as 'Resource', so those parentheticals are added."
+  },
+  {
+   "turn": "t079",
+   "concept": "Lifecycle Signal Types",
+   "text": "Типы lifecycle signals: UPSTREAM_SUPPORT, SECURITY, COMPATIBILITY, ECOSYSTEM, PERFORMANCE, COST, OPERABILITY, INTERNAL_INCIDENT, SKILL_AVAILABILITY.",
+   "quote": "Lifecycle Signal Types",
+   "l1": 363,
+   "l2": 363,
+   "verdict": "supported",
+   "reason": "Lines 366-374 list exactly these nine lifecycle signal types in the same order."
+  },
+  {
+   "turn": "t051",
+   "concept": "Semantic similarity",
+   "text": "Semantic similarity используется только как candidate hypothesis.",
+   "quote": "Только candidate hypothesis.",
+   "l1": 968,
+   "l2": 968,
+   "verdict": "supported",
+   "reason": "Source says 'Semantic similarity: Только candidate hypothesis' and that embedding similarity must not automatically yield verified capability."
+  },
+  {
+   "turn": "t073",
+   "concept": "Fitness Function",
+   "text": "Вместо универсального fitness score предпочтительно использовать Requirement Satisfaction.",
+   "quote": "Requirement Satisfaction",
+   "l1": 2529,
+   "l2": 2529,
+   "verdict": "supported",
+   "reason": "The source says it is better to use Requirement Satisfaction than a universal fitness score, because different environments select differently."
+  },
+  {
+   "turn": "t080",
+   "concept": "Mission Feasibility",
+   "text": "CONDITIONALLY_FEASIBLE означает условную осуществимость и создаёт Capability Gap.",
+   "quote": "CONDITIONALLY_FEASIBLE",
+   "l1": 459,
+   "l2": 459,
+   "verdict": "supported",
+   "reason": "The source lists CONDITIONALLY_FEASIBLE as a feasibility result, gives the example 'possible if external lab access obtained', and states 'This creates: Capability Gap.'"
+  },
+  {
+   "turn": "t058",
+   "concept": "Twin Compiler",
+   "text": "Twin Projection может быть cached, потому что rebuildable: если кэш потерян, он перестраивается из canonical data.",
+   "quote": "Twin Projection может быть cached",
+   "l1": 754,
+   "l2": 754,
+   "verdict": "supported",
+   "reason": "Source states Twin Projection can be cached because it is rebuildable, and if the twin cache is lost it is rebuilt from canonical data."
+  },
+  {
+   "turn": "t080",
+   "concept": "Intent Compiler",
+   "text": "LLM interpretation не равна user-approved goal.",
+   "quote": "LLM interpretation",
+   "l1": 138,
+   "l2": 138,
+   "verdict": "supported",
+   "reason": "Source line 28390 states exactly 'LLM interpretation ≠ user-approved goal.'"
+  },
+  {
+   "turn": "t034",
+   "concept": "TEAM Resource (Consortium)",
+   "text": "Участник консорциума — Organization Resource с capabilities: research, software, manufacturing, validation, market access, dissemination.",
+   "quote": "Organization Resource",
+   "l1": 528,
+   "l2": 528,
+   "verdict": "supported",
+   "reason": "Section 23 states the Consortium Member is an Organization Resource with capabilities research, software, manufacturing, validation, market access, dissemination, exactly as in the claim."
+  },
+  {
+   "turn": "t049",
+   "concept": "Digital Twin Fidelity Level",
+   "text": "Digital Shadow описывает физическую → цифровую синхронизацию, а Digital Twin добавляет двунаправленную операционную связь и достаточную модель состояния и поведения.",
+   "quote": "Physical → digital synchronization.",
+   "l1": 4674,
+   "l2": 4674,
+   "verdict": "supported",
+   "reason": "Source states Digital Shadow is physical → digital synchronization and Digital Twin is bidirectional operational linkage plus sufficient state/behavior model, matching the claim."
+  },
+  {
+   "turn": "t004",
+   "concept": "UNIFIED GRAPH",
+   "text": "Вместо новой биржи предлагается подключить внешние источники (HN, Upwork, Toptal, Braintrust, GitHub) к единому графу.",
+   "quote": "Не создавать ещё одну собственную биржу с нуля, а подключить",
+   "l1": 535,
+   "l2": 535,
+   "verdict": "supported",
+   "reason": "Source says not to create another exchange from scratch but to connect HN, Upwork, Toptal, Braintrust, GitHub into a UNIFIED GRAPH."
+  },
+  {
+   "turn": "t042",
+   "concept": "Separation of Duties",
+   "text": "Критические процессы могут требовать, чтобы один готовил решение, а другой его утверждал.",
+   "quote": "Критические процессы могут требовать:",
+   "l1": 570,
+   "l2": 570,
+   "verdict": "supported",
+   "reason": "Lines 570-574 state that critical processes may require one person to prepare and another to approve, which matches the claim."
+  },
+  {
+   "turn": "t025",
+   "concept": "Scenario object",
+   "text": "Scenario object содержит id, base_world_revision (например, 1842), modifications (например, gpu_compute_cost с операцией multiply и значением 0.3) и status: simulation; реальный World State при этом не меняется.",
+   "quote": "Никаких изменений реального World State.",
+   "l1": 104,
+   "l2": 104,
+   "verdict": "partial",
+   "reason": "The modifications (gpu_compute_cost, multiply, 0.3), status: simulation and the unchanged real World State are in the lines, but id and base_world_revision (1842) are not shown."
+  },
+  {
+   "turn": "t048",
+   "concept": "Durable Queue",
+   "text": "Worker получает command, но не удаляет его окончательно до подтверждения результата.",
+   "quote": "но не удаляет его окончательно до подтверждения результата.",
+   "l1": 305,
+   "l2": 305,
+   "verdict": "none",
+   "reason": ""
+  },
+  {
+   "turn": "t074",
+   "concept": "Sensitivity Analysis",
+   "text": "Sensitivity Analysis проверяет, меняется ли вывод при варьировании assumptions; если результат сохраняется — он robust, если меняется — sensitive.",
+   "quote": "Sensitivity Analysis",
+   "l1": 1664,
+   "l2": 1664,
+   "verdict": "supported",
+   "reason": "The source defines Sensitivity Analysis as checking whether the conclusion changes when assumptions vary, calling the result robust if it remains similar and sensitive if it flips."
+  },
+  {
+   "turn": "t078",
+   "concept": "Runbook",
+   "text": "Runbook — reusable recovery procedure, представляемая как Artifact + Procedural Graph, с состояниями DRAFT, TESTED, APPROVED, ACTIVE, DEPRECATED.",
+   "quote": "reusable recovery procedure.",
+   "l1": 1709,
+   "l2": 1709,
+   "verdict": "supported",
+   "reason": "The source defines a runbook as a reusable recovery procedure, represented as Artifact + Procedural Graph, with states DRAFT, TESTED, APPROVED, ACTIVE, DEPRECATED."
+  },
+  {
+   "turn": "t078",
+   "concept": "Blast Radius",
+   "text": "Состояния воздействия: UNAFFECTED, AT_RISK, DEGRADED, BLOCKED, UNKNOWN; UNKNOWN нельзя трактовать как unaffected.",
+   "quote": "Impact States",
+   "l1": 889,
+   "l2": 889,
+   "verdict": "supported",
+   "reason": "The source lists the five impact states exactly, says UNKNOWN remains important, and gives the stale remote provider example where one cannot conclude 'unaffected'."
+  },
+  {
+   "turn": "t016",
+   "concept": "Project Lock",
+   "text": "Lock нужен для воспроизводимости, чтобы было понятно, какая конфигурация команды реально утверждена.",
+   "quote": "Lock нужен для воспроизводимости",
+   "l1": 1020,
+   "l2": 1020,
+   "verdict": "supported",
+   "reason": "The source says the lock is needed for reproducibility, otherwise the matcher could choose A+B+C today and D+E+F tomorrow, leaving unclear which configuration is actually approved."
+  },
+  {
+   "turn": "t031",
+   "concept": "Demand Index",
+   "text": "Demand Index считает, сколько hiring projects требуют capability X.",
+   "quote": "сколько hiring projects требуют capability X",
+   "l1": 488,
+   "l2": 488,
+   "verdict": "supported",
+   "reason": "The source says the Observatory's Demand Index should count how many hiring projects require capability X, which matches the claim."
+  },
+  {
+   "turn": "t079",
+   "concept": "Lifecycle State",
+   "text": "Возможные состояния: EXPERIMENTAL, EMERGING, SUPPORTED, MATURE, LEGACY, DEPRECATED, SUNSETTING, RETIRED, UNKNOWN.",
+   "quote": "EXPERIMENTAL",
+   "l1": 158,
+   "l2": 158,
+   "verdict": "supported",
+   "reason": "The source lists exactly these nine states (EXPERIMENTAL, EMERGING, SUPPORTED, MATURE, LEGACY, DEPRECATED, SUNSETTING, RETIRED, UNKNOWN) in the same order."
+  },
+  {
+   "turn": "t040",
+   "concept": "Package Risk Class",
+   "text": "Утверждение по риску: LOW — automated policy may approve; MEDIUM — reviewer; HIGH — security/admin approval; CRITICAL — multiple approvals.",
+   "quote": "В зависимости от risk:",
+   "l1": 859,
+   "l2": 859,
+   "verdict": "supported",
+   "reason": "The source lists exactly these four risk levels with the same approval requirements: LOW automated policy, MEDIUM reviewer, HIGH security/admin approval, CRITICAL multiple approvals."
+  },
+  {
+   "turn": "t043",
+   "concept": "EPISTEMIC STATE",
+   "text": "Эпистемическое состояние формируется как CLAIM + EVIDENCE + VERIFICATION PROCEDURE + CONTEXT.",
+   "quote": "EPISTEMIC STATE",
+   "l1": 110,
+   "l2": 110,
+   "verdict": "supported",
+   "reason": "Lines 102-110 state CLAIM + EVIDENCE + VERIFICATION PROCEDURE + CONTEXT = EPISTEMIC STATE, which matches the claim exactly."
+  },
+  {
+   "turn": "t019",
+   "concept": "ResolutionRequest",
+   "text": "Значение max_results_per_resolver по умолчанию равно 20.",
+   "quote": "max_results_per_resolver: int = 20",
+   "l1": 235,
+   "l2": 235,
+   "verdict": "supported",
+   "reason": "Line 235 shows `max_results_per_resolver: int = 20`, which sets the default value to 20."
+  },
+  {
+   "turn": "t010",
+   "concept": "Проектные команды и компетенции",
+   "text": "Недостающие компетенции команды выделяются как отдельный результат анализа.",
+   "quote": "недостающие компетенции команды",
+   "l1": 19,
+   "l2": 19,
+   "verdict": "supported",
+   "reason": "Line 19 lists 'недостающие компетенции команды' as a separate item among the things the monthly task analyzes."
+  },
+  {
+   "turn": "t066",
+   "concept": "Latency Classes",
+   "text": "Robot obstacle response относится к LOCAL_REFLEX и никогда не отправляется в удалённый облачный round trip.",
+   "quote": "Never place into distant cloud round trip.",
+   "l1": 1147,
+   "l2": 1147,
+   "verdict": "supported",
+   "reason": "Source states robot obstacle response is LOCAL_REFLEX and 'Never place into distant cloud round trip'."
+  },
+  {
+   "turn": "t067",
+   "concept": "Semantic M2M Protocol",
+   "text": "Протокол не заменяет TCP/HTTP/MQTT/gRPC, а работает поверх транспорта.",
+   "quote": "Не заменить TCP/HTTP/MQTT/gRPC.",
+   "l1": 88,
+   "l2": 88,
+   "verdict": "supported",
+   "reason": "Lines 88-92 state the protocol's goal is not to replace TCP/HTTP/MQTT/gRPC and that it works on top of the transport (HTTP, WebSocket, MQTT, gRPC, etc.)."
+  },
+  {
+   "turn": "t014",
+   "concept": "Task IR",
+   "text": "Каждая task должна иметь DONE_IF (например, latency < 100 ms, all unit tests pass или human reviewer approves), что делает workflow проверяемым.",
+   "quote": "Каждая task должна иметь:",
+   "l1": 557,
+   "l2": 557,
+   "verdict": "supported",
+   "reason": "The source states every task must have DONE_IF, gives the same three examples (latency < 100 ms, all unit tests pass, human reviewer approves), and says this makes the workflow a verifiable system."
+  },
+  {
+   "turn": "t050",
+   "concept": "Data pipeline layers",
+   "text": "Raw source никогда не выбрасывается: Raw Artifact нужен для reparse, audit и improved extraction.",
+   "quote": "Никогда не выбрасывать raw source",
+   "l1": 848,
+   "l2": 848,
+   "verdict": "supported",
+   "reason": "Source states 'Никогда не выбрасывать raw source' and that Raw Artifact is needed for reparse, audit, and improved extraction."
+  },
+  {
+   "turn": "t011",
+   "concept": "Problem Graph",
+   "text": "Один и тот же человек может решать проблемы нескольких компаний, даже если названия вакансий различаются.",
+   "quote": "Потому что один и тот же человек может решить проблемы у нескольких компаний",
+   "l1": 215,
+   "l2": 215,
+   "verdict": "supported",
+   "reason": "Line 215 says exactly this: one person can solve problems at several companies even if job titles are completely different."
+  },
+  {
+   "turn": "t058",
+   "concept": "RoutePlan",
+   "text": "RoutePlan ≠ ObservedTrajectory: плановый маршрут и фактическая траектория хранятся отдельно.",
+   "quote": "ObservedTrajectory",
+   "l1": 1212,
+   "l2": 1212,
+   "verdict": "partial",
+   "reason": "The source states RoutePlan ≠ ObservedTrajectory under 'Plan vs Actual', meaning they are distinct concepts, but it says nothing about them being stored separately."
+  },
+  {
+   "turn": "t023",
+   "concept": "Program Composer",
+   "text": "Program Composer не управляет всем, а помогает обнаружить общие структуры, зависимости, конфликты ресурсов, стратегические bottleneck'и и возможные объединения.",
+   "quote": "Он не «управляет всем».",
+   "l1": 1707,
+   "l2": 1707,
+   "verdict": "supported",
+   "reason": "Source says Program Composer does not 'manage everything' and helps detect shared structures, dependencies, resource conflicts, strategic bottlenecks, and possible consolidations — exactly the claim's list."
+  },
+  {
+   "turn": "t003",
+   "concept": "Wellspring",
+   "text": "Wellspring прежде всего помогает человеку искать и управлять инновационным портфелем, тогда как следующий шаг — чтобы система сама обнаруживала комбинацию и запускала проект.",
+   "quote": "Но Wellspring прежде всего помогает человеку искать и управлять инновационным портфелем",
+   "l1": 459,
+   "l2": 459,
+   "verdict": "supported",
+   "reason": "Lines 459-463 state that Wellspring primarily helps a human search and manage an innovation portfolio, and that the next step is for the system to discover the combination and launch the project itself."
+  },
+  {
+   "turn": "t044",
+   "concept": "Memory Promotion",
+   "text": "Информация поднимается по ступеням Event → Episode → Project Lesson → Reusable Pattern → World Knowledge, но каждая ступень требует основания.",
+   "quote": "Но каждая ступень требует основания.",
+   "l1": 292,
+   "l2": 292,
+   "verdict": "supported",
+   "reason": "Lines 285-289 give Project Lesson → Reusable Pattern → World Knowledge and line 292 says \"каждая ступень требует основания\". Event → Episode is not shown directly, but the Event-to-Episode example in 2062 and the arrow at 284 imply it."
+  },
+  {
+   "turn": "t060",
+   "concept": "Self Model",
+   "text": "Главный invariant: System Description ≠ System Capability; например, README с фразой supports PDF analysis не означает, что PDF analysis works.",
+   "quote": "System Capability",
+   "l1": 127,
+   "l2": 127,
+   "verdict": "supported",
+   "reason": "Source states the invariant 'System Description ≠ System Capability' and gives the README 'supports PDF analysis' example, noting it does not mean 'PDF analysis works'."
+  },
+  {
+   "turn": "t059",
+   "concept": "Page Staleness Engine",
+   "text": "Если Claim изменился, соответствующий абзац может получить статус STALE, после чего AI предлагает refresh.",
+   "quote": "# 9594. Если Claim изменился",
+   "l1": 436,
+   "l2": 436,
+   "verdict": "supported",
+   "reason": "Source says that if a Claim changed, the paragraph may become STALE, and then the AI suggests a refresh."
+  },
+  {
+   "turn": "t018",
+   "concept": "Execution Graph",
+   "text": "В Execution Graph вершина — это TASK, а ребро — это DEPENDENCY.",
+   "quote": "Каждая вершина:",
+   "l1": 214,
+   "l2": 214,
+   "verdict": "supported",
+   "reason": "The source states under 'Execution Graph' that each vertex is TASK and each edge is DEPENDENCY."
+  },
+  {
+   "turn": "t007",
+   "concept": "Team Builder",
+   "text": "Team Builder разбивает задачу на подсистемы и ищет best combination of candidates, а не best candidate.",
+   "quote": "best combination of candidates",
+   "l1": 698,
+   "l2": 698,
+   "verdict": "partial",
+   "reason": "Источник подтверждает, что система ищет best combination of candidates, а не best candidate, но в этих строках нет ничего о разбиении задачи на подсистемы."
+  },
+  {
+   "turn": "t007",
+   "concept": "Resource Gap Analysis",
+   "text": "Resource Gap Analysis превращает непокрытые возможности (например, Coverage = 18/20 с пропусками robot safety и embedded security) в новые SEARCH-запросы.",
+   "quote": "Потом Resource Gap Analysis",
+   "l1": 757,
+   "l2": 757,
+   "verdict": "supported",
+   "reason": "The source says that after team assembly with Coverage = 18/20 and missing robot safety and embedded security, the system automatically turns these gaps into new SEARCH queries."
+  },
+  {
+   "turn": "t054",
+   "concept": "Entity Resolution Result",
+   "text": "POSSIBLE links не используются как hard identity fact.",
+   "quote": "POSSIBLE links не используются как hard identity fact.",
+   "l1": 2043,
+   "l2": 2043,
+   "verdict": "supported",
+   "reason": "Source line 6709 states verbatim 'POSSIBLE links не используются как hard identity fact.'"
+  },
+  {
+   "turn": "t080",
+   "concept": "Gap Taxonomy",
+   "text": "Типы gaps: Human, Software, Knowledge, Funding, Organization, Physical, Material, Capacity, Logistics, Compute, Authority и Verification Gap.",
+   "quote": "Gap Taxonomy",
+   "l1": 898,
+   "l2": 898,
+   "verdict": "supported",
+   "reason": "The source lists exactly Human, Software, Knowledge, Funding, Organization, Physical, Material, Capacity, Logistics, Compute, Authority as existing gap types, plus Verification Gap, matching the claim."
+  },
+  {
+   "turn": "t048",
+   "concept": "Saga Pattern",
+   "text": "Compensation не равна undo: для отправленного email компенсацией может быть send correction.",
+   "quote": "Compensation может быть:",
+   "l1": 1053,
+   "l2": 1053,
+   "verdict": "supported",
+   "reason": "Source says an sent email cannot be unsent and that compensation can be 'send correction', which matches the claim that compensation is not undo."
+  }
+ ],
+ "pages": [
+  {
+   "note": "n152",
+   "title": "Late Binding",
+   "verdict": "some_unsupported",
+   "unsupported": [
+    "Таким образом, от простого противопоставления двух видов эволюция идёт к правилу выбора момента привязки.",
+    "В t080 это уточняется"
+   ]
+  },
+  {
+   "note": "n117",
+   "title": "Scenario",
+   "verdict": "all_supported",
+   "unsupported": []
+  },
+  {
+   "note": "n146",
+   "title": "Hard constraints",
+   "verdict": "some_unsupported",
+   "unsupported": [
+    "В t007 список расширен"
+   ]
+  },
+  {
+   "note": "n112",
+   "title": "Observation",
+   "verdict": "all_supported",
+   "unsupported": []
+  },
+  {
+   "note": "n086",
+   "title": "Capability",
+   "verdict": "all_supported",
+   "unsupported": []
+  },
+  {
+   "note": "n121",
+   "title": "ACTION",
+   "verdict": "some_unsupported",
+   "unsupported": [
+    "Позже (t029) определение уточняется",
+    "В той же формулировке TASK выделяется как специализированный ACTION (t029)"
+   ]
+  },
+  {
+   "note": "n082",
+   "title": "Gold Dataset",
+   "verdict": "all_supported",
+   "unsupported": []
+  },
+  {
+   "note": "n091",
+   "title": "Capability Capital",
+   "verdict": "all_supported",
+   "unsupported": []
+  },
+  {
+   "note": "n095",
+   "title": "Kill Criteria",
+   "verdict": "all_supported",
+   "unsupported": []
+  },
+  {
+   "note": "n158",
+   "title": "Negative Knowledge",
+   "verdict": "all_supported",
+   "unsupported": []
+  },
+  {
+   "note": "n150",
+   "title": "IIR Core",
+   "verdict": "all_supported",
+   "unsupported": []
+  },
+  {
+   "note": "n181",
+   "title": "Total Cost of Capability",
+   "verdict": "some_unsupported",
+   "unsupported": [
+    "Также в t032 введено понятие Time to Capability"
+   ]
+  },
+  {
+   "note": "n107",
+   "title": "Innovation Compiler",
+   "verdict": "all_supported",
+   "unsupported": []
+  },
+  {
+   "note": "n134",
+   "title": "DECISION",
+   "verdict": "all_supported",
+   "unsupported": []
+  },
+  {
+   "note": "n119",
+   "title": "Semantic Runtime",
+   "verdict": "all_supported",
+   "unsupported": []
+  },
+  {
+   "note": "n160",
+   "title": "Parser",
+   "verdict": "some_unsupported",
+   "unsupported": [
+    "В t014 его роль расширяется"
+   ]
+  },
+  {
+   "note": "n115",
+   "title": "Resource Gap Resolution",
+   "verdict": "all_supported",
+   "unsupported": []
+  },
+  {
+   "note": "n101",
+   "title": "Acquisition Modes",
+   "verdict": "all_supported",
+   "unsupported": []
+  },
+  {
+   "note": "n087",
+   "title": "Claim",
+   "verdict": "all_supported",
+   "unsupported": []
+  },
+  {
+   "note": "n125",
+   "title": "Architecture Invariants",
+   "verdict": "some_unsupported",
+   "unsupported": [
+    "Таким образом, (t076) расширяет набор (t065) на распределённый уровень, не меняя его эпистемических различий и разделения данных и команд."
+   ]
+  },
+  {
+   "note": "n122",
+   "title": "Agent",
+   "verdict": "all_supported",
+   "unsupported": []
+  },
+  {
+   "note": "n128",
+   "title": "Capability Contract",
+   "verdict": "some_unsupported",
+   "unsupported": [
+    "Дополняет его ephemeral permission",
+    "В t067 контракт расширен"
+   ]
+  },
+  {
+   "note": "n099",
+   "title": "Project IR",
+   "verdict": "all_supported",
+   "unsupported": []
+  },
+  {
+   "note": "n130",
+   "title": "causation_id",
+   "verdict": "all_supported",
+   "unsupported": []
+  }
+ ],
+ "summary": {
+  "claims": {
+   "supported": 79,
+   "partial": 9,
+   "unsupported": 1,
+   "none": 1
+  },
+  "claims_n": 90,
+  "pages": {
+   "all_supported": 17,
+   "some_unsupported": 7,
+   "none": 0
+  },
+  "pages_n": 24
+ }
+}

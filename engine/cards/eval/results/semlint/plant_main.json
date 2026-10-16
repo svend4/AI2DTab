@@ -1,0 +1,796 @@
+{
+ "arm": "main",
+ "results": {
+  "Idempotency": {
+   "mode": "chat",
+   "term": "Idempotency",
+   "pattern": "Idempotency",
+   "info": {
+    "cards": 15,
+    "hit_lines": 34,
+    "truncated": 0,
+    "mode": "sections≤120 / window ±30",
+    "passages": 18,
+    "chars": 12506
+   },
+   "findings": [
+    {
+     "kind": "revision",
+     "summary": "Раньше ключ идемпотентности Match строился из project_id, resource_id, matcher_version и world_revision; позже заявлено, что ключ состоит только из content hash, а эти поля в него не входят.",
+     "a": {
+      "card": "t053",
+      "l1": 3102,
+      "l2": 3102,
+      "quote": "# 6269. Почему world_revision",
+      "relabeled": false
+     },
+     "b": {
+      "card": "t082",
+      "l1": 13,
+      "l2": 13,
+      "quote": "Уточняю: Idempotency key для Match состоит только из content hash. Поля project_id, resource_id, matcher_version и world_revision в ключ не входят.",
+      "relabeled": false
+     }
+    }
+   ],
+   "rejected": {},
+   "proposed": 1,
+   "asked": true,
+   "failed": false,
+   "prompt_chars": 15431,
+   "invalid": null
+  },
+  "Causal Engine": {
+   "mode": "chat",
+   "term": "Causal Engine",
+   "pattern": "Causal\\s+Engine",
+   "info": {
+    "cards": 18,
+    "hit_lines": 36,
+    "truncated": 0,
+    "mode": "sections≤120 / window ±30",
+    "passages": 28,
+    "chars": 19636
+   },
+   "findings": [
+    {
+     "kind": "conflict",
+     "summary": "В t046 Causal Engine говорит, что может случиться при изменении X, а в t084 сказано, что он этого не оценивает и отвечает только про прошлое.",
+     "a": {
+      "card": "t046",
+      "l1": 2030,
+      "l2": 2030,
+      "quote": "what may happen if X changes",
+      "relabeled": false
+     },
+     "b": {
+      "card": "t084",
+      "l1": 13,
+      "l2": 13,
+      "quote": "Он не оценивает, что может случиться при изменении X, и прогнозов не строит.",
+      "relabeled": false
+     }
+    },
+    {
+     "kind": "conflict",
+     "summary": "В t045 Causal Engine симулирует предполагаемые и непредвиденные эффекты политик до их принятия, а в t084 он якобы не оценивает последствия изменений и не строит прогнозов.",
+     "a": {
+      "card": "t045",
+      "l1": 1699,
+      "l2": 1699,
+      "quote": "simulate intended",
+      "relabeled": false
+     },
+     "b": {
+      "card": "t084",
+      "l1": 13,
+      "l2": 13,
+      "quote": "Он не оценивает, что может случиться при изменении X, и прогнозов не строит.",
+      "relabeled": false
+     }
+    },
+    {
+     "kind": "conflict",
+     "summary": "В t078 Causal Engine используется для интервенций do(X), то есть для вопросов «что будет, если», а в t084 он ограничен вопросом «что уже произошло».",
+     "a": {
+      "card": "t078",
+      "l1": 4097,
+      "l2": 4097,
+      "quote": "Causal Engine directly reused.",
+      "relabeled": false
+     },
+     "b": {
+      "card": "t084",
+      "l1": 13,
+      "l2": 13,
+      "quote": "Causal Engine отвечает только на вопрос «что уже произошло».",
+      "relabeled": false
+     }
+    }
+   ],
+   "rejected": {},
+   "proposed": 3,
+   "asked": true,
+   "failed": false,
+   "prompt_chars": 22992,
+   "invalid": null
+  },
+  "Package Manager": {
+   "mode": "chat",
+   "term": "Package Manager",
+   "pattern": "Package\\s+Manager",
+   "info": {
+    "cards": 18,
+    "hit_lines": 41,
+    "truncated": 0,
+    "mode": "sections≤120 / window ±30",
+    "passages": 33,
+    "chars": 23463
+   },
+   "findings": [
+    {
+     "kind": "conflict",
+     "summary": "Раньше Package Manager описан с шестью типами пакетов (Capability, Skill, Ontology, Workflow, Tool Binding, Agent), а в t085 сказано, что типов три и других нет.",
+     "a": {
+      "card": "t039",
+      "l1": 3008,
+      "l2": 3008,
+      "quote": "Ontology Package",
+      "relabeled": false
+     },
+     "b": {
+      "card": "t085",
+      "l1": 13,
+      "l2": 13,
+      "quote": "Package Manager работает с тремя типами пакетов: Capability Package, Skill Package и Agent Package.",
+      "relabeled": false
+     }
+    },
+    {
+     "kind": "conflict",
+     "summary": "Package Manager управляет версиями и зависимостями ONTOLOGY_PACKAGE, CURRICULUM_PACKAGE и других знаниевых пакетов, но в t085 утверждается, что других типов, кроме трёх, нет.",
+     "a": {
+      "card": "t059",
+      "l1": 5119,
+      "l2": 5119,
+      "quote": "ONTOLOGY_PACKAGE",
+      "relabeled": false
+     },
+     "b": {
+      "card": "t085",
+      "l1": 13,
+      "l2": 13,
+      "quote": "Других типов пакетов в Package Manager нет.",
+      "relabeled": false
+     }
+    },
+    {
+     "kind": "divergent",
+     "summary": "В манифесте пакет имеет единый тип AGENT_SKILL_PACKAGE, а в t085 Skill Package и Agent Package считаются двумя разными типами. Какое деление актуально, не сказано.",
+     "a": {
+      "card": "t040",
+      "l1": 326,
+      "l2": 326,
+      "quote": "package_type: AGENT_SKILL_PACKAGE",
+      "relabeled": false
+     },
+     "b": {
+      "card": "t085",
+      "l1": 13,
+      "l2": 13,
+      "quote": "Package Manager работает с тремя типами пакетов: Capability Package, Skill Package и Agent Package.",
+      "relabeled": false
+     }
+    }
+   ],
+   "rejected": {},
+   "proposed": 3,
+   "asked": true,
+   "failed": false,
+   "prompt_chars": 27027,
+   "invalid": null
+  },
+  "Procedural Graph": {
+   "mode": "chat",
+   "term": "Procedural Graph",
+   "pattern": "Procedural\\s+Graph",
+   "info": {
+    "cards": 25,
+    "hit_lines": 79,
+    "truncated": 0,
+    "mode": "sections≤120 / window ±30",
+    "passages": 45,
+    "chars": 34845
+   },
+   "findings": [
+    {
+     "kind": "conflict",
+     "summary": "В t067 ACTION-узел Procedural Graph сериализуется в COMMAND_REQUEST, а в t083 сказано, что он сериализуется в EXECUTE_ORDER и COMMAND_REQUEST в протоколе не используется.",
+     "a": {
+      "card": "t067",
+      "l1": 6680,
+      "l2": 6680,
+      "quote": "Procedural Graph node can serialize request:",
+      "relabeled": false
+     },
+     "b": {
+      "card": "t083",
+      "l1": 13,
+      "l2": 13,
+      "quote": "ACTION-узел Procedural Graph сериализуется в сообщение EXECUTE_ORDER. Сообщение COMMAND_REQUEST в протоколе не используется.",
+      "relabeled": false
+     }
+    }
+   ],
+   "rejected": {},
+   "proposed": 1,
+   "asked": true,
+   "failed": false,
+   "prompt_chars": 38924,
+   "invalid": null
+  },
+  "Strategy Engine": {
+   "mode": "chat",
+   "term": "Strategy Engine",
+   "pattern": "Strategy\\s+Engine",
+   "info": {
+    "cards": 15,
+    "hit_lines": 41,
+    "truncated": 0,
+    "mode": "sections≤120 / window ±30",
+    "passages": 31,
+    "chars": 23169
+   },
+   "findings": [
+    {
+     "kind": "conflict",
+     "summary": "В t086 Strategy Engine рекомендует выкатывать решение сразу везде, без пилота. В t069 он, наоборот, ценит обратимые шаги и поэтапный путь Pilot → Partial Deployment → Scale.",
+     "a": {
+      "card": "t069",
+      "l1": 2703,
+      "l2": 2703,
+      "quote": "Strategy Engine values reversible steps.",
+      "relabeled": false
+     },
+     "b": {
+      "card": "t086",
+      "l1": 13,
+      "l2": 13,
+      "quote": "Strategy Engine рекомендует выкатывать решение сразу на все площадки одним запуском, без пилота и без частичного развёртывания.",
+      "relabeled": false
+     }
+    },
+    {
+     "kind": "conflict",
+     "summary": "Общий принцип Strategy Engine в t046: сначала дешёвое обратимое действие, потом большее обязательство. В t086 он рекомендует необратимый развёрнутый запуск без пилота.",
+     "a": {
+      "card": "t046",
+      "l1": 2121,
+      "l2": 2121,
+      "quote": "cheap reversible action",
+      "relabeled": false
+     },
+     "b": {
+      "card": "t086",
+      "l1": 13,
+      "l2": 13,
+      "quote": "Strategy Engine рекомендует выкатывать решение сразу на все площадки одним запуском, без пилота и без частичного развёртывания.",
+      "relabeled": false
+     }
+    }
+   ],
+   "rejected": {},
+   "proposed": 2,
+   "asked": true,
+   "failed": false,
+   "prompt_chars": 26659,
+   "invalid": null
+  },
+  "Acceptance Test": {
+   "mode": "chat",
+   "term": "Acceptance Test",
+   "pattern": "Acceptance\\s+Test",
+   "info": {
+    "cards": 28,
+    "hit_lines": 106,
+    "truncated": 0,
+    "mode": "sections≤120 / window ±30",
+    "passages": 29,
+    "chars": 27757
+   },
+   "findings": [
+    {
+     "kind": "conflict",
+     "summary": "В t058 перетаскивание реального объекта в Live Mode должно создавать Action Proposal, а не менять состояние сразу. В t087 Acceptance Test для Live Mode, наоборот, ожидает мгновенное изменение состояния без Action Proposal.",
+     "a": {
+      "card": "t058",
+      "l1": 5332,
+      "l2": 5332,
+      "quote": "not immediate state mutation.",
+      "relabeled": false
+     },
+     "b": {
+      "card": "t087",
+      "l1": 13,
+      "l2": 13,
+      "quote": "состояние системы меняется мгновенно. Action Proposal при этом не создаётся.",
+      "relabeled": false
+     }
+    },
+    {
+     "kind": "divergent",
+     "summary": "В t050 для доказательства архитектуры и осмысленности первого релиза названы два разных набора acceptance tests: десять шагов MVP и шесть тестов release gate v0.1. Текст не говорит, какой из них действующий.",
+     "a": {
+      "card": "t050",
+      "l1": 2138,
+      "l2": 2138,
+      "quote": "Если эти десять шагов работают — архитектура уже доказана в миниатюре",
+      "relabeled": false
+     },
+     "b": {
+      "card": "t050",
+      "l1": 5205,
+      "l2": 5205,
+      "quote": "release is meaningful.",
+      "relabeled": false
+     }
+    }
+   ],
+   "rejected": {},
+   "proposed": 2,
+   "asked": true,
+   "failed": false,
+   "prompt_chars": 31167,
+   "invalid": null
+  },
+  "Funding Resolver": {
+   "mode": "chat",
+   "term": "Funding Resolver",
+   "pattern": "Funding\\s+Resolver",
+   "info": {
+    "cards": 17,
+    "hit_lines": 36,
+    "truncated": 0,
+    "mode": "sections≤120 / window ±30",
+    "passages": 31,
+    "chars": 21049
+   },
+   "findings": [
+    {
+     "kind": "conflict",
+     "summary": "Ранее Funding Resolver собирает портфель из грантов, корпоративных денег и инвесторов, а в t088 сказано, что он ищет только государственные гранты и не рассматривает инвесторов и спонсоров.",
+     "a": {
+      "card": "t034",
+      "l1": 842,
+      "l2": 842,
+      "quote": "Поэтому Funding Resolver должен уметь собирать portfolio.",
+      "relabeled": false
+     },
+     "b": {
+      "card": "t088",
+      "l1": 13,
+      "l2": 13,
+      "quote": "Funding Resolver ищет только государственные гранты. Инвесторов, ангелов и корпоративных спонсоров он не рассматривает.",
+      "relabeled": false
+     }
+    },
+    {
+     "kind": "divergent",
+     "summary": "В t034 анализ консорциума (Consortium Analysis) входит в pipeline Funding Resolver, а в t056 консорциумы вынесены в отдельный Consortium Resolver со своим типом gap, и текст не говорит, какая версия действует.",
+     "a": {
+      "card": "t034",
+      "l1": 346,
+      "l2": 346,
+      "quote": "Consortium Analysis",
+      "relabeled": false
+     },
+     "b": {
+      "card": "t056",
+      "l1": 4511,
+      "l2": 4511,
+      "quote": "# 8236. Consortium Resolver",
+      "relabeled": false
+     }
+    }
+   ],
+   "rejected": {},
+   "proposed": 2,
+   "asked": true,
+   "failed": false,
+   "prompt_chars": 24527,
+   "invalid": null
+  },
+  "Query Planner": {
+   "mode": "chat",
+   "term": "Query Planner",
+   "pattern": "Query\\s+Planner",
+   "info": {
+    "cards": 11,
+    "hit_lines": 21,
+    "truncated": 0,
+    "mode": "sections≤120 / window ±30",
+    "passages": 17,
+    "chars": 11779
+   },
+   "findings": [
+    {
+     "kind": "conflict",
+     "summary": "В t019 Query Planner порождает подзапросы в том числе по направлениям PARTNERS и TRAINING (и стратегию partner), а в t089 сказано, что таких направлений у Query Planner нет и их всего четыре.",
+     "a": {
+      "card": "t019",
+      "l1": 161,
+      "l2": 161,
+      "quote": "resolver: partner",
+      "relabeled": false
+     },
+     "b": {
+      "card": "t089",
+      "l1": 13,
+      "l2": 13,
+      "quote": "Направлений PARTNERS и TRAINING у Query Planner нет.",
+      "relabeled": false
+     }
+    }
+   ],
+   "rejected": {},
+   "proposed": 1,
+   "asked": true,
+   "failed": false,
+   "prompt_chars": 14651,
+   "invalid": null
+  },
+  "Handoff": {
+   "mode": "chat",
+   "term": "Handoff",
+   "pattern": "Handoff",
+   "info": {
+    "cards": 16,
+    "hit_lines": 58,
+    "truncated": 0,
+    "mode": "sections≤120 / window ±30",
+    "passages": 29,
+    "chars": 22500
+   },
+   "findings": [
+    {
+     "kind": "revision",
+     "summary": "Раньше человек, уходящий с задачи, пишет handoff note; позже это отменено, и вместо заметки используется только Context Capsule.",
+     "a": {
+      "card": "t080",
+      "l1": 4004,
+      "l2": 4004,
+      "quote": "Person leaving task writes:",
+      "relabeled": false
+     },
+     "b": {
+      "card": "t091",
+      "l1": 13,
+      "l2": 13,
+      "quote": "теперь handoff note для людей больше не пишется, вместо него используется только Context Capsule.",
+      "relabeled": false
+     }
+    }
+   ],
+   "rejected": {
+    "quote not found": 1
+   },
+   "proposed": 2,
+   "asked": true,
+   "failed": false,
+   "prompt_chars": 25880,
+   "invalid": null
+  },
+  "Team Hypothesis": {
+   "mode": "chat",
+   "term": "Team Hypothesis",
+   "pattern": "Team\\s+Hypothesis",
+   "info": {
+    "cards": 21,
+    "hit_lines": 39,
+    "truncated": 0,
+    "mode": "sections≤120 / window ±30",
+    "passages": 31,
+    "chars": 24647
+   },
+   "findings": [
+    {
+     "kind": "conflict",
+     "summary": "Раньше Latent Team Detector описан как существующий модуль, формирующий team hypothesis; позже сказано, что Latent Team Hypothesis создаёт Team Builder, а Detector в системе не существует.",
+     "a": {
+      "card": "t021",
+      "l1": 1776,
+      "l2": 1776,
+      "quote": "# 82. Latent Team Detector",
+      "relabeled": false
+     },
+     "b": {
+      "card": "t090",
+      "l1": 13,
+      "l2": 13,
+      "quote": "Latent Team Detector в системе не существует.",
+      "relabeled": false
+     }
+    },
+    {
+     "kind": "divergent",
+     "summary": "Схема TeamHypothesis различается: в t030 состав задан как member_ids (люди), в t053 как resource_ids (люди и репозитории, «смешанная команда»). Поля и статусы тоже отличаются (missing/uncovered, unknowns/constraint_unknowns, status HYPOTHESIS), и текст не говорит, какая схема актуальна.",
+     "a": {
+      "card": "t030",
+      "l1": 1012,
+      "l2": 1012,
+      "quote": "member_ids: list[UUID]",
+      "relabeled": false
+     },
+     "b": {
+      "card": "t053",
+      "l1": 2033,
+      "l2": 2033,
+      "quote": "resource_ids: list[UUID]",
+      "relabeled": false
+     }
+    },
+    {
+     "kind": "divergent",
+     "summary": "Перетаскивание кандидата в слот команды в t049 создаёт «Team Proposal», а в t053 выбор ресурсов в Team Builder создаёт «Team Hypothesis». Не сказано, один это объект или разные.",
+     "a": {
+      "card": "t049",
+      "l1": 5585,
+      "l2": 5585,
+      "quote": "# 4386. Drag Candidate into Team slot creates:",
+      "relabeled": false
+     },
+     "b": {
+      "card": "t053",
+      "l1": 3295,
+      "l2": 3295,
+      "quote": "# 6287. But selection creates only:",
+      "relabeled": false
+     }
+    }
+   ],
+   "rejected": {},
+   "proposed": 3,
+   "asked": true,
+   "failed": false,
+   "prompt_chars": 28129,
+   "invalid": null
+  }
+ },
+ "kind": "planted",
+ "planted": [
+  {
+   "term": "Idempotency",
+   "kind": "conflict",
+   "targets": [
+    "t053",
+    "t065"
+   ],
+   "phrase": "matcher_version",
+   "q": "Какой ключ идемпотентности у Match?",
+   "a": "## Idempotency key для Match\n\nУточняю: Idempotency key для Match состоит только из content hash. Поля project_id, resource_id, matcher_version и world_revision в ключ не входят.",
+   "card": "t082",
+   "target_in_scope": true
+  },
+  {
+   "term": "Procedural Graph",
+   "kind": "conflict",
+   "targets": [
+    "t067",
+    "t027",
+    "t056"
+   ],
+   "phrase": "COMMAND_REQUEST",
+   "q": "Как ACTION-узел превращается в сообщение?",
+   "a": "## ACTION-узел Procedural Graph\n\nACTION-узел Procedural Graph сериализуется в сообщение EXECUTE_ORDER. Сообщение COMMAND_REQUEST в протоколе не используется.",
+   "card": "t083",
+   "target_in_scope": true
+  },
+  {
+   "term": "Causal Engine",
+   "kind": "conflict",
+   "targets": [
+    "t046",
+    "t061",
+    "t065"
+   ],
+   "phrase": "what may happen if X changes",
+   "q": "Что на самом деле делает Causal Engine?",
+   "a": "## Causal Engine\n\nCausal Engine отвечает только на вопрос «что уже произошло». Он не оценивает, что может случиться при изменении X, и прогнозов не строит.",
+   "card": "t084",
+   "target_in_scope": true
+  },
+  {
+   "term": "Package Manager",
+   "kind": "divergent",
+   "targets": [
+    "t039",
+    "t041"
+   ],
+   "phrase": "Tool Binding Package",
+   "q": "Сколько типов пакетов в Package Manager?",
+   "a": "## Типы пакетов\n\nPackage Manager работает с тремя типами пакетов: Capability Package, Skill Package и Agent Package. Других типов пакетов в Package Manager нет.",
+   "card": "t085",
+   "target_in_scope": true
+  },
+  {
+   "term": "Strategy Engine",
+   "kind": "conflict",
+   "targets": [
+    "t046",
+    "t057",
+    "t069"
+   ],
+   "phrase": "Partial Deployment",
+   "q": "Как Strategy Engine рекомендует выкатывать новое решение?",
+   "a": "## Развёртывание\n\nStrategy Engine рекомендует выкатывать решение сразу на все площадки одним запуском, без пилота и без частичного развёртывания.",
+   "card": "t086",
+   "target_in_scope": true
+  },
+  {
+   "term": "Acceptance Test",
+   "kind": "conflict",
+   "targets": [
+    "t033",
+    "t057",
+    "t058"
+   ],
+   "phrase": "creates action proposal",
+   "q": "Что проверяет Acceptance Test для Live Mode?",
+   "a": "## Acceptance Test: Live Mode\n\nAcceptance Test для Live Mode проверяет следующее: когда пользователь перетаскивает реальный объект, состояние системы меняется мгновенно. Action Proposal при этом не создаётся.",
+   "card": "t087",
+   "target_in_scope": false
+  },
+  {
+   "term": "Funding Resolver",
+   "kind": "conflict",
+   "targets": [
+    "t014",
+    "t034"
+   ],
+   "phrase": "corporate sponsor",
+   "q": "Какие источники финансирования ищет Funding Resolver?",
+   "a": "## Источники финансирования\n\nFunding Resolver ищет только государственные гранты. Инвесторов, ангелов и корпоративных спонсоров он не рассматривает.",
+   "card": "t088",
+   "target_in_scope": true
+  },
+  {
+   "term": "Query Planner",
+   "kind": "divergent",
+   "targets": [
+    "t019",
+    "t055",
+    "t056"
+   ],
+   "phrase": "COMMERCIAL:",
+   "q": "На какие направления Query Planner делит gap?",
+   "a": "## Направления подзапросов\n\nОбщий Query Planner делит gap на четыре направления: PEOPLE, REPOSITORIES, RESEARCH и COMMERCIAL. Направлений PARTNERS и TRAINING у Query Planner нет.",
+   "card": "t089",
+   "target_in_scope": true
+  },
+  {
+   "term": "Team Hypothesis",
+   "kind": "conflict",
+   "targets": [
+    "t031",
+    "t053"
+   ],
+   "phrase": "Latent Team Hypothesis",
+   "q": "Кто создаёт Latent Team Hypothesis?",
+   "a": "## Latent Team Hypothesis\n\nLatent Team Hypothesis создаёт Team Builder, а не Latent Team Detector. Latent Team Detector в системе не существует.",
+   "card": "t090",
+   "target_in_scope": true
+  },
+  {
+   "term": "Handoff",
+   "kind": "revision",
+   "targets": [
+    "t027",
+    "t049",
+    "t080"
+   ],
+   "phrase": "Context Capsule",
+   "q": "Чем передаём контекст между агентами и людьми?",
+   "a": "## Передача контекста\n\nМеняем решение: теперь handoff note для людей больше не пишется, вместо него используется только Context Capsule.",
+   "card": "t091",
+   "target_in_scope": true
+  }
+ ],
+ "usage": {
+  "calls": 10,
+  "usd_reported": 0.609604,
+  "input_tokens": 20,
+  "cache_creation_input_tokens": 111156,
+  "cache_read_input_tokens": 0,
+  "output_tokens": 16494
+ },
+ "planted_score": {
+  "hit": 9,
+  "partial": 1,
+  "miss": 0,
+  "n": 10,
+  "in_scope": 9,
+  "hit_in_scope": 8,
+  "rows": [
+   {
+    "term": "Idempotency",
+    "kind": "conflict",
+    "in_scope": true,
+    "outcome": "hit",
+    "found_kind": "revision",
+    "natural": 0
+   },
+   {
+    "term": "Procedural Graph",
+    "kind": "conflict",
+    "in_scope": true,
+    "outcome": "hit",
+    "found_kind": "conflict",
+    "natural": 0
+   },
+   {
+    "term": "Causal Engine",
+    "kind": "conflict",
+    "in_scope": true,
+    "outcome": "hit",
+    "found_kind": "conflict",
+    "natural": 0
+   },
+   {
+    "term": "Package Manager",
+    "kind": "divergent",
+    "in_scope": true,
+    "outcome": "hit",
+    "found_kind": "conflict",
+    "natural": 0
+   },
+   {
+    "term": "Strategy Engine",
+    "kind": "conflict",
+    "in_scope": true,
+    "outcome": "hit",
+    "found_kind": "conflict",
+    "natural": 0
+   },
+   {
+    "term": "Acceptance Test",
+    "kind": "conflict",
+    "in_scope": false,
+    "outcome": "hit",
+    "found_kind": "conflict",
+    "natural": 1
+   },
+   {
+    "term": "Funding Resolver",
+    "kind": "conflict",
+    "in_scope": true,
+    "outcome": "hit",
+    "found_kind": "conflict",
+    "natural": 1
+   },
+   {
+    "term": "Query Planner",
+    "kind": "divergent",
+    "in_scope": true,
+    "outcome": "hit",
+    "found_kind": "conflict",
+    "natural": 0
+   },
+   {
+    "term": "Team Hypothesis",
+    "kind": "conflict",
+    "in_scope": true,
+    "outcome": "partial",
+    "found_kind": "conflict",
+    "natural": 2
+   },
+   {
+    "term": "Handoff",
+    "kind": "revision",
+    "in_scope": true,
+    "outcome": "hit",
+    "found_kind": "revision",
+    "natural": 0
+   }
+  ]
+ }
+}
