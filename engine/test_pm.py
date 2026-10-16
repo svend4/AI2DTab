@@ -6,7 +6,10 @@
 """
 from __future__ import annotations
 
+import argparse
+import contextlib
 import importlib.util
+import io
 import os
 import re
 import shutil
@@ -999,6 +1002,128 @@ class RepairNeedsTheList(Desk):
         r = self.run_pm("REPAIR")
         self.assertIn("REPAIR → 0", r.stdout)
         self.assertNotIn("нужно подтверждение", r.stdout)
+
+
+class SharedTransaction(Desk):
+    """AUD-15, общая транзакция: чтение набора, проверка списка id и запись идут под одной блокировкой базы. Другой писатель не
+    успевает сменить набор между проверкой и записью; занятая база — отказ строкой; отказ после проверки ничего не держит.
+    Тесты идут в процессе (in-process), чтобы видеть соединение стола и его состояние."""
+
+    def setUp(self):
+        super().setUp()
+        self.opened = []
+        for i in range(1, 4):
+            self.add(f"R{i}", typ="observation", status="raw", cluster="A")
+
+    def tearDown(self):
+        for con in self.opened:
+            con.close()
+        super().tearDown()
+
+    def engine(self, busy_ms=100):
+        """pm.py из временной папки: его база — тестовая, а не настоящая. Каждое соединение стола ждёт блокировку `busy_ms`
+        и попадает в `self.opened`."""
+        spec = importlib.util.spec_from_file_location("pm_under_the_test", self.dir / "pm.py")
+        pm = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(pm)
+        connect_real = pm.connect
+
+        def connect():
+            con = connect_real()
+            con.execute(f"PRAGMA busy_timeout = {busy_ms}")
+            self.opened.append(con)
+            return con
+
+        pm.connect = connect
+        return pm, self.opened
+
+    def in_process(self, pm, ids, *line):
+        ns = argparse.Namespace(line=list(line), file=None, ids=ids)
+        buf = io.StringIO()
+        with contextlib.redirect_stdout(buf):
+            pm.cmd_exec(ns)
+        return buf.getvalue()
+
+    def raw_ids(self):
+        """Точный набор RAW (с учётом семени стола), как его подтверждает человек: `IDS RAW`."""
+        return [line.split("\t")[0] for line in self.out("IDS", "RAW").splitlines() if line.strip()]
+
+    def other_writer(self, timeout=0.05):
+        return sqlite3.connect(self.dir / "project-store.sqlite", timeout=timeout)
+
+    def hold_base(self):
+        """Другой писатель держит блокировку записи, пока её не отпустят."""
+        held = self.other_writer(timeout=5)
+        held.execute("BEGIN IMMEDIATE")
+        return held
+
+    def test_a_foreign_writer_cannot_change_the_set_between_check_and_write(self):
+        pm, _ = self.engine()
+        check = pm.bulk_refusal
+        seen = []
+
+        def foreign_write_during_the_check(ns, verb, name, rows, always=False):
+            other = self.other_writer()
+            try:
+                other.execute("UPDATE objects SET body='чужая правка' WHERE id='R3'")
+                other.commit()
+                seen.append("written")
+            except sqlite3.OperationalError:
+                seen.append("locked")
+            finally:
+                other.close()
+            return check(ns, verb, name, rows, always)
+
+        pm.bulk_refusal = foreign_write_during_the_check
+        out = self.in_process(pm, self.raw_ids(), "ACCEPT", "RAW")
+        self.assertEqual(seen, ["locked"])
+        self.assertIn("ACCEPT RAW → ok=", out)
+        self.assertEqual(self.status("R1"), "canon")
+
+    def test_a_base_held_by_another_writer_refuses_the_bulk_write(self):
+        pm, opened = self.engine()
+        held = self.hold_base()
+        try:
+            out = self.in_process(pm, self.raw_ids(),"ACCEPT", "RAW")
+        finally:
+            held.rollback()
+            held.close()
+        self.assertIn("REFUSE ACCEPT RAW: база занята другой записью — ничего не записано", out)
+        self.assertEqual(self.status("R1"), "raw")
+        self.assertFalse(opened[-1].in_transaction)
+
+    def test_a_base_held_by_another_writer_refuses_take_and_repair_too(self):
+        pm, _ = self.engine()
+        held = self.hold_base()
+        try:
+            take = self.in_process(pm, self.raw_ids(),"TAKE", "RAW")
+            repair = self.in_process(pm, None, "REPAIR")
+        finally:
+            held.rollback()
+            held.close()
+        self.assertIn("REFUSE TAKE RAW: база занята", take)
+        self.assertIn("REFUSE REPAIR REPAIR: база занята", repair)
+        self.assertEqual(self.status("R1"), "raw")
+
+    def test_a_refusal_rolls_back_and_releases_the_base(self):
+        pm, opened = self.engine()
+        out = self.in_process(pm, ["R1", "R2"], "ACCEPT", "RAW")
+        self.assertIn("набор изменился", out)
+        self.assertFalse(opened[-1].in_transaction)
+        other = self.other_writer(timeout=0)          # без ожидания: блокировки после отказа быть не должно
+        try:
+            other.execute("UPDATE objects SET body='после отказа' WHERE id='R3'")
+            other.commit()
+        finally:
+            other.close()
+        self.assertEqual(self.status("R1"), "raw")
+
+    def test_a_write_that_succeeds_leaves_no_transaction_open(self):
+        pm, opened = self.engine()
+        out = self.in_process(pm, self.raw_ids(),"ACCEPT", "RAW")
+        self.assertIn("ACCEPT RAW → ok=", out)
+        self.assertFalse(opened[-1].in_transaction)
+        self.assertEqual(self.status("R3"), "canon")
 
 
 if __name__ == "__main__":
