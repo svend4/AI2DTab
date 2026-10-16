@@ -758,12 +758,13 @@ class OwnerOfObjects(Desk):
             self.assertEqual(self.field(oid, "owner"), "web:user-3", oid)
 
     def test_only_concept_types_are_accepted(self):
-        for i, typ in enumerate(["fact", "decision", "observation", "question", "artifact"]):
+        for i, typ in enumerate(["fact", "decision", "observation", "artifact"]):
             oid = f"TY{i}"
             self.add(oid, typ=typ, status="raw", cluster="A")
             self.assertIn(f"ACCEPT {oid}", self.out("ACCEPT", oid), typ)
             self.assertEqual(self.field(oid, "status"), "canon", typ)
-        for i, typ in enumerate(["task", "signal", "signpost", "packet", "session", "tape"]):
+        # question не принимается в канон: вопрос отвечают, а не принимают (AUD-22)
+        for i, typ in enumerate(["question", "task", "signal", "signpost", "packet", "session", "tape"]):
             oid = f"TN{i}"
             self.add(oid, typ=typ, status="raw", cluster="A")
             self.assertIn(f"REFUSE {oid} type={typ}", self.out("ACCEPT", oid), typ)
