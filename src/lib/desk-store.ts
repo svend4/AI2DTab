@@ -11,17 +11,12 @@ export type Event = { at: string; cmd: string; id: string; note: string };
 
 export type Wire = { from: string; rel: string; to: string; note: string };
 
-function seedRows(): Row[] {
-  return [];
-}
-
 function stamp(): string {
   return new Date().toISOString().slice(11, 19);
 }
 
 type Desk = {
   tape: string;
-  rows: Row[];
   events: Event[];
   setTape: (t: string) => void;
   fetchNew: () => void;
@@ -56,7 +51,6 @@ export const useDesk = create<Desk>()(
       plane: [],
       instr: null,
       wires: [],
-      rows: seedRows(),
       events: [{ at: "seed", cmd: "SEED", id: "-", note: "seed raw packets on L2" }],
       setTape: (tape) => set({ tape }),
       setLook: (look) => set({ look }),
@@ -81,7 +75,6 @@ export const useDesk = create<Desk>()(
       resetDesk: () =>
         set({
           tape: "",
-          rows: seedRows(),
           canon: [],
           plane: [],
           events: [{ at: "seed", cmd: "RESET", id: "-", note: "desk reset" }],

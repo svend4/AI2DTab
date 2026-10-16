@@ -17,6 +17,7 @@ const l2 = read("../routes/l2.tsx");
 const l3 = read("../routes/l3.tsx");
 const l4 = read("../routes/l4.tsx");
 const index = read("../routes/index.tsx");
+const machine = read("./machine.ts");
 
 /** Текст одной экспортируемой функции моста: от заголовка до закрывающей скобки на начале строки. */
 function fn(source: string, name: string): string {
@@ -93,6 +94,25 @@ describe("мост: все записи идут через одну точку 
     assert.match(store, /setWriteNotice: \(notice: string \| null\) => void;/);
     assert.match(store, /notice: string \| null;/);
     assert.match(store, /partialize: \(s\) => \(\{ tape: s\.tape \}\)/);
+  });
+});
+
+describe("остаток rows убран: стор и маршруты читают только книгу (AUD-26)", () => {
+  it("в сторе нет поля rows и его начального значения", () => {
+    assert.doesNotMatch(store, /^ {2}rows: Row\[\];$/m);
+    assert.doesNotMatch(store, /seedRows/);
+    assert.doesNotMatch(store, /\brows: seedRows\(\)/);
+  });
+
+  it("маршруты и шапка не читают s.rows, а счётчик L1 не выводит фиктивный ноль", () => {
+    assert.doesNotMatch(l2, /useDesk\(\(s\) => s\.rows\)/);
+    assert.doesNotMatch(nav, /useDesk\(\(s\) => s\.rows\)/);
+    assert.doesNotMatch(nav, /rows\.filter/);
+    assert.doesNotMatch(l2, /rows\.filter/);
+  });
+
+  it("мёртвая machineStatus с параметром rows удалена", () => {
+    assert.doesNotMatch(machine, /machineStatus/);
   });
 });
 
