@@ -230,6 +230,11 @@ describe("массовые записи RAW и OBS: список и подтве
     assert.doesNotMatch(l2, /writeDesk\("FILL"\)/);
   });
 
+  it("REPAIR идёт через список всегда: мост смотрит на alwaysList, а не только на наличие RAW или OBS", () => {
+    assert.match(bridge, /const always = alwaysList\(line\);/);
+    assert.match(bridge, /if \(!always && !touchesBulk\(rows\)\) return writeDesk\(line\);/);
+  });
+
   it("панель подтверждения показывает список id и закрывает ожидание ответом", () => {
     assert.match(nav, /function BulkConfirm/);
     assert.match(nav, /bulk\.ids\.map/);

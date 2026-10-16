@@ -10,7 +10,7 @@ import {
   parseBook,
   type BookSink,
 } from "@/lib/desk-refresh";
-import { BULK_MAX, parseRows, setExprOf, touchesBulk } from "@/lib/desk-bulk";
+import { BULK_MAX, alwaysList, parseRows, setExprOf, touchesBulk } from "@/lib/desk-bulk";
 import { fetchAdded, writeOutcome } from "@/lib/desk-writes";
 
 export type BridgeOut = PmReply;
@@ -107,12 +107,15 @@ export async function writeBulk(line: string): Promise<BridgeOut> {
     return listed;
   }
   const rows = parseRows(listed.stdout);
+  const always = alwaysList(line);
+  // REPAIR без мусора пишет «clean» и без списка; пустой набор RAW или OBS — сообщаем, что писать нечего.
+  if (rows.length === 0 && always) return writeDesk(line);
   if (rows.length === 0) {
     useDesk.getState().setWriteNotice(`В наборе «${expr}» нет объектов: ничего не записано.`);
     return { ok: false, stdout: "", stderr: "в наборе нет объектов" };
   }
   // Набор из одних понятий движок пишет без списка: подтверждать нечего.
-  if (!touchesBulk(rows)) return writeDesk(line);
+  if (!always && !touchesBulk(rows)) return writeDesk(line);
   if (rows.length > BULK_MAX) {
     useDesk
       .getState()

@@ -13,6 +13,7 @@ export type BulkRow = { id: string; type: string; status: string };
 
 /** Выражение набора, если строка — запись над набором (ACCEPT, TAKE, FILL, PURGE, SWEEP); иначе `null`. */
 export function setExprOf(line: string): string | null {
+  if (alwaysList(line)) return "REPAIR";
   const m = /^\s*(ACCEPT|TAKE|FILL|PURGE|SWEEP)\b\s*(.*)$/i.exec(line);
   if (!m) return null;
   const verb = m[1].toUpperCase();
@@ -26,6 +27,11 @@ export function setExprOf(line: string): string | null {
           ? arg || "SESSION"
           : arg;
   return expr && isSetExpr(expr) ? expr : null;
+}
+
+/** REPAIR возвращает канон в сырые: массовая запись всегда со списком, даже если объект один (решение владельца). */
+export function alwaysList(line: string): boolean {
+  return /^\s*REPAIR\b/i.test(line);
 }
 
 /** Ответ `IDS`: строка на объект — id, тип, статус. */

@@ -1,6 +1,6 @@
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
-import { BULK_MAX, parseRows, setExprOf, touchesBulk } from "./desk-bulk.ts";
+import { BULK_MAX, alwaysList, parseRows, setExprOf, touchesBulk } from "./desk-bulk.ts";
 
 describe("какая строка — запись над набором (AUD-15)", () => {
   it("ACCEPT, TAKE, FILL, PURGE и SWEEP над набором дают выражение для IDS", () => {
@@ -13,6 +13,13 @@ describe("какая строка — запись над набором (AUD-15
     assert.equal(setExprOf("FILL"), "NEQ ∩ RAW");
     assert.equal(setExprOf("PURGE"), "JUNK");
     assert.equal(setExprOf("SWEEP"), "SESSION");
+    assert.equal(setExprOf("REPAIR"), "REPAIR");
+  });
+
+  it("REPAIR всегда идёт через список: и один объект, и набор (возврат из канона)", () => {
+    assert.equal(alwaysList("REPAIR"), true);
+    assert.equal(alwaysList("ACCEPT RAW"), false);
+    assert.equal(alwaysList("ACCEPT A1"), false);
   });
 
   it("одиночный id и не-записи набором не считаются", () => {

@@ -934,5 +934,72 @@ class ReadsLeaveTheBase(Desk):
         self.assertEqual(self.pred_of("LG1"), "стабильность")
 
 
+class RepairNeedsTheList(Desk):
+    """REPAIR возвращает канон-объекты с мусорным заголовком в сырые: массовый возврат из канона, поэтому только со списком id
+    (как RAW и OBS, решение владельца). Список — тот же, что печатает `IDS REPAIR`."""
+
+    def setUp(self):
+        super().setUp()
+        self.add("J1", typ="observation", status="canon", cluster="A", title="example")
+        self.add("J2", typ="observation", status="canon", cluster="A", title="again")
+        self.add("K1", typ="fact", status="canon", cluster="A", title="нормальный канон")   # не мусор: не наблюдение
+
+    def status_of(self, oid):
+        con = self.db()
+        try:
+            return con.execute("SELECT status FROM objects WHERE id=?", (oid,)).fetchone()[0]
+        finally:
+            con.close()
+
+    def ids(self):
+        return [line.split("\t")[0] for line in self.out("IDS", "REPAIR").splitlines() if line.strip()]
+
+    def test_ids_repair_lists_the_junk_canon_objects(self):
+        listed = self.ids()
+        self.assertEqual(sorted(listed), ["J1", "J2"])
+        self.assertIn("J1\tobservation\tcanon", self.out("IDS", "REPAIR"))
+
+    def test_repair_without_the_list_is_refused(self):
+        r = self.run_pm("REPAIR")
+        self.assertEqual(r.returncode, 0, r.stderr)
+        self.assertIn("REFUSE REPAIR REPAIR: нужно подтверждение", r.stdout)
+        self.assertEqual(self.status_of("J1"), "canon")
+
+    def test_repair_of_a_single_junk_object_still_needs_the_list(self):
+        r = self.run_pm("REPAIR")
+        self.assertIn("нужно подтверждение", r.stdout)
+        self.assertEqual(self.status_of("J1"), "canon")
+
+    def test_repair_with_the_listed_ids_goes_through(self):
+        r = self.run_pm("--ids", ",".join(self.ids()), "REPAIR")
+        self.assertEqual(r.returncode, 0, r.stderr)
+        self.assertIn("REPAIR → 2", r.stdout)
+        self.assertEqual(self.status_of("J1"), "raw")
+        self.assertEqual(self.status_of("J2"), "raw")
+        self.assertEqual(self.status_of("K1"), "canon")
+
+    def test_repair_refuses_a_list_that_differs(self):
+        for listed in (["J1"], ["J1", "J2", "K1"]):
+            r = self.run_pm("--ids", ",".join(listed), "REPAIR")
+            self.assertIn("набор изменился", r.stdout, listed)
+            self.assertEqual(self.status_of("J1"), "canon")
+
+    def test_repair_inside_a_batch_is_refused_with_the_reason(self):
+        r = self.run_pm("--ids", ",".join(self.ids()), "BATCH", "REPAIR")
+        self.assertIn("в пакете массовая запись не принимается", r.stdout)
+        self.assertEqual(self.status_of("J1"), "canon")
+
+    def test_a_clean_base_needs_no_list(self):
+        con = self.db()
+        try:
+            con.execute("UPDATE objects SET status='rejected' WHERE id IN ('J1','J2')")
+            con.commit()
+        finally:
+            con.close()
+        r = self.run_pm("REPAIR")
+        self.assertIn("REPAIR → 0", r.stdout)
+        self.assertNotIn("нужно подтверждение", r.stdout)
+
+
 if __name__ == "__main__":
     unittest.main()
