@@ -34,6 +34,10 @@ describe("снимок стола для опубликованного сайт
     assert.throws(() => buildSnapshot({ engine: join(dir, "нет"), taken: "2026-10-16" }), /pm\.py/);
   });
 
+  it("дата, которой нет в календаре (30 февраля), — отказ до запуска движка", () => {
+    assert.throws(() => buildSnapshot({ engine: dir, taken: "2026-02-30" }), /календар|YYYY-MM-DD/);
+  });
+
   it("дата не в формате YYYY-MM-DD — отказ до запуска движка", () => {
     assert.throws(() => buildSnapshot({ engine: dir, taken: "16.10.2026" }), /YYYY-MM-DD/);
   });

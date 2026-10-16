@@ -196,6 +196,16 @@ describe("runPm: сбои процесса не роняют сервер", () =
     assert.equal(r.cut, undefined);
   });
 
+  it("обрезка не разрывает символ: последний знак, который не влез целиком, отбрасывается", async () => {
+    const dir = tempDir("pm-fake-");
+    const script = join(dir, "euro-cut.py");
+    writeFileSync(script, "import sys\nsys.stdout.buffer.write(('€' * 1000).encode('utf-8'))\n");
+    const r = await runPm(["x"], undefined, { script, cwd: dir, maxOut: 1000 });
+    assert.equal(r.stdout, "€".repeat(333));
+    assert.equal(r.stdout.includes("\uFFFD"), false);
+    assert.deepEqual(r.cut, { dropped: 3000 - 999, total: 3000 });
+  });
+
   it("ответ больше 2 МБ обрезается и говорит, сколько отброшено", async () => {
     const dir = tempDir("pm-fake-");
     const script = join(dir, "big.py");
