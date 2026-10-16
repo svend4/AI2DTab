@@ -21,7 +21,8 @@
 export type VerbKind = "read" | "write" | "bulk";
 /** `null` — гость. `writer` обязателен: забытое поле не даёт записи (закрыто по умолчанию). */
 export type PmUser = { id: string; writer: boolean } | null;
-export type PmInput = { line: string; tape?: string };
+/** `ids` — список подтверждения массовой записи RAW или OBS (AUD-15); для чтения и для обычной записи не нужен. */
+export type PmInput = { line: string; tape?: string; ids?: string[] };
 export type Refusal =
   | "empty"
   | "too_long"
@@ -83,6 +84,7 @@ export const VERBS: Readonly<Record<string, Verb>> = {
   NEQ: { kind: "read", rule: "none" },
   CELL: { kind: "read", rule: "none" },
   SET: { kind: "read", rule: "set" },
+  IDS: { kind: "read", rule: "set" },
   VOCAB: { kind: "read", rule: "set" },
   PACKET: { kind: "read", rule: "packet" },
   CONC: { kind: "read", rule: "words" },

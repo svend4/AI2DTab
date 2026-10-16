@@ -60,7 +60,7 @@ describe("pm-api.ts: кто что может вызвать", () => {
     const m = src.match(/const Input = z\.object\(\{([\s\S]*?)\}\);/);
     assert.ok(m, "не нашёл схему Input");
     const keys = [...m[1].matchAll(/^\s*(\w+):/gm)].map((k) => k[1]);
-    assert.deepEqual(keys, ["line", "tape"]);
+    assert.deepEqual(keys, ["line", "tape", "ids"]);
     assert.doesNotMatch(src, /\bfile\s*:\s*z\./);
     assert.equal([...src.matchAll(/\.validator\(Input\)/g)].length, 2);
   });

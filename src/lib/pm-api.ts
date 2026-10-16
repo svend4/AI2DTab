@@ -12,10 +12,15 @@ import { authMiddleware } from "@/lib/auth/middleware";
  * Что именно разрешено, решает `buildPmArgs` в `pm-request.ts`, а не имя вызова: строка, не подходящая под вызов, получает отказ
  * (`login_required`, `not_writer` и т. п.), и клиентская подсказка «какой вызов выбрать» ничего не открывает.
  * Параметра «файл» нет; лента PLANT приходит текстом, путь к её временному файлу выбирает сервер.
+ * `ids` — список подтверждения массовой записи RAW и OBS (AUD-15): до 500 идентификаторов, проверяет и движок.
  */
 const Input = z.object({
   line: z.string().min(1).max(4000),
   tape: z.string().max(200_000).optional(),
+  ids: z
+    .array(z.string().regex(/^[A-Za-z0-9][A-Za-z0-9._-]{0,39}$/))
+    .max(500)
+    .optional(),
 });
 
 export const pmRead = createServerFn({ method: "POST" })

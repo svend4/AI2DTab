@@ -237,11 +237,11 @@ ACCEPT_STATUSES = {"raw", "open", "draft"}
 
 VERBS = (
     "STATUS","LOOK","PLANT","CUT","ACCEPT","TAKE","RUN","FETCH","DUMP","GRID","DIFF",
-    "JSON","BATCH","CANON","RAW","NEQ","SET","PACKET","MATRIX","FILL","SWEEP","REPAIR",
+    "JSON","BATCH","CANON","RAW","NEQ","SET","IDS","PACKET","MATRIX","FILL","SWEEP","REPAIR",
     "CELL","CONC","INSTR","GAP","PROBE","WIRE","PURGE","SETTLE","VOCAB","PORT","SPEC","CAT","SUPERSEDE",
 )
 READS = {
-    "CANON", "RAW", "INSTR", "LOOK", "GRID", "JSON", "NEQ", "SET", "PACKET",
+    "CANON", "RAW", "INSTR", "LOOK", "GRID", "JSON", "NEQ", "SET", "IDS", "PACKET",
     "CONC", "VOCAB", "PORT", "DUMP", "DIFF", "CELL", "STATUS", "MATRIX", "RANGE",
 }
 
@@ -250,6 +250,41 @@ READS = {
 DEFAULT_ACTOR = "machine:exec"
 ACTOR = DEFAULT_ACTOR
 ACTOR_RE = re.compile(r"[A-Za-z0-9][A-Za-z0-9._:@+=/-]{0,79}")
+
+
+# Массовые записи RAW и OBS (AUD-15): принять или снять можно только список id, который подтвердил человек (`exec --ids a,b,c`).
+# Список должен совпасть с набором в столе в тот же момент; `IDS <набор>` печатает его целиком.
+BULK_SETS = {"RAW", "OBS", "OBSERVATION"}
+BULK_MAX = 500
+ID_RE = re.compile(r"[A-Za-z0-9][A-Za-z0-9._-]{0,39}")
+
+
+def valid_ids(text: str) -> list:
+    ids = [t for t in text.split(",") if t]
+    if len(ids) > BULK_MAX or any(not ID_RE.fullmatch(i) for i in ids):
+        raise argparse.ArgumentTypeError(
+            f"--ids: до {BULK_MAX} идентификаторов через запятую, каждый из латиницы, цифр и . _ -, до 40 знаков")
+    return ids
+
+
+def touches_bulk(expr: str) -> bool:
+    operands, _ = split_set_expr(expr)
+    return any(o.strip().upper().replace("≠", "NEQ") in BULK_SETS for o in operands)
+
+
+def bulk_refusal(ns, verb: str, name: str, expr: str, rows):
+    """Отказ строкой, если массовая запись RAW или OBS идёт без списка или со списком, которого в столе сейчас нет. Иначе None.
+    `getattr`: пакет BATCH собирает свой `Namespace` без `ids`, и массовая запись внутри пакета тоже без списка не идёт."""
+    if not touches_bulk(expr):
+        return None
+    listed_arg = getattr(ns, "ids", None)
+    if listed_arg is None:
+        return f"REFUSE {verb} {name}: нужно подтверждение — список id в --ids ({len(rows)} объектов в наборе)"
+    listed, actual = set(listed_arg), {r["id"] for r in rows}
+    if listed != actual:
+        return (f"REFUSE {verb} {name}: набор изменился — подтверждено {len(listed)}, "
+                f"в столе сейчас {len(actual)}; прочитайте набор заново (IDS {expr})")
+    return None
 
 
 def valid_actor(text: str) -> str:
@@ -823,6 +858,10 @@ def cmd_exec(ns: argparse.Namespace) -> None:
             raise SystemExit("ACCEPT id|множество")
         if is_set_expr(expr):
             name, rows = eval_set_expr(con, expr)
+            refusal = bulk_refusal(ns, cmd, name, expr, rows)
+            if refusal:
+                print(refusal)
+                return
             if "NEQ" in name.upper() or "≠" in name:
                 kept, dropped = [], []
                 for r in rows:
@@ -850,6 +889,10 @@ def cmd_exec(ns: argparse.Namespace) -> None:
             raise SystemExit("TAKE id|множество")
         if is_set_expr(expr):
             name, rows = eval_set_expr(con, expr)
+            refusal = bulk_refusal(ns, cmd, name, expr, rows)
+            if refusal:
+                print(refusal)
+                return
             notes = [take_row(con, r) for r in rows]
             con.commit()
             print(f"TAKE {name} → {len(notes)}")
@@ -1082,6 +1125,10 @@ def cmd_exec(ns: argparse.Namespace) -> None:
             print(sep.join([r["id"], r["status"], parsed[0], parsed[1], parsed[2]]))
         log(con, "NEQ", None, str(len(rows)))
         con.commit()
+        return
+    if cmd == "IDS":
+        _, rows = eval_set_expr(con, arg)
+        print("\n".join(r["id"] for r in rows))
         return
     if cmd == "SET":
         name, rows = eval_set_expr(con, arg)
@@ -1377,6 +1424,7 @@ def main() -> None:
     e.add_argument("line", nargs="*")
     e.add_argument("--file", dest="file")
     e.add_argument("--actor", dest="actor", type=valid_actor, default=None)
+    e.add_argument("--ids", dest="ids", type=valid_ids, default=None)
     e.set_defaults(func=cmd_exec)
     ns = p.parse_args()
     ACTOR = getattr(ns, "actor", None) or DEFAULT_ACTOR                 # присваивается на каждый запуск: повторный main() не унаследует чужого

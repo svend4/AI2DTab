@@ -11,6 +11,9 @@ export type Event = { at: string; cmd: string; id: string; note: string };
 
 export type Wire = { from: string; rel: string; to: string; note: string };
 
+/** Массовая запись, которую человек ещё не подтвердил: список id и ответ `done` (AUD-15). В сохранённое состояние не входит. */
+export type BulkAsk = { line: string; ids: string[]; done: (ok: boolean) => void };
+
 function stamp(): string {
   return new Date().toISOString().slice(11, 19);
 }
@@ -39,6 +42,8 @@ type Desk = {
   /** Дата снимка (`YYYY-MM-DD`), если стол показан снимком (AUD-03, вариант 3). В сохранённое состояние не входит. */
   snapshot: string | null;
   setSnapshot: (taken: string | null) => void;
+  bulk: BulkAsk | null;
+  setBulk: (bulk: BulkAsk | null) => void;
   /** Пометка «ответ обрезан» (O8): тихая строка, не уведомление. В сохранённое состояние не входит. */
   bookCut: string | null;
   setBookCut: (cut: string | null) => void;
@@ -69,6 +74,8 @@ export const useDesk = create<Desk>()(
       setNotice: (notice) => set({ notice }),
       snapshot: null,
       setSnapshot: (snapshot) => set({ snapshot }),
+      bulk: null,
+      setBulk: (bulk) => set({ bulk }),
       bookCut: null,
       setBookCut: (bookCut) => set({ bookCut }),
       writeNotice: null,

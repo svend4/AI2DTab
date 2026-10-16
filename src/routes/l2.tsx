@@ -2,7 +2,7 @@ import { Fragment, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import ontSeed from "@/data/ont-l2.json";
 import { DeskShell } from "@/components/desk-nav";
-import { acceptBoth, plantToDb, takeBoth, writeDesk } from "@/lib/desk-bridge";
+import { acceptBoth, plantToDb, takeBoth, writeBulk, writeDesk } from "@/lib/desk-bridge";
 import { writeProps } from "@/lib/desk-access";
 import { useDesk, type Row } from "@/lib/desk-store";
 import { useDeskAccess } from "@/lib/use-desk-access";
@@ -118,7 +118,7 @@ function L2() {
           type="button"
           {...writeProps(access)}
           className="h-10 rounded-md border border-border px-3 text-xs"
-          onClick={() => void writeDesk("FILL")}
+          onClick={() => void writeBulk("FILL")}
         >
           FILL NEQ∩RAW
         </button>

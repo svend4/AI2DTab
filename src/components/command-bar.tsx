@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from "react";
-import { acceptBoth, bridge, fetchBoth, runBoth, takeBoth, writeDesk } from "@/lib/desk-bridge";
+import { acceptBoth, bridge, fetchBoth, runBoth, takeBoth, writeBulk, writeDesk } from "@/lib/desk-bridge";
 import { downloadText } from "@/lib/machine";
 import { useDesk } from "@/lib/desk-store";
 import { deniedMessage } from "@/lib/desk-access";
@@ -71,7 +71,7 @@ export function CommandBar() {
       return;
     }
     const kind = verbKind(C);
-    const out = kind === "write" || kind === "bulk" ? await writeDesk(t) : await bridge(t);
+    const out = kind === "write" || kind === "bulk" ? await writeBulk(t) : await bridge(t);
     setEcho(tail(out));
   }
 
