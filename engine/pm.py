@@ -229,6 +229,11 @@ def cmd_add(ns: argparse.Namespace) -> None:
 
 NO_CANON = {"session", "tape"}
 
+# Что принимает ACCEPT (AUD-15): понятия, которые стол ведёт в каноне, и объекты, которые ещё можно принять (сырые, открытые
+# вопросы, черновики). Снятые (rejected), закрытые и служебные типы возвращаются только новым объектом. NO_CANON выше — другое правило.
+ACCEPT_TYPES = {"fact", "decision", "observation", "question", "artifact"}
+ACCEPT_STATUSES = {"raw", "open", "draft"}
+
 
 VERBS = (
     "STATUS","LOOK","PLANT","CUT","ACCEPT","TAKE","RUN","FETCH","DUMP","GRID","DIFF",
@@ -323,7 +328,7 @@ def upsert_raw(con, row: dict) -> str:
             row.get("body") or "",
             now(),
             now(),
-            "machine:exec",
+            ACTOR,
         ),
     )
     log(con, "PLANT", oid, row.get("title") or "")
@@ -561,7 +566,7 @@ def take_row(con, row) -> str:
 
 def accept_row(con, row) -> str:
     oid = row["id"]
-    if row["type"] in NO_CANON:
+    if row["type"] not in ACCEPT_TYPES:
         log_once(con, "REFUSE", oid, row["type"])
         return f"REFUSE {oid} type={row['type']}"
     if row["status"] == "canon":
@@ -569,7 +574,11 @@ def accept_row(con, row) -> str:
     if row["status"] == "superseded":
         log_once(con, "REFUSE", oid, "superseded")
         return f"REFUSE {oid} superseded: заменён, вернуть можно только новым объектом"
-    con.execute("UPDATE objects SET status='canon', updated_at=? WHERE id=?", (now(), oid))
+    if row["status"] not in ACCEPT_STATUSES:
+        log_once(con, "REFUSE", oid, row["status"])
+        return f"REFUSE {oid} status={row['status']}"
+    # Владелец принятого — тот, кто принял (проверенный актор с сайта), а не машина (AUD-15).
+    con.execute("UPDATE objects SET status='canon', owner=?, updated_at=? WHERE id=?", (ACTOR, now(), oid))
     stamp_cell(con, oid, row["title"])
     log(con, "ACCEPT", oid, row["title"])
     return f"ACCEPT {oid}"
