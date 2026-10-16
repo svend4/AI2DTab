@@ -290,6 +290,17 @@ def bulk_refusal(ns, verb: str, name: str, rows, always: bool = False):
     return None
 
 
+def lock_set_write(con, verb: str, name: str):
+    """Запись по набору идёт одной транзакцией (AUD-15): чтение набора, проверка списка id и запись под одной блокировкой базы.
+    Пока блокировка держится, другой писатель не сменит набор между проверкой и записью. Занятая база — отказ строкой, ничего
+    не записано. Вернёт None, если блокировка взята. Отказ после проверки делает `con.rollback()` у вызывающего."""
+    try:
+        con.execute("BEGIN IMMEDIATE")
+    except sqlite3.OperationalError:
+        return f"REFUSE {verb} {name}: база занята другой записью — ничего не записано, повторите"
+    return None
+
+
 def valid_actor(text: str) -> str:
     if not ACTOR_RE.fullmatch(text):
         raise argparse.ArgumentTypeError(
@@ -875,9 +886,14 @@ def cmd_exec(ns: argparse.Namespace) -> None:
         if not expr:
             raise SystemExit("ACCEPT id|множество")
         if is_set_expr(expr):
+            busy = lock_set_write(con, cmd, expr)
+            if busy:
+                print(busy)
+                return
             name, rows = eval_set_expr(con, expr)
             refusal = bulk_refusal(ns, cmd, name, rows)
             if refusal:
+                con.rollback()
                 print(refusal)
                 return
             if "NEQ" in name.upper() or "≠" in name:
@@ -906,9 +922,14 @@ def cmd_exec(ns: argparse.Namespace) -> None:
         if not expr:
             raise SystemExit("TAKE id|множество")
         if is_set_expr(expr):
+            busy = lock_set_write(con, cmd, expr)
+            if busy:
+                print(busy)
+                return
             name, rows = eval_set_expr(con, expr)
             refusal = bulk_refusal(ns, cmd, name, rows)
             if refusal:
+                con.rollback()
                 print(refusal)
                 return
             notes = [take_row(con, r) for r in rows]
@@ -1179,9 +1200,14 @@ def cmd_exec(ns: argparse.Namespace) -> None:
         con.commit()
         return
     if cmd == "REPAIR":
+        busy = lock_set_write(con, "REPAIR", "REPAIR")
+        if busy:
+            print(busy)
+            return
         junk = repair_rows(con)
         refusal = bulk_refusal(ns, "REPAIR", "REPAIR", junk, always=True)
         if refusal:
+            con.rollback()
             print(refusal)
             return
         notes = []
