@@ -71,7 +71,6 @@ export function DeskNav() {
   );
 }
 
-/** Уведомление стола: текст причины и кнопка «Скрыть». Для записи и для обновления — два отдельных слота. */
 /** Панель подтверждения массовой записи: список id виден до нажатия, ответ уходит в ожидание моста (AUD-15). */
 function BulkConfirm({ bulk }: { bulk: BulkAsk }) {
   const answer = (ok: boolean) => {
@@ -111,6 +110,7 @@ function BulkConfirm({ bulk }: { bulk: BulkAsk }) {
   );
 }
 
+/** Уведомление стола: текст причины и кнопка «Скрыть». Для записи и для обновления — два отдельных слота. */
 function DeskAlert({ text, onHide }: { text: string; onHide: () => void }) {
   return (
     <div

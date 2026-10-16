@@ -46,6 +46,12 @@ export function CommandBar() {
     }
     if (C === "DUMP") {
       const out = await bridge("DUMP");
+      if (out.cut) {
+        setEcho(
+          `Выгрузка обрезана: обрезано ${out.cut.dropped} из ${out.cut.total} байт. Файл не сохранён.`,
+        );
+        return;
+      }
       if (out.ok) downloadText("book.tsv", out.stdout, "text/tab-separated-values");
       setEcho(tail(out));
       return;

@@ -10,6 +10,10 @@ import { useDeskAccess } from "@/lib/use-desk-access";
 
 export const Route = createFileRoute("/l4")({ component: L4 });
 
+/** На опубликованном снимке спецификация и файлы стола не выводятся: их собирают в рабочей копии (AUD-03, вариант 3). */
+const SNAPSHOT_L4 =
+  "В опубликованной версии спецификация и файлы стола не выводятся: они есть в рабочей копии.";
+
 function L4() {
   const nav = useNavigate();
   const access = useDeskAccess();
@@ -41,10 +45,19 @@ function L4() {
 
   useEffect(() => {
     if (pending) return;
+    if (access.snapshot) {
+      setSpec(SNAPSHOT_L4);
+      setPort("");
+      return;
+    }
     void loadSpec(canWrite);
-  }, [pending, canWrite]);
+  }, [pending, canWrite, access.snapshot]);
 
   async function openFile(p: string) {
+    if (access.snapshot) {
+      setPreview({ path: p, bytes: 0, preview: SNAPSHOT_L4 });
+      return;
+    }
     if (p.endsWith("LANG-FROM-DB.md") || p.endsWith("LANG.md")) {
       const c = await bridge(`CAT ${p.split("/").pop()}`);
       setPreview({ path: p, bytes: (c.stdout || "").length, preview: c.stdout || c.stderr || "пусто" });

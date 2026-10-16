@@ -1,6 +1,6 @@
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
-import { writeOutcome } from "./desk-writes.ts";
+import { fetchAdded, writeOutcome } from "./desk-writes.ts";
 import type { PmReply } from "./pm-request.ts";
 
 const done = (stdout: string): PmReply => ({ ok: true, stdout, stderr: "" });
@@ -33,7 +33,7 @@ describe("исход записи: отказ при коде 0 (AUD-13)", () =>
 
   it("сводка набора с отказами — отказ с числом объектов", () => {
     const r = writeOutcome(done("ACCEPT NEQ ∩ RAW → ok=9 refuse=2 skip=0"));
-    assert.deepEqual(r, { ok: false, message: "Стол отказал в 2 объектах." });
+    assert.deepEqual(r, { ok: false, message: "Стол отказал в 2 объектах; принято 9." });
   });
 
   it("число склоняется: «в 1 объекте», «в 11 объектах»", () => {
@@ -99,5 +99,34 @@ describe("исход записи: разбор ответа PLANT (AUD-43)", ()
       ok: true,
       note: "Пропущено 1, уже были в столе: C1.",
     });
+  });
+});
+
+describe("исход записи по набору: частичный успех и счёт пропусков (AUD-11, AUD-43)", () => {
+  it("если часть принята, а часть отказана, сообщение называет оба числа", () => {
+    const r = writeOutcome(
+      done("REFUSE O2 status=rejected\nACCEPT NEQ ∩ RAW → ok=1 refuse=1 skip=0"),
+    );
+    assert.deepEqual(r, { ok: false, message: "Стол отказал в 1 объекте; принято 1." });
+  });
+
+  it("число пропусков берётся из сводки: строки печатаются только первые восемьдесят", () => {
+    const r = writeOutcome(done("ACCEPT X → ok=0 refuse=0 skip=100\nskip A1 already canon\n"));
+    assert.deepEqual(r, { ok: true, note: "Пропущено 100, уже были в столе: A1 и ещё 99." });
+  });
+});
+
+describe("FETCH: строка в ленту только когда движок её завёл (AUD-43)", () => {
+  it("новый вопрос — строка добавляется; пропуск уже открытого — нет", () => {
+    assert.equal(fetchAdded({ ok: true, stdout: "FETCH Q-FETCH-001\n", stderr: "" }), true);
+    assert.equal(
+      fetchAdded({
+        ok: true,
+        stdout: "skip FETCH Q-FETCH-001 уже стоит: второй такой же вопрос не заводим\n",
+        stderr: "",
+      }),
+      false,
+    );
+    assert.equal(fetchAdded({ ok: false, stdout: "FETCH Q-FETCH-002\n", stderr: "сбой" }), false);
   });
 });
