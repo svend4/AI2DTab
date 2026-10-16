@@ -1,7 +1,8 @@
 import { useEffect } from "react";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { DeskShell } from "@/components/desk-nav";
-import { bridge, refreshBook } from "@/lib/desk-bridge";
+import { refreshBook, writeDesk } from "@/lib/desk-bridge";
+import { writeOutcome } from "@/lib/desk-writes";
 import { writeProps } from "@/lib/desk-access";
 import { useDesk } from "@/lib/desk-store";
 import { useDeskAccess } from "@/lib/use-desk-access";
@@ -56,9 +57,8 @@ function L1() {
             const text = useDesk.getState().tape.trim();
             if (!text) return;
             void (async () => {
-              await bridge("PLANT", { tape: text });
-              await refreshBook();
-              nav({ to: "/l2" });
+              const out = await writeDesk("PLANT", { tape: text });
+              if (writeOutcome(out).ok) nav({ to: "/l2" });
             })();
           }}
         >

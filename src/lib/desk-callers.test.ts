@@ -3,13 +3,27 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 
 /**
- * Мост и баннер нельзя загрузить под `node --test`: они тянут `@/`-алиасы и серверные функции. Поэтому здесь проверено по тексту,
- * что мост больше не имеет запасного пути, который стирал стол при сбое (AUD-14), что обновление идёт через разбор с проверкой
- * (`desk-refresh.ts`), и что баннер с причиной стоит в шапке стола. Поведение целиком смотрит `desk-refresh.test.ts`.
+ * Мост, строка команд, маршруты и шапка нельзя загрузить под `node --test`: они тянут `@/`-алиасы и серверные функции. Поэтому
+ * здесь проверено по тексту: книга обновляется без запасного пути (AUD-14); каждая запись идёт через `writeDesk`, а исход записи
+ * виден пользователю (AUD-11, AUD-13); переход после записи делается только при успехе (AUD-31, AUD-43). Поведение целиком
+ * смотрят `desk-refresh.test.ts` и `desk-writes.test.ts`.
  */
-const bridge = readFileSync(new URL("./desk-bridge.ts", import.meta.url), "utf8");
-const store = readFileSync(new URL("./desk-store.ts", import.meta.url), "utf8");
-const nav = readFileSync(new URL("../components/desk-nav.tsx", import.meta.url), "utf8");
+const read = (path: string) => readFileSync(new URL(path, import.meta.url), "utf8");
+const bridge = read("./desk-bridge.ts");
+const store = read("./desk-store.ts");
+const nav = read("../components/desk-nav.tsx");
+const commandBar = read("../components/command-bar.tsx");
+const l2 = read("../routes/l2.tsx");
+const l3 = read("../routes/l3.tsx");
+const l4 = read("../routes/l4.tsx");
+const index = read("../routes/index.tsx");
+
+/** Текст одной экспортируемой функции моста: от заголовка до закрывающей скобки на начале строки. */
+function fn(source: string, name: string): string {
+  const start = source.indexOf(`export async function ${name}(`);
+  assert.ok(start >= 0, `нет ${name}`);
+  return source.slice(start, source.indexOf("\n}\n", start));
+}
 
 describe("мост: обновление стола не стирает его при сбое (AUD-14, AUD-23)", () => {
   it("запасного пути из четырёх вызовов больше нет", () => {
@@ -25,9 +39,11 @@ describe("мост: обновление стола не стирает его �
     for (const verb of ["CANON", "RAW", "INSTR", "PACKET"]) {
       assert.doesNotMatch(bridge, new RegExp(`bridge\\(\\s*"${verb}"`), verb);
     }
-    const start = bridge.indexOf("export async function refreshBook(");
-    const body = bridge.slice(start, bridge.indexOf("\n}\n", start));
-    assert.equal([...body.matchAll(/bridge\(/g)].length, 1, "в refreshBook один вызов моста");
+    assert.equal(
+      [...fn(bridge, "refreshBook").matchAll(/bridge\(/g)].length,
+      1,
+      "в refreshBook один вызов",
+    );
   });
 
   it("книга разбирается и применяется через desk-refresh, и ответ отстающего запроса отбрасывается", () => {
@@ -36,27 +52,101 @@ describe("мост: обновление стола не стирает его �
     assert.match(bridge, /createSequencer\(\)/);
     assert.match(bridge, /if \(!bookSequence\.isLatest\(token\)\) return;/);
   });
+});
 
-  it("пишущие функции по-прежнему обновляют стол после записи", () => {
-    for (const fn of ["acceptBoth", "takeBoth", "runBoth", "fetchBoth", "plantToDb"]) {
-      const start = bridge.indexOf(`export async function ${fn}(`);
-      assert.ok(start >= 0, fn);
-      const body = bridge.slice(start, bridge.indexOf("\n}\n", start));
-      assert.match(body, /await refreshBook\(\)/, fn);
+describe("мост: все записи идут через одну точку и показывают исход (AUD-11, AUD-13)", () => {
+  it("writeDesk: команда, затем исход в уведомление записи, затем книга", () => {
+    const body = fn(bridge, "writeDesk");
+    const order = ["bridge(line", "writeOutcome(out)", "setWriteNotice(", "refreshBook()"].map(
+      (p) => body.indexOf(p),
+    );
+    assert.ok(
+      order.every((i) => i >= 0),
+      JSON.stringify(order),
+    );
+    assert.deepEqual(
+      [...order].sort((a, b) => a - b),
+      order,
+    );
+  });
+
+  it("каждая пишущая функция идёт через writeDesk и не трогает стор до ответа стола", () => {
+    for (const name of ["plantToDb", "acceptBoth", "takeBoth", "runBoth", "fetchBoth"]) {
+      assert.match(fn(bridge, name), /writeDesk\(/, name);
     }
+    assert.doesNotMatch(bridge, /useDesk\.getState\(\)\.(accept|reject|run|mergeRows|plant)\(/);
+  });
+
+  it("FETCH добавляет строку в ленту только после успешного ответа стола", () => {
+    const body = fn(bridge, "fetchBoth");
+    assert.match(body, /if \(writeOutcome\(out\)\.ok\) useDesk\.getState\(\)\.fetchNew\(\);/);
+  });
+
+  it("стор: оптимистичных записей и мёртвого разбора строки команд больше нет", () => {
+    for (const name of ["accept", "reject", "run", "mergeRows", "plant", "execLine"]) {
+      assert.doesNotMatch(store, new RegExp(`\\n {6}${name}: \\(`), name);
+    }
+  });
+
+  it("стор держит уведомление записи отдельно от уведомления обновления", () => {
+    assert.match(store, /writeNotice: string \| null;/);
+    assert.match(store, /setWriteNotice: \(notice: string \| null\) => void;/);
+    assert.match(store, /notice: string \| null;/);
+    assert.match(store, /partialize: \(s\) => \(\{ tape: s\.tape \}\)/);
   });
 });
 
-describe("стор и шапка: причина сбоя видна пользователю", () => {
-  it("стор держит уведомление, и оно не сохраняется между сессиями", () => {
-    assert.match(store, /notice: string \| null;/);
-    assert.match(store, /setNotice: \(notice: string \| null\) => void;/);
-    assert.match(store, /partialize: \(s\) => \(\{ tape: s\.tape \}\)/);
+describe("шапка: оба уведомления видны, каждое закрывается отдельно", () => {
+  it("шапка показывает уведомление записи и уведомление обновления через один компонент с role=alert", () => {
+    assert.match(nav, /useDesk\(\(s\) => s\.writeNotice\)/);
+    assert.match(nav, /useDesk\(\(s\) => s\.notice\)/);
+    assert.match(nav, /<DeskAlert text=\{writeNotice\}/);
+    assert.match(nav, /<DeskAlert text=\{notice\}/);
+    assert.match(nav, /role="alert"/);
+    assert.match(nav, /setWriteNotice\(null\)/);
+    assert.match(nav, /setNotice\(null\)/);
+  });
+});
+
+describe("строка команд: исход записи виден, обновление не дублируется", () => {
+  it("класс команды берётся из таблицы глаголов, регулярного выражения WRITE нет", () => {
+    assert.match(commandBar, /const kind = verbKind\(C\);/);
+    assert.match(
+      commandBar,
+      /kind === "write" \|\| kind === "bulk" \? await writeDesk\(t\) : await bridge\(t\)/,
+    );
+    assert.doesNotMatch(commandBar, /const WRITE =/);
   });
 
-  it("шапка показывает уведомление с role=alert и кнопкой закрыть", () => {
-    assert.match(nav, /useDesk\(\(s\) => s\.notice\)/);
-    assert.match(nav, /role="alert"/);
-    assert.match(nav, /setNotice\(null\)/);
+  it("DUMP сохраняет файл только при успешном ответе", () => {
+    assert.match(commandBar, /if \(out\.ok\) downloadText\("book\.tsv"/);
+  });
+
+  it("записи строки команд не вызывают refreshBook сами: это делает writeDesk", () => {
+    assert.doesNotMatch(commandBar, /refreshBook/);
+  });
+});
+
+describe("кнопки и переходы: при сбое пользователь остаётся на месте", () => {
+  it("L2: FILL, SWEEP, GAP, PURGE и PROBE идут через writeDesk, мимо стора не пишут", () => {
+    for (const verb of ["FILL", "SWEEP", "GAP", "PURGE", "PROBE C A"]) {
+      assert.match(l2, new RegExp(`writeDesk\\("${verb}"\\)`), verb);
+    }
+    assert.doesNotMatch(l2, /bridge\("(FILL|SWEEP|GAP|PURGE|PROBE)/);
+    assert.doesNotMatch(l2, /mergeRows/);
+  });
+
+  it("L2: загрузка комплекта отправляет строки в PLANT, а не добавляет их в стор до ответа", () => {
+    assert.match(l2, /void plantToDb\(rows\);/);
+  });
+
+  it("PLANT (L1), RUN (L3) и FETCH (L4) переходят на другую страницу только при успехе", () => {
+    assert.match(index, /if \(writeOutcome\(out\)\.ok\) nav\(\{ to: "\/l2" \}\);/);
+    assert.match(l3, /if \(writeOutcome\(out\)\.ok\) nav\(\{ to: "\/l4" \}\);/);
+    assert.match(l4, /if \(writeOutcome\(out\)\.ok\) nav\(\{ to: "\/" \}\);/);
+  });
+
+  it("SETTLE (L4) идёт через writeDesk и затем перечитывает спецификацию", () => {
+    assert.match(l4, /await writeDesk\("SETTLE"\);/);
   });
 });

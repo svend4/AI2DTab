@@ -3,7 +3,8 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import archive from "@/data/archive.json";
 import { DeskShell } from "@/components/desk-nav";
 import { readKitFile } from "@/lib/kit-api";
-import { bridge, fetchBoth, refreshBook } from "@/lib/desk-bridge";
+import { bridge, fetchBoth, writeDesk } from "@/lib/desk-bridge";
+import { writeOutcome } from "@/lib/desk-writes";
 import { writeProps } from "@/lib/desk-access";
 import { useDeskAccess } from "@/lib/use-desk-access";
 
@@ -82,8 +83,7 @@ function L4() {
             className="h-11 rounded-md border border-border px-4 text-sm"
             onClick={() => {
               void (async () => {
-                await bridge("SETTLE");
-                await refreshBook();
+                await writeDesk("SETTLE");
                 await loadSpec(true);
               })();
             }}
@@ -95,7 +95,9 @@ function L4() {
             {...writeProps(access)}
             className="h-11 rounded-md bg-fg px-4 text-sm text-accent-fg"
             onClick={() => {
-              void fetchBoth().then(() => nav({ to: "/" }));
+              void fetchBoth().then((out) => {
+                if (writeOutcome(out).ok) nav({ to: "/" });
+              });
             }}
           >
             FETCH → L1

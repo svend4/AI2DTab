@@ -2,7 +2,7 @@ import { Fragment, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import ontSeed from "@/data/ont-l2.json";
 import { DeskShell } from "@/components/desk-nav";
-import { acceptBoth, bridge, plantToDb, refreshBook, takeBoth } from "@/lib/desk-bridge";
+import { acceptBoth, plantToDb, takeBoth, writeDesk } from "@/lib/desk-bridge";
 import { writeProps } from "@/lib/desk-access";
 import { useDesk, type Row } from "@/lib/desk-store";
 import { useDeskAccess } from "@/lib/use-desk-access";
@@ -25,7 +25,6 @@ function L2() {
   const rows = useDesk((s) => s.rows);
   const book = useDesk((s) => s.plane);
   const canon = useDesk((s) => s.canon);
-  const mergeRows = useDesk((s) => s.mergeRows);
   const [open, setOpen] = useState<string | null>(null);
   const look = useDesk((s) => s.look);
   const cluster = useDesk((s) => s.cluster);
@@ -57,7 +56,7 @@ function L2() {
   const neq = plane.filter((r) => r.title.includes("≠") && r.type === "observation");
 
   function fromKit() {
-    const mapped: Omit<Row, "status">[] = ontSeed.map((r) => ({
+    const rows: Row[] = ontSeed.map((r) => ({
       id: r.id,
       cluster: r.cluster || "C",
       layer: r.layer || "2",
@@ -65,11 +64,9 @@ function L2() {
       title: r.title || r.id,
       body: (r.body || "").slice(0, 800),
       source: "kit ont",
+      status: "raw" as const,
     }));
-    const have = new Set(useDesk.getState().rows.map((r) => r.id));
-    mergeRows(mapped);
-    const added = useDesk.getState().rows.filter((r) => !have.has(r.id));
-    void plantToDb(added);
+    void plantToDb(rows);
   }
 
   return (
@@ -122,12 +119,7 @@ function L2() {
           type="button"
           {...writeProps(access)}
           className="h-10 rounded-md border border-border px-3 text-xs"
-          onClick={() => {
-            void (async () => {
-              await bridge("FILL");
-              await refreshBook();
-            })();
-          }}
+          onClick={() => void writeDesk("FILL")}
         >
           FILL NEQ∩RAW
         </button>
@@ -135,12 +127,7 @@ function L2() {
           type="button"
           {...writeProps(access)}
           className="h-10 rounded-md border border-border px-3 text-xs"
-          onClick={() => {
-            void (async () => {
-              await bridge("SWEEP");
-              await refreshBook();
-            })();
-          }}
+          onClick={() => void writeDesk("SWEEP")}
         >
           SWEEP SESSION
         </button>
@@ -148,12 +135,7 @@ function L2() {
           type="button"
           {...writeProps(access)}
           className="h-10 rounded-md border border-border px-3 text-xs"
-          onClick={() => {
-            void (async () => {
-              await bridge("GAP");
-              await refreshBook();
-            })();
-          }}
+          onClick={() => void writeDesk("GAP")}
         >
           GAP из приборов
         </button>
@@ -161,12 +143,7 @@ function L2() {
           type="button"
           {...writeProps(access)}
           className="h-10 rounded-md border border-border px-3 text-xs"
-          onClick={() => {
-            void (async () => {
-              await bridge("PURGE");
-              await refreshBook();
-            })();
-          }}
+          onClick={() => void writeDesk("PURGE")}
         >
           PURGE JUNK
         </button>
@@ -174,12 +151,7 @@ function L2() {
           type="button"
           {...writeProps(access)}
           className="h-10 rounded-md border border-border px-3 text-xs"
-          onClick={() => {
-            void (async () => {
-              await bridge("PROBE C A");
-              await refreshBook();
-            })();
-          }}
+          onClick={() => void writeDesk("PROBE C A")}
         >
           PROBE C→A
         </button>

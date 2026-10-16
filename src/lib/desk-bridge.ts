@@ -4,6 +4,7 @@ import { pmRead, pmWrite } from "@/lib/pm-api";
 import { LOGIN_MESSAGE, parsePmLine, type PmReply } from "@/lib/pm-request";
 import { useDesk, type Row } from "@/lib/desk-store";
 import { applyBookReply, createSequencer, parseBook, type BookSink } from "@/lib/desk-refresh";
+import { writeOutcome } from "@/lib/desk-writes";
 
 export type BridgeOut = PmReply;
 
@@ -56,37 +57,39 @@ export async function refreshBook(): Promise<void> {
   applyBookReply(parseBook(out), bookSink());
 }
 
-export async function plantToDb(rows: Row[]): Promise<BridgeOut> {
-  if (!rows.length) return { ok: true, stdout: "", stderr: "" };
-  const r = await bridge("PLANT", { tape: dumpTsv(rows) });
-  await refreshBook();
-  return r;
-}
-
-export async function acceptBoth(id: string): Promise<BridgeOut> {
-  useDesk.getState().accept(id);
-  const out = await bridge(`ACCEPT ${id}`);
+/**
+ * Запись в стол: одна точка для кнопок и строки команд. Исход записи, в том числе отказ при коде 0, попадает в уведомление
+ * записи и не стирается обновлением книги (AUD-11, AUD-13). Книга обновляется после каждой записи.
+ */
+export async function writeDesk(line: string, extra?: { tape?: string }): Promise<BridgeOut> {
+  const out = await bridge(line, extra);
+  const outcome = writeOutcome(out);
+  useDesk.getState().setWriteNotice(outcome.ok ? null : outcome.message);
   await refreshBook();
   return out;
+}
+
+export async function plantToDb(rows: Row[]): Promise<BridgeOut> {
+  if (!rows.length) return { ok: true, stdout: "", stderr: "" };
+  return writeDesk("PLANT", { tape: dumpTsv(rows) });
+}
+
+/** Оптимистичных изменений нет: строка меняется, когда стол ответил (AUD-13). */
+export async function acceptBoth(id: string): Promise<BridgeOut> {
+  return writeDesk(`ACCEPT ${id}`);
 }
 
 export async function takeBoth(id: string): Promise<BridgeOut> {
-  useDesk.getState().reject(id);
-  const out = await bridge(`TAKE ${id}`);
-  await refreshBook();
-  return out;
+  return writeDesk(`TAKE ${id}`);
 }
 
 export async function runBoth(id: string): Promise<BridgeOut> {
-  useDesk.getState().run(id);
-  const out = await bridge(`RUN ${id}`);
-  await refreshBook();
-  return out;
+  return writeDesk(`RUN ${id}`);
 }
 
+/** Строку вопроса в ленту добавляем только после ответа стола, что FETCH записал вопрос (AUD-31). */
 export async function fetchBoth(): Promise<BridgeOut> {
-  useDesk.getState().fetchNew();
-  const out = await bridge("FETCH");
-  await refreshBook();
+  const out = await writeDesk("FETCH");
+  if (writeOutcome(out).ok) useDesk.getState().fetchNew();
   return out;
 }
