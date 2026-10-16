@@ -264,6 +264,11 @@ def valid_ids(text: str) -> list:
     if len(ids) > BULK_MAX or any(not ID_RE.fullmatch(i) for i in ids):
         raise argparse.ArgumentTypeError(
             f"--ids: до {BULK_MAX} идентификаторов через запятую, без пробелов и управляющих знаков, до 200 знаков")
+    # Слово команды или имя набора на месте списка значит, что список забыли: `--ids ACCEPT RAW` не должен молча стать чтением.
+    word = next((i for i in ids if i.upper() in VERBS or i.upper() in SET_NAMES), None)
+    if word is not None:
+        raise argparse.ArgumentTypeError(
+            f"--ids: «{word}» — это команда или имя набора, а не идентификатор; список id идёт перед командой, через запятую")
     return ids
 
 

@@ -1084,7 +1084,7 @@ class SharedTransaction(Desk):
         pm, opened = self.engine()
         held = self.hold_base()
         try:
-            out = self.in_process(pm, self.raw_ids(),"ACCEPT", "RAW")
+            out = self.in_process(pm, self.raw_ids(), "ACCEPT", "RAW")
         finally:
             held.rollback()
             held.close()
@@ -1096,7 +1096,7 @@ class SharedTransaction(Desk):
         pm, _ = self.engine()
         held = self.hold_base()
         try:
-            take = self.in_process(pm, self.raw_ids(),"TAKE", "RAW")
+            take = self.in_process(pm, self.raw_ids(), "TAKE", "RAW")
             repair = self.in_process(pm, None, "REPAIR")
         finally:
             held.rollback()
@@ -1120,10 +1120,50 @@ class SharedTransaction(Desk):
 
     def test_a_write_that_succeeds_leaves_no_transaction_open(self):
         pm, opened = self.engine()
-        out = self.in_process(pm, self.raw_ids(),"ACCEPT", "RAW")
+        out = self.in_process(pm, self.raw_ids(), "ACCEPT", "RAW")
         self.assertIn("ACCEPT RAW → ok=", out)
         self.assertFalse(opened[-1].in_transaction)
         self.assertEqual(self.status("R3"), "canon")
+
+
+class IdsValue(Desk):
+    """Значение --ids в CLI (AUD-15): слово команды или имя набора не принимается за список id. Так `exec --ids ACCEPT RAW`
+    (список забыли) отказывает ошибкой аргументов и ничего не пишет; id, которые печатает `IDS`, проходят проверку."""
+
+    def setUp(self):
+        super().setUp()
+        self.add("R1", typ="decision", status="raw", cluster="A")
+
+    def test_a_verb_where_the_list_belongs_is_an_argument_error(self):
+        r = self.run_pm("--ids", "ACCEPT", "RAW")
+        self.assertEqual(r.returncode, 2, r.stdout + r.stderr)
+        self.assertIn("--ids", r.stderr)
+        self.assertIn("«ACCEPT»", r.stderr)
+        self.assertEqual(self.status("R1"), "raw")
+
+    def test_a_set_name_inside_the_list_is_an_argument_error(self):
+        for listed in ("R1,RAW", "C", "neq,R1", "session"):
+            r = self.run_pm("--ids", listed, "ACCEPT", "R1")
+            self.assertEqual(r.returncode, 2, listed)
+            self.assertIn("--ids", r.stderr, listed)
+        self.assertEqual(self.status("R1"), "raw")
+
+    def test_ids_that_the_desk_prints_pass_the_check(self):
+        listed = [line.split("\t")[0] for line in self.out("IDS", "RAW").splitlines() if line.strip()]
+        self.assertTrue(listed)
+        r = self.run_pm("--ids", ",".join(listed), "ACCEPT", "RAW")
+        self.assertEqual(r.returncode, 0, r.stderr)
+        self.assertNotIn("--ids", r.stderr)
+        self.assertIn("ACCEPT RAW → ok=", r.stdout)
+
+    def test_every_id_of_the_site_snapshot_is_a_valid_list_item(self):
+        """Снимок стола на сайте (src/data/desk-snapshot.json) отдаёт id, которые сайт передаёт в --ids: все проходят проверку."""
+        snapshot = (Path(__file__).resolve().parents[1] / "src" / "data" / "desk-snapshot.json").read_text(encoding="utf-8")
+        ids = set(re.findall(r'"id":\s*"([^"]+)"', snapshot))
+        self.assertGreater(len(ids), 0)
+        pm = load_engine()
+        for oid in sorted(ids):
+            self.assertEqual(pm.valid_ids(oid), [oid], oid)
 
 
 if __name__ == "__main__":
