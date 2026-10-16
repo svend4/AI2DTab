@@ -43,6 +43,7 @@ function bookSink(): BookSink {
     setInstr: (instr) => s.setInstr(instr as Instr | null),
     setWires: s.setWires,
     setNotice: s.setNotice,
+    setCut: s.setBookCut,
   };
 }
 

@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import { copyFileSync, existsSync, mkdtempSync, readdirSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
-import { runPm } from "./pm-run.server.ts";
+import { MAX_OUT_BYTES, runPm } from "./pm-run.server.ts";
 
 const ENGINE = resolve(import.meta.dirname, "../../engine");
 const made: string[] = [];
@@ -168,7 +168,7 @@ describe("runPm: сбои процесса не роняют сервер", () =
     assert.deepEqual(tapeDirs(), before);
   });
 
-  it("вывод не копится сверх предела", async () => {
+  it("вывод не копится сверх предела, а обрезка называется числами (O8)", async () => {
     const dir = tempDir("pm-fake-");
     const script = join(dir, "flood.py");
     writeFileSync(
@@ -177,7 +177,32 @@ describe("runPm: сбои процесса не роняют сервер", () =
     );
     const r = await runPm(["x"], undefined, { script, cwd: dir, maxOut: 5000, maxErr: 700 });
     assert.equal(r.code, 0);
-    assert.ok(r.stdout.length <= 5000 && r.stdout.length > 0, String(r.stdout.length));
+    assert.equal(Buffer.byteLength(r.stdout), 5000);
     assert.ok(r.stderr.length <= 700 && r.stderr.length > 0, String(r.stderr.length));
+    assert.deepEqual(r.cut, { dropped: 2_000_000 - 5000, total: 2_000_000 });
+  });
+
+  it("предел по умолчанию — 2 МБ в байтах", () => {
+    assert.equal(MAX_OUT_BYTES, 2 * 1024 * 1024);
+  });
+
+  it("ответ до предела приходит целиком: многобайтные символы на стыке кусков не портятся", async () => {
+    const dir = tempDir("pm-fake-");
+    const script = join(dir, "euro.py");
+    writeFileSync(script, "import sys\nsys.stdout.buffer.write(('€' * 300000).encode('utf-8'))\n");
+    const r = await runPm(["x"], undefined, { script, cwd: dir });
+    assert.equal(r.code, 0);
+    assert.equal(r.stdout, "€".repeat(300000));
+    assert.equal(r.cut, undefined);
+  });
+
+  it("ответ больше 2 МБ обрезается и говорит, сколько отброшено", async () => {
+    const dir = tempDir("pm-fake-");
+    const script = join(dir, "big.py");
+    writeFileSync(script, "import sys\nsys.stdout.buffer.write(b'x' * 2500000)\n");
+    const r = await runPm(["x"], undefined, { script, cwd: dir });
+    assert.equal(r.code, 0);
+    assert.equal(Buffer.byteLength(r.stdout), MAX_OUT_BYTES);
+    assert.deepEqual(r.cut, { dropped: 2_500_000 - MAX_OUT_BYTES, total: 2_500_000 });
   });
 });

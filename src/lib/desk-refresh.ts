@@ -17,10 +17,13 @@ export type BookSink = {
   setInstr: (instr: unknown) => void;
   setWires: (wires: Wire[]) => void;
   setNotice: (notice: string | null) => void;
+  /** Пометка «ответ обрезан»: тихая строка в шапке, не уведомление (O8). */
+  setCut: (cut: string | null) => void;
 };
 
 export type Book = { ok: true; raw: Row[]; canon: Row[]; wires: Wire[]; instr: unknown };
-export type BookFailure = { ok: false; reason: string };
+/** Обрезка — отдельный случай: книгу не разобрать, поэтому называем размер, а не причину (O8). */
+export type BookFailure = { ok: false; reason: string; cut?: { dropped: number; total: number } };
 export type BookReply = Book | BookFailure;
 
 const CODE_TEXT: Partial<Record<NonNullable<PmReply["code"]>, string>> = {
@@ -68,6 +71,7 @@ function toRow(r: Record<string, string>, status: Row["status"]): Row {
 
 /** Разбор ответа `JSON`. Ошибка — если ответ не успешный, в нём нет строки книги, JSON не читается или срез испорчен. */
 export function parseBook(out: PmReply): BookReply {
+  if (out.cut) return { ok: false, reason: "ответ обрезан", cut: out.cut };
   if (!out.ok) return { ok: false, reason: describeReply(out) };
   const line = out.stdout.split("\n").find((l) => l.trim().startsWith("{"));
   if (!line) return { ok: false, reason: "ответ стола без книги" };
@@ -97,7 +101,16 @@ export function parseBook(out: PmReply): BookReply {
 
 /** Применяет разобранный ответ: при сбое срезы не трогаются, пользователю пишется причина; при успехе уведомление снимается. */
 export function applyBookReply(parsed: BookReply, sink: BookSink): boolean {
+  if (!parsed.ok && parsed.cut) {
+    const { dropped, total } = parsed.cut;
+    sink.setNotice(null);
+    sink.setCut(
+      `Ответ стола обрезан: обрезано ${dropped} из ${total} байт. Показано прежнее состояние.`,
+    );
+    return false;
+  }
   if (!parsed.ok) {
+    sink.setCut(null);
     sink.setNotice(`Стол не обновился: ${parsed.reason}. Показано прежнее состояние.`);
     return false;
   }
@@ -105,6 +118,7 @@ export function applyBookReply(parsed: BookReply, sink: BookSink): boolean {
   sink.setCanon(parsed.canon);
   sink.setInstr(parsed.instr);
   sink.setWires(parsed.wires);
+  sink.setCut(null);
   sink.setNotice(null);
   return true;
 }

@@ -48,5 +48,6 @@ export async function execute(
   const res = await engine.run(argv, decision.tape ? input.tape : undefined);
   const reply: PmReply = { ok: res.code === 0, stdout: res.stdout, stderr: res.stderr };
   if (res.code === 127) reply.code = "engine_unavailable";
+  if (res.cut) reply.cut = res.cut;
   return reply;
 }
