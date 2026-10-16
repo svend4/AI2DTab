@@ -252,38 +252,40 @@ ACTOR = DEFAULT_ACTOR
 ACTOR_RE = re.compile(r"[A-Za-z0-9][A-Za-z0-9._:@+=/-]{0,79}")
 
 
-# Массовые записи RAW и OBS (AUD-15): принять или снять можно только список id, который подтвердил человек (`exec --ids a,b,c`).
-# Список должен совпасть с набором в столе в тот же момент; `IDS <набор>` печатает его целиком.
-BULK_SETS = {"RAW", "OBS", "OBSERVATION"}
+# Массовые записи (AUD-15): набор, в котором есть сырые объекты или наблюдения, принимается или снимается только со списком id,
+# который подтвердил человек (`exec --ids a,b,c`). Признак — строки набора, а не его имя: NEQ, JUNK, кластер и OBS — одно и то же.
+# Список должен совпасть с набором в столе в тот же момент; `IDS <набор>` печатает его целиком: id, тип и статус по табуляции.
 BULK_MAX = 500
-ID_RE = re.compile(r"[A-Za-z0-9][A-Za-z0-9._-]{0,39}")
+ID_RE = re.compile(r"[^\s,\x00-\x1f]{1,200}")
 
 
 def valid_ids(text: str) -> list:
     ids = [t for t in text.split(",") if t]
     if len(ids) > BULK_MAX or any(not ID_RE.fullmatch(i) for i in ids):
         raise argparse.ArgumentTypeError(
-            f"--ids: до {BULK_MAX} идентификаторов через запятую, каждый из латиницы, цифр и . _ -, до 40 знаков")
+            f"--ids: до {BULK_MAX} идентификаторов через запятую, без пробелов и управляющих знаков, до 200 знаков")
     return ids
 
 
-def touches_bulk(expr: str) -> bool:
-    operands, _ = split_set_expr(expr)
-    return any(o.strip().upper().replace("≠", "NEQ") in BULK_SETS for o in operands)
+def bulk_rows(rows) -> bool:
+    """Затрагивает ли набор сырое или наблюдение: тогда запись массовая."""
+    return any(r["status"] == "raw" or r["type"] == "observation" for r in rows)
 
 
-def bulk_refusal(ns, verb: str, name: str, expr: str, rows):
-    """Отказ строкой, если массовая запись RAW или OBS идёт без списка или со списком, которого в столе сейчас нет. Иначе None.
-    `getattr`: пакет BATCH собирает свой `Namespace` без `ids`, и массовая запись внутри пакета тоже без списка не идёт."""
-    if not touches_bulk(expr):
+def bulk_refusal(ns, verb: str, name: str, rows):
+    """Отказ строкой, если массовая запись набора с сырым или наблюдением идёт без списка, внутри пакета или со списком, которого в
+    столе сейчас нет. Иначе None. Пустой набор ничего не меняет и списка не требует. `getattr`: пакет BATCH собирает свой `Namespace`."""
+    if not rows or not bulk_rows(rows):
         return None
+    if getattr(ns, "in_batch", False):
+        return f"REFUSE {verb} {name}: в пакете массовая запись не принимается — запустите её отдельной командой"
     listed_arg = getattr(ns, "ids", None)
     if listed_arg is None:
         return f"REFUSE {verb} {name}: нужно подтверждение — список id в --ids ({len(rows)} объектов в наборе)"
     listed, actual = set(listed_arg), {r["id"] for r in rows}
     if listed != actual:
         return (f"REFUSE {verb} {name}: набор изменился — подтверждено {len(listed)}, "
-                f"в столе сейчас {len(actual)}; прочитайте набор заново (IDS {expr})")
+                f"в столе сейчас {len(actual)}; прочитайте набор заново (IDS {name})")
     return None
 
 
@@ -601,7 +603,7 @@ def take_row(con, row) -> str:
 
 def accept_row(con, row) -> str:
     oid = row["id"]
-    if row["type"] not in ACCEPT_TYPES:
+    if row["type"] in NO_CANON:
         log_once(con, "REFUSE", oid, row["type"])
         return f"REFUSE {oid} type={row['type']}"
     if row["status"] == "canon":
@@ -609,6 +611,9 @@ def accept_row(con, row) -> str:
     if row["status"] == "superseded":
         log_once(con, "REFUSE", oid, "superseded")
         return f"REFUSE {oid} superseded: заменён, вернуть можно только новым объектом"
+    if row["type"] not in ACCEPT_TYPES:
+        log_once(con, "REFUSE", oid, row["type"])
+        return f"REFUSE {oid} type={row['type']}"
     if row["status"] not in ACCEPT_STATUSES:
         log_once(con, "REFUSE", oid, row["status"])
         return f"REFUSE {oid} status={row['status']}"
@@ -858,7 +863,7 @@ def cmd_exec(ns: argparse.Namespace) -> None:
             raise SystemExit("ACCEPT id|множество")
         if is_set_expr(expr):
             name, rows = eval_set_expr(con, expr)
-            refusal = bulk_refusal(ns, cmd, name, expr, rows)
+            refusal = bulk_refusal(ns, cmd, name, rows)
             if refusal:
                 print(refusal)
                 return
@@ -889,7 +894,7 @@ def cmd_exec(ns: argparse.Namespace) -> None:
             raise SystemExit("TAKE id|множество")
         if is_set_expr(expr):
             name, rows = eval_set_expr(con, expr)
-            refusal = bulk_refusal(ns, cmd, name, expr, rows)
+            refusal = bulk_refusal(ns, cmd, name, rows)
             if refusal:
                 print(refusal)
                 return
@@ -1042,7 +1047,7 @@ def cmd_exec(ns: argparse.Namespace) -> None:
                 print("skip SUPERSEDE in BATCH: замену запускают отдельной командой")
                 continue
             print(f"# {b}")
-            sub = argparse.Namespace(line=shlex.split(b), file=None)
+            sub = argparse.Namespace(line=shlex.split(b), file=None, in_batch=True)
             cmd_exec(sub)
         return
     if cmd == "CANON":
@@ -1128,7 +1133,7 @@ def cmd_exec(ns: argparse.Namespace) -> None:
         return
     if cmd == "IDS":
         _, rows = eval_set_expr(con, arg)
-        print("\n".join(r["id"] for r in rows))
+        print("\n".join(f"{r['id']}\t{r['type']}\t{r['status']}" for r in rows))
         return
     if cmd == "SET":
         name, rows = eval_set_expr(con, arg)
@@ -1337,7 +1342,7 @@ def cmd_exec(ns: argparse.Namespace) -> None:
         return
     if cmd == "PURGE":
 
-        cmd_exec(argparse.Namespace(line=["TAKE", "JUNK"], file=None))
+        cmd_exec(argparse.Namespace(line=["TAKE", "JUNK"], file=None, ids=getattr(ns, "ids", None)))
         return
     if cmd == "PROBE":
         bits = arg.split()
