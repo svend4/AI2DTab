@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import argparse
+import re
 import sqlite3
 from datetime import datetime, timezone
 from pathlib import Path
@@ -109,6 +110,15 @@ def cmd_check(_: argparse.Namespace) -> None:
     ).fetchall()
     for r in unread:
         problems.append(f"непрочитанный пакет {r['id']}: {r['subject']}")
+
+    # замещённый объект обязан иметь действующего (canon) заместителя: иначе в каноне дыра
+    orphans = con.execute(
+        "SELECT o.id, o.title FROM objects o WHERE o.status='superseded' AND NOT EXISTS ("
+        "SELECT 1 FROM links l JOIN objects n ON n.id=l.from_id "
+        "WHERE l.to_id=o.id AND l.rel='supersedes' AND n.status='canon')"
+    ).fetchall()
+    for r in orphans:
+        problems.append(f"{r['id']} заменён, но действующего заместителя нет: {r['title']}")
 
     if not problems:
         print("проверка: чисто")
@@ -219,24 +229,107 @@ def cmd_add(ns: argparse.Namespace) -> None:
 
 NO_CANON = {"session", "tape"}
 
+# Что принимает ACCEPT (AUD-15): понятия, которые стол ведёт в каноне. Вопрос в канон не принимают — на него отвечают (AUD-22).
+# Снятые (rejected), закрытые и служебные типы возвращаются только новым объектом. NO_CANON выше — другое правило.
+ACCEPT_TYPES = {"fact", "decision", "observation", "artifact"}
+ACCEPT_STATUSES = {"raw", "open", "draft"}
+
 
 VERBS = (
     "STATUS","LOOK","PLANT","CUT","ACCEPT","TAKE","RUN","FETCH","DUMP","GRID","DIFF",
-    "JSON","BATCH","CANON","RAW","NEQ","SET","PACKET","MATRIX","FILL","SWEEP","REPAIR",
-    "CELL","CONC","INSTR","GAP","PROBE","WIRE","PURGE","SETTLE","VOCAB","PORT","SPEC","CAT",
+    "JSON","BATCH","CANON","RAW","NEQ","SET","IDS","PACKET","MATRIX","FILL","SWEEP","REPAIR",
+    "CELL","CONC","INSTR","GAP","PROBE","WIRE","PURGE","SETTLE","VOCAB","PORT","SPEC","CAT","SUPERSEDE",
 )
 READS = {
-    "CANON", "RAW", "INSTR", "LOOK", "GRID", "JSON", "NEQ", "SET", "PACKET",
+    "CANON", "RAW", "INSTR", "LOOK", "GRID", "JSON", "NEQ", "SET", "IDS", "PACKET",
     "CONC", "VOCAB", "PORT", "DUMP", "DIFF", "CELL", "STATUS", "MATRIX", "RANGE",
 }
+
+# Кто записал событие (AUD-15). Сайт передаёт `exec --actor web:<id>` сразу после `exec`, терминал без флага пишет DEFAULT_ACTOR.
+# Флаг — метка оператора, не проверенная личность: в CLI входа нет. Правило одно и для сайта (`pm-request.ts`), и для этого файла.
+DEFAULT_ACTOR = "machine:exec"
+ACTOR = DEFAULT_ACTOR
+ACTOR_RE = re.compile(r"[A-Za-z0-9][A-Za-z0-9._:@+=/-]{0,79}")
+
+
+# Массовые записи (AUD-15): набор, в котором есть сырые объекты или наблюдения, принимается или снимается только со списком id,
+# который подтвердил человек (`exec --ids a,b,c`). Признак — строки набора, а не его имя: NEQ, JUNK, кластер и OBS — одно и то же.
+# Список должен совпасть с набором в столе в тот же момент; `IDS <набор>` печатает его целиком: id, тип и статус по табуляции.
+BULK_MAX = 500
+ID_RE = re.compile(r"[^\s,\x00-\x1f]{1,200}")
+
+
+def valid_ids(text: str) -> list:
+    ids = [t for t in text.split(",") if t]
+    if len(ids) > BULK_MAX or any(not ID_RE.fullmatch(i) for i in ids):
+        raise argparse.ArgumentTypeError(
+            f"--ids: до {BULK_MAX} идентификаторов через запятую, без пробелов и управляющих знаков, до 200 знаков")
+    # Слово команды или имя набора на месте списка значит, что список забыли: `--ids ACCEPT RAW` не должен молча стать чтением.
+    word = next((i for i in ids if i.upper() in VERBS or i.upper() in SET_NAMES), None)
+    if word is not None:
+        raise argparse.ArgumentTypeError(
+            f"--ids: «{word}» — это команда или имя набора, а не идентификатор; список id идёт перед командой, через запятую")
+    return ids
+
+
+def bulk_rows(rows) -> bool:
+    """Затрагивает ли набор сырое или наблюдение: тогда запись массовая."""
+    return any(r["status"] == "raw" or r["type"] == "observation" for r in rows)
+
+
+def bulk_refusal(ns, verb: str, name: str, rows, always: bool = False):
+    """Отказ строкой, если массовая запись идёт без списка, внутри пакета или со списком, которого в столе сейчас нет. Иначе None.
+    Набор с сырым или наблюдением требует списка; `always` — требует всегда (возврат из канона, REPAIR). Пустой набор списка не
+    требует. `getattr`: пакет BATCH собирает свой `Namespace`."""
+    if not rows or not (always or bulk_rows(rows)):
+        return None
+    if getattr(ns, "in_batch", False):
+        return f"REFUSE {verb} {name}: в пакете массовая запись не принимается — запустите её отдельной командой"
+    listed_arg = getattr(ns, "ids", None)
+    if listed_arg is None:
+        return f"REFUSE {verb} {name}: нужно подтверждение — список id в --ids ({len(rows)} объектов в наборе)"
+    listed, actual = set(listed_arg), {r["id"] for r in rows}
+    if listed != actual:
+        return (f"REFUSE {verb} {name}: набор изменился — подтверждено {len(listed)}, "
+                f"в столе сейчас {len(actual)}; прочитайте набор заново (IDS {name})")
+    return None
+
+
+def lock_set_write(con, verb: str, name: str):
+    """Запись по набору идёт одной транзакцией (AUD-15): чтение набора, проверка списка id и запись под одной блокировкой базы.
+    Пока блокировка держится, другой писатель не сменит набор между проверкой и записью. Занятая база — отказ строкой, ничего
+    не записано. Вернёт None, если блокировка взята. Отказ после проверки делает `con.rollback()` у вызывающего."""
+    try:
+        con.execute("BEGIN IMMEDIATE")
+    except sqlite3.OperationalError:
+        return f"REFUSE {verb} {name}: база занята другой записью — ничего не записано, повторите"
+    return None
+
+
+def valid_actor(text: str) -> str:
+    if not ACTOR_RE.fullmatch(text):
+        raise argparse.ArgumentTypeError(
+            "неверный идентификатор актора: до 80 знаков из латиницы, цифр и . _ : @ + = / -, первый — буква или цифра")
+    return text
+
 
 def log(con, action, oid=None, detail=""):
     if action in READS:
         return
     con.execute(
         "INSERT INTO events(ts,actor,action,object_id,detail) VALUES (?,?,?,?,?)",
-        (now(), "machine:exec", action, oid, detail),
+        (now(), ACTOR, action, oid, detail),
     )
+
+
+def log_once(con, action, oid=None, detail="") -> bool:
+    """Как log, но без подряд идущих повторов: если последнее событие по этому объекту — то же действие с теми же подробностями, строка не
+    нужна. Для отказов, которые человек или скрипт повторяет вслепую: журнал хранит, что отказали, а не сколько раз спросили."""
+    last = con.execute("SELECT action, detail FROM events WHERE object_id IS ? ORDER BY id DESC LIMIT 1", (oid,)).fetchone()
+    if last and last["action"] == action and (last["detail"] or "") == (detail or ""):
+        return False
+    log(con, action, oid, detail)
+    return True
 
 
 def plant_text(text: str) -> list[dict]:
@@ -289,7 +382,7 @@ def upsert_raw(con, row: dict) -> str:
             row.get("body") or "",
             now(),
             now(),
-            "machine:exec",
+            ACTOR,
         ),
     )
     log(con, "PLANT", oid, row.get("title") or "")
@@ -424,6 +517,10 @@ def resolve_set(con, name: str) -> list:
         return list(con.execute(
             "SELECT id, cluster, type, status, title FROM objects WHERE status='canon' ORDER BY id"
         ))
+    if up == "SUPERSEDED":
+        return list(con.execute(
+            "SELECT id, cluster, type, status, title FROM objects WHERE status='superseded' ORDER BY id"
+        ))
     if up == "SESSION":
         return list(con.execute(
             "SELECT id, cluster, type, status, title FROM objects "
@@ -450,26 +547,51 @@ def resolve_set(con, name: str) -> list:
 
 
 
-SET_NAMES = {"NEQ", "NE", "RAW", "CANON", "SESSION", "A", "B", "C", "D", "OBS", "OBSERVATION", "JUNK"}
+SET_NAMES = {"NEQ", "NE", "RAW", "CANON", "SUPERSEDED", "SESSION", "A", "B", "C", "D", "OBS", "OBSERVATION", "JUNK"}
+
+# Знаки операций над множествами; слова AND/OR/MINUS — только отдельными словами, чтобы не резать идентификаторы вроде ORG1
+SET_OPS = {"∩": "∩", "&": "∩", "AND": "∩", "∪": "∪", "|": "∪", "OR": "∪", "\\": "\\", "MINUS": "\\"}
+_SET_OP_RE = re.compile(r"[∩∪\\&|]|(?<!\S)(?:AND|OR|MINUS)(?!\S)")
+
+
+def split_set_expr(expr: str):
+    """«A \\ B ∩ C» → (["A", "B", "C"], ["\\", "∩"]): операнды и знаки (∩ ∪ \\) по порядку. Пустой операнд — ошибка."""
+    expr = (expr or "").strip()
+    if not expr:
+        raise SystemExit("пустое выражение множества")
+    operands, ops, pos = [], [], 0
+    for m in _SET_OP_RE.finditer(expr):
+        operands.append(expr[pos:m.start()].strip())
+        ops.append(SET_OPS[m.group(0)])
+        pos = m.end()
+    operands.append(expr[pos:].strip())
+    if any(not o for o in operands):
+        raise SystemExit(f"в выражении множества пропущен операнд: {expr}")
+    return operands, ops
+
+
+def set_operand(con, name: str) -> list:
+    """Строки одного операнда: имя множества или идентификатор объекта. Неизвестное имя — ошибка, а не пустое множество."""
+    rows = resolve_set(con, name)
+    if not rows and name.strip().upper().replace("≠", "NEQ") not in SET_NAMES:
+        raise SystemExit(f"нет множества или объекта {name.strip()}")
+    return rows
 
 
 def eval_set_expr(con, expr: str):
-    import re
-    expr = (expr or "").strip()
-    parts = re.split(r"\s*(∩|∪|\\|&|\||AND|OR|MINUS)\s*", expr, maxsplit=1)
-    left = resolve_set(con, parts[0])
-    if len(parts) == 1:
-        return parts[0], left
-    op, right_n = parts[1], parts[2]
-    right = resolve_set(con, right_n)
-    li, ri = {r["id"] for r in left}, {r["id"] for r in right}
-    if op in {"∩", "&", "AND"}:
-        keep, name = li & ri, f"{parts[0]} ∩ {right_n}"
-    elif op in {"∪", "|", "OR"}:
-        keep, name = li | ri, f"{parts[0]} ∪ {right_n}"
-    else:
-        keep, name = li - ri, f"{parts[0]} \\ {right_n}"
-    by = {r["id"]: r for r in left + right}
+    """Выражение над множествами слева направо без приоритетов: «A \\ B \\ C» = «(A \\ B) \\ C»."""
+    operands, ops = split_set_expr(expr)
+    by, first = {}, set_operand(con, operands[0])
+    for r in first:
+        by.setdefault(r["id"], r)
+    keep, name = {r["id"] for r in first}, operands[0]
+    for op, operand in zip(ops, operands[1:]):
+        rows = set_operand(con, operand)
+        for r in rows:
+            by.setdefault(r["id"], r)
+        ids = {r["id"] for r in rows}
+        keep = keep & ids if op == "∩" else keep | ids if op == "∪" else keep - ids
+        name += f" {op} {operand}"
     return name, [by[i] for i in sorted(keep)]
 
 
@@ -487,6 +609,8 @@ def take_row(con, row) -> str:
     oid = row["id"]
     if row["status"] == "canon" and row["type"] not in NO_CANON:
         return f"REFUSE {oid} canon"
+    if row["status"] == "superseded":
+        return f"REFUSE {oid} superseded"
     if row["status"] == "rejected":
         return f"skip {oid} already taken"
     con.execute("UPDATE objects SET status='rejected', updated_at=? WHERE id=?", (now(), oid))
@@ -497,14 +621,99 @@ def take_row(con, row) -> str:
 def accept_row(con, row) -> str:
     oid = row["id"]
     if row["type"] in NO_CANON:
-        log(con, "REFUSE", oid, row["type"])
+        log_once(con, "REFUSE", oid, row["type"])
         return f"REFUSE {oid} type={row['type']}"
     if row["status"] == "canon":
         return f"skip {oid} already canon"
-    con.execute("UPDATE objects SET status='canon', updated_at=? WHERE id=?", (now(), oid))
+    if row["status"] == "superseded":
+        log_once(con, "REFUSE", oid, "superseded")
+        return f"REFUSE {oid} superseded: заменён, вернуть можно только новым объектом"
+    if row["type"] not in ACCEPT_TYPES:
+        log_once(con, "REFUSE", oid, row["type"])
+        return f"REFUSE {oid} type={row['type']}"
+    if row["status"] not in ACCEPT_STATUSES:
+        log_once(con, "REFUSE", oid, row["status"])
+        return f"REFUSE {oid} status={row['status']}"
+    # Владелец принятого — тот, кто принял (проверенный актор с сайта), а не машина (AUD-15).
+    con.execute("UPDATE objects SET status='canon', owner=?, updated_at=? WHERE id=?", (ACTOR, now(), oid))
     stamp_cell(con, oid, row["title"])
     log(con, "ACCEPT", oid, row["title"])
     return f"ACCEPT {oid}"
+
+
+def related(con, old, new) -> bool:
+    """Похож ли new на замену old: между ними уже есть связь (любая, в любую сторону) или тот же тип и общее слово в заголовках.
+    Защита от опечатки в id: без неё SUPERSEDE D002 BY D001B молча снял бы с канона постороннее решение. Не похожи, но связаны по смыслу —
+    сначала WIRE new old related."""
+    if con.execute("SELECT 1 FROM links WHERE (from_id=? AND to_id=?) OR (from_id=? AND to_id=?)",
+                   (old["id"], new["id"], new["id"], old["id"])).fetchone():
+        return True
+    return old["type"] == new["type"] and bool(vocab_tokens(old["title"]) & vocab_tokens(new["title"]))
+
+
+def supersede_row(con, old, new, reason: str = "") -> str:
+    """Заменить принятое. old (canon) перестаёт быть каноном (superseded), new принимается (если ещё не канон), в links появляется
+    new -supersedes-> old. Всё в одной транзакции (коммит делает вызывающий): либо всё, либо ничего. Отказ начинается с REFUSE.
+    Заменить можно только канон; заменителем не может быть снятое (rejected), уже замещённое (superseded), session/tape, и он должен быть
+    связан со старым (related). Цепочки линейные: замещённый объект сам не возвращается в канон иначе как откатом (unsupersede_row),
+    поэтому циклов в supersedes не бывает."""
+    oid, nid = old["id"], new["id"]
+    if oid == nid:
+        return f"REFUSE {oid}: нельзя заменить самим собой"
+    if old["status"] == "superseded":
+        by = con.execute("SELECT from_id FROM links WHERE to_id=? AND rel='supersedes' ORDER BY rowid DESC LIMIT 1", (oid,)).fetchone()
+        if by and by["from_id"] == nid:
+            return f"skip {oid} уже заменён объектом {nid}"
+        return f"REFUSE {oid} уже заменён" + (f" объектом {by['from_id']}" if by else "")
+    if old["status"] != "canon":
+        return f"REFUSE {oid} status={old['status']}: заменяют только канон (сырое снимают TAKE)"
+    if new["type"] in NO_CANON:
+        return f"REFUSE {nid} type={new['type']}: не может быть каноном"
+    if new["status"] in ("rejected", "superseded"):
+        return f"REFUSE {nid} status={new['status']}: заменителем не может быть снятое или уже замещённое (заведите новый объект)"
+    if not related(con, old, new):
+        return (f"REFUSE {nid} не похож на замену {oid} (разный тип или нет общих слов в заголовках). Если это верно, свяжите их: "
+                f"WIRE {nid} {oid} related — и повторите")
+    if new["status"] != "canon":
+        con.execute("UPDATE objects SET status='canon', updated_at=? WHERE id=?", (now(), nid))
+        stamp_cell(con, nid, new["title"])
+        log(con, "ACCEPT", nid, f"{new['title']} (SUPERSEDE {oid}; было {new['status']})")      # метка нужна откату: что принято самой заменой
+    con.execute("UPDATE objects SET status='superseded', updated_at=? WHERE id=?", (now(), oid))
+    con.execute("INSERT OR IGNORE INTO links(from_id,to_id,rel,note) VALUES (?,?,?,?)", (nid, oid, "supersedes", reason or "SUPERSEDE"))
+    log(con, "SUPERSEDE", oid, f"by {nid}" + (f": {reason}" if reason else ""))
+    diff = f" (тип {old['type']} → {new['type']})" if old["type"] != new["type"] else ""
+    head = f"SUPERSEDE {oid} by {nid}{diff}" + ("" if new["status"] == "canon" else f"; {nid} принят")
+    return f"{head}\n  было:  {oid}  {old['title']}\n  стало: {nid}  {new['title']}"          # заголовки на виду: опечатку в id видно сразу
+
+
+def unsupersede_row(con, old, reason: str = "") -> str:
+    """Откатить замену: old (superseded) снова canon, связь supersedes снимается. Заместитель, которого принимала сама замена (так записано
+    в журнале), возвращается в прежний статус; был каноном до замены — им и остаётся. Откат идёт с конца цепочки: если заместитель сам
+    уже заменён, сначала откатите его. Отказ начинается с REFUSE, повтор на уже каноне — skip."""
+    oid = old["id"]
+    if old["status"] == "canon":
+        return f"skip {oid} не заменён"
+    if old["status"] != "superseded":
+        return f"REFUSE {oid} status={old['status']}: откатывать нечего (откат нужен только замещённому)"
+    link = con.execute("SELECT from_id, note FROM links WHERE to_id=? AND rel='supersedes' ORDER BY rowid DESC LIMIT 1", (oid,)).fetchone()
+    if not link:
+        return f"REFUSE {oid} помечен замещённым, но связи supersedes нет: откатывать не от чего"
+    nid = link["from_id"]
+    new = con.execute("SELECT id, status, title FROM objects WHERE id=?", (nid,)).fetchone()
+    if new["status"] == "superseded":
+        return f"REFUSE {oid}: его заместитель {nid} сам заменён, сначала SUPERSEDE {nid} UNDO"
+    back = ""
+    if new["status"] == "canon":
+        last = con.execute("SELECT detail FROM events WHERE action='ACCEPT' AND object_id=? ORDER BY id DESC LIMIT 1", (nid,)).fetchone()
+        m = _re.search(r"\(SUPERSEDE (\S+); было (\S+)\)$", last["detail"] or "") if last else None
+        if m and m.group(1) == oid:                                  # заместитель принят этой самой заменой, а не вручную до или после неё
+            con.execute("UPDATE objects SET status=?, updated_at=? WHERE id=?", (m.group(2), now(), nid))
+            back = m.group(2)
+    con.execute("UPDATE objects SET status='canon', updated_at=? WHERE id=?", (now(), oid))
+    con.execute("DELETE FROM links WHERE from_id=? AND to_id=? AND rel='supersedes'", (nid, oid))
+    log(con, "UNSUPERSEDE", oid, f"by {nid}" + (f"; {nid} → {back}" if back else "") + (f": {reason}" if reason else ""))
+    head = f"UNSUPERSEDE {oid}: снова canon; " + (f"{nid} → {back}" if back else f"{nid} остаётся как был ({new['status']})")
+    return f"{head}\n  вернулось: {oid}  {old['title']}\n  ушло:      {nid}  {new['title']}"
 
 
 def print_set(label: str, rows) -> None:
@@ -625,6 +834,17 @@ def gap_from_warns(warns):
     return out
 
 
+# Команды, которые пишут в базу. Только им нужна миграция ячеек (`migrate_cells`); чтения базу не меняют.
+WRITE_VERBS = {"PLANT", "CUT", "ACCEPT", "FILL", "TAKE", "SWEEP", "PURGE", "REPAIR", "GAP", "RUN", "FETCH",
+               "WIRE", "PROBE", "SETTLE", "SUPERSEDE", "BATCH"}
+
+
+def repair_rows(con) -> list:
+    """Канон-объекты с мусорным заголовком: их REPAIR вернёт в сырые."""
+    rows = list(con.execute("SELECT id, cluster, type, status, title FROM objects WHERE status='canon'"))
+    return [r for r in rows if is_junk_cell(r)]
+
+
 def cmd_exec(ns: argparse.Namespace) -> None:
     line = " ".join(ns.line or []).strip()
     parts = line.split()
@@ -633,7 +853,8 @@ def cmd_exec(ns: argparse.Namespace) -> None:
     if ns.file and not cmd:
         cmd = "PLANT"
     con = connect()
-    migrate_cells(con)
+    if cmd in WRITE_VERBS:
+        migrate_cells(con)          # миграция ячеек — только перед записью: чтения базу не меняют (решение владельца)
     if cmd == "STATUS":
         cmd_status(ns)
         log(con, "STATUS", None, "cli")
@@ -670,7 +891,16 @@ def cmd_exec(ns: argparse.Namespace) -> None:
         if not expr:
             raise SystemExit("ACCEPT id|множество")
         if is_set_expr(expr):
+            busy = lock_set_write(con, cmd, expr)
+            if busy:
+                print(busy)
+                return
             name, rows = eval_set_expr(con, expr)
+            refusal = bulk_refusal(ns, cmd, name, rows)
+            if refusal:
+                con.rollback()
+                print(refusal)
+                return
             if "NEQ" in name.upper() or "≠" in name:
                 kept, dropped = [], []
                 for r in rows:
@@ -697,7 +927,16 @@ def cmd_exec(ns: argparse.Namespace) -> None:
         if not expr:
             raise SystemExit("TAKE id|множество")
         if is_set_expr(expr):
+            busy = lock_set_write(con, cmd, expr)
+            if busy:
+                print(busy)
+                return
             name, rows = eval_set_expr(con, expr)
+            refusal = bulk_refusal(ns, cmd, name, rows)
+            if refusal:
+                con.rollback()
+                print(refusal)
+                return
             notes = [take_row(con, r) for r in rows]
             con.commit()
             print(f"TAKE {name} → {len(notes)}")
@@ -707,6 +946,34 @@ def cmd_exec(ns: argparse.Namespace) -> None:
         if not row:
             raise SystemExit(f"нет {expr}")
         print(take_row(con, row))
+        con.commit()
+        return
+    if cmd == "SUPERSEDE":
+        usage = ("SUPERSEDE старый_id BY новый_id [причина]   (BY можно опустить: SUPERSEDE старый_id новый_id)\n"
+                 "SUPERSEDE старый_id UNDO [причина]   (откатить замену)")
+        bits = arg.split()
+        if len(bits) >= 2 and bits[1].upper() == "UNDO":
+            row = con.execute("SELECT id, cluster, type, status, title FROM objects WHERE id=?", (bits[0],)).fetchone()
+            if not row:
+                raise SystemExit(f"нет {bits[0]}")
+            print(unsupersede_row(con, row, " ".join(bits[2:])))
+            con.commit()
+            return
+        if len(bits) >= 2 and bits[1].upper() == "BY":
+            if len(bits) < 3:
+                raise SystemExit(usage)
+            old_id, new_id, reason = bits[0], bits[2], " ".join(bits[3:])
+        elif len(bits) >= 2:
+            old_id, new_id, reason = bits[0], bits[1], " ".join(bits[2:])
+        else:
+            raise SystemExit(usage)
+        pair = {}
+        for oid in (old_id, new_id):
+            r = con.execute("SELECT id, cluster, type, status, title FROM objects WHERE id=?", (oid,)).fetchone()
+            if not r:
+                raise SystemExit(f"нет {oid}")
+            pair[oid] = r
+        print(supersede_row(con, pair[old_id], pair[new_id], reason))
         con.commit()
         return
     if cmd == "RUN":
@@ -721,11 +988,21 @@ def cmd_exec(ns: argparse.Namespace) -> None:
         cmd_next(ns)
         return
     if cmd == "FETCH":
-        oid = f"Q-FETCH-{now()[11:19].replace(':','')}"
+        title = "чего нет в каноне?"
+        open_q = con.execute(                                    # тот же вопрос уже стоит (не снят, не закрыт): второй не нужен
+            "SELECT id FROM objects WHERE type='question' AND title=? AND status NOT IN ('closed','rejected','dormant','superseded') "
+            "ORDER BY id LIMIT 1", (title,)).fetchone()
+        if open_q:
+            print(f"skip FETCH {open_q['id']} уже стоит: второй такой же вопрос не заводим")
+            return
+        n = con.execute("SELECT COUNT(*) FROM objects WHERE id LIKE 'Q-FETCH-%'").fetchone()[0] + 1
+        while con.execute("SELECT 1 FROM objects WHERE id=?", (f"Q-FETCH-{n:03d}",)).fetchone():
+            n += 1                                               # номер по порядку, а не по часам: часы повторялись в ту же секунду и на следующий день
+        oid = f"Q-FETCH-{n:03d}"
         con.execute(
             "INSERT INTO objects(id,cluster,layer,type,title,status,body,created_at,updated_at,owner) "
             "VALUES (?,?,?,?,?,?,?,?,?,?)",
-            (oid, "C", 2, "question", "чего нет в каноне?", "raw", "FETCH с L4 на L1", now(), now(), "machine:exec"),
+            (oid, "C", 2, "question", title, "raw", "FETCH с L4 на L1", now(), now(), "machine:exec"),
         )
         log(con, "FETCH", oid, "new L1")
         con.commit()
@@ -805,8 +1082,11 @@ def cmd_exec(ns: argparse.Namespace) -> None:
             if b.upper().startswith("BATCH"):
                 print("skip nested BATCH")
                 continue
+            if b.split()[0].upper() == "SUPERSEDE":          # замена принятого — решение человека, отдельной командой; в BATCH её не протащить
+                print("skip SUPERSEDE in BATCH: замену запускают отдельной командой")
+                continue
             print(f"# {b}")
-            sub = argparse.Namespace(line=shlex.split(b), file=None)
+            sub = argparse.Namespace(line=shlex.split(b), file=None, in_batch=True)
             cmd_exec(sub)
         return
     if cmd == "CANON":
@@ -890,30 +1170,12 @@ def cmd_exec(ns: argparse.Namespace) -> None:
         log(con, "NEQ", None, str(len(rows)))
         con.commit()
         return
+    if cmd == "IDS":
+        rows = repair_rows(con) if arg.strip().upper() == "REPAIR" else eval_set_expr(con, arg)[1]
+        print("\n".join(f"{r['id']}\t{r['type']}\t{r['status']}" for r in rows))
+        return
     if cmd == "SET":
-        import re
-        expr = arg.strip()
-        parts = re.split(r"\s*(∩|∪|\\|&|\||AND|OR|MINUS)\s*", expr, maxsplit=1)
-        left = resolve_set(con, parts[0])
-        if len(parts) == 1:
-            print_set(f"SET {parts[0]}", left)
-            log(con, "SET", None, parts[0])
-            con.commit()
-            return
-        op, right_n = parts[1], parts[2]
-        right = resolve_set(con, right_n)
-        li, ri = {r["id"] for r in left}, {r["id"] for r in right}
-        if op in {"∩", "&", "AND"}:
-            keep = li & ri
-            name = f"{parts[0]} ∩ {right_n}"
-        elif op in {"∪", "|", "OR"}:
-            keep = li | ri
-            name = f"{parts[0]} ∪ {right_n}"
-        else:
-            keep = li - ri
-            name = f"{parts[0]} \\ {right_n}"
-        by = {r["id"]: r for r in left + right}
-        rows = [by[i] for i in sorted(keep)]
+        name, rows = eval_set_expr(con, arg)
         print_set(f"SET {name}", rows)
         log(con, "SET", None, name)
         con.commit()
@@ -943,10 +1205,16 @@ def cmd_exec(ns: argparse.Namespace) -> None:
         con.commit()
         return
     if cmd == "REPAIR":
-        rows = list(con.execute(
-            "SELECT id, cluster, type, status, title FROM objects WHERE status='canon'"
-        ))
-        junk = [r for r in rows if is_junk_cell(r)]
+        busy = lock_set_write(con, "REPAIR", "REPAIR")
+        if busy:
+            print(busy)
+            return
+        junk = repair_rows(con)
+        refusal = bulk_refusal(ns, "REPAIR", "REPAIR", junk, always=True)
+        if refusal:
+            con.rollback()
+            print(refusal)
+            return
         notes = []
         for r in junk:
             con.execute(
@@ -1119,7 +1387,7 @@ def cmd_exec(ns: argparse.Namespace) -> None:
         return
     if cmd == "PURGE":
 
-        cmd_exec(argparse.Namespace(line=["TAKE", "JUNK"], file=None))
+        cmd_exec(argparse.Namespace(line=["TAKE", "JUNK"], file=None, ids=getattr(ns, "ids", None)))
         return
     if cmd == "PROBE":
         bits = arg.split()
@@ -1183,6 +1451,7 @@ def cmd_exec(ns: argparse.Namespace) -> None:
 
 
 def main() -> None:
+    global ACTOR
     p = argparse.ArgumentParser(description="Ступень 4 портфеля: действия над SQLite")
     sub = p.add_subparsers(dest="cmd", required=True)
     sub.add_parser("init").set_defaults(func=cmd_init)
@@ -1204,8 +1473,11 @@ def main() -> None:
     e = sub.add_parser("exec")
     e.add_argument("line", nargs="*")
     e.add_argument("--file", dest="file")
+    e.add_argument("--actor", dest="actor", type=valid_actor, default=None)
+    e.add_argument("--ids", dest="ids", type=valid_ids, default=None)
     e.set_defaults(func=cmd_exec)
     ns = p.parse_args()
+    ACTOR = getattr(ns, "actor", None) or DEFAULT_ACTOR                 # присваивается на каждый запуск: повторный main() не унаследует чужого
     if ns.cmd != "init" and not DB.exists():
         raise SystemExit("нет базы: сначала python3 pm.py init")
     ns.func(ns)

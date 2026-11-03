@@ -2,7 +2,10 @@ import { useEffect, useState } from "react";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { DeskShell } from "@/components/desk-nav";
 import { refreshBook, runBoth } from "@/lib/desk-bridge";
+import { writeOutcome } from "@/lib/desk-writes";
+import { writeProps } from "@/lib/desk-access";
 import { useDesk } from "@/lib/desk-store";
+import { useDeskAccess } from "@/lib/use-desk-access";
 
 export const Route = createFileRoute("/l3")({ component: L3 });
 
@@ -10,6 +13,7 @@ function L3() {
   const rows = useDesk((s) => s.canon);
   const wires = useDesk((s) => s.wires);
   const nav = useNavigate();
+  const access = useDeskAccess();
   const [ready, setReady] = useState(false);
   const cells = rows.filter((r) => r.pred && r.obj);
   const rest = rows.filter((r) => !(r.pred && r.obj));
@@ -96,9 +100,12 @@ function L3() {
                 <td className="px-3 py-2">
                   <button
                     type="button"
+                    {...writeProps(access)}
                     className="text-xs underline"
                     onClick={() => {
-                      void runBoth(r.id).then(() => nav({ to: "/l4" }));
+                      void runBoth(r.id).then((out) => {
+                        if (writeOutcome(out).ok) nav({ to: "/l4" });
+                      });
                     }}
                   >
                     RUN

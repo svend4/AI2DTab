@@ -2,8 +2,10 @@ import { Fragment, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import ontSeed from "@/data/ont-l2.json";
 import { DeskShell } from "@/components/desk-nav";
-import { acceptBoth, bridge, plantToDb, refreshBook, takeBoth } from "@/lib/desk-bridge";
+import { acceptBoth, plantToDb, takeBoth, writeBulk, writeDesk } from "@/lib/desk-bridge";
+import { writeProps } from "@/lib/desk-access";
 import { useDesk, type Row } from "@/lib/desk-store";
+import { useDeskAccess } from "@/lib/use-desk-access";
 
 function parseNeq(row: { title: string; pred?: string; obj?: string }) {
   if (row.pred && row.obj) return { pred: row.pred, obj: row.obj };
@@ -19,16 +21,15 @@ function parseNeq(row: { title: string; pred?: string; obj?: string }) {
 export const Route = createFileRoute("/l2")({ component: L2 });
 
 function L2() {
-  const rows = useDesk((s) => s.rows);
+  const access = useDeskAccess();
   const book = useDesk((s) => s.plane);
   const canon = useDesk((s) => s.canon);
-  const mergeRows = useDesk((s) => s.mergeRows);
   const [open, setOpen] = useState<string | null>(null);
   const look = useDesk((s) => s.look);
   const cluster = useDesk((s) => s.cluster);
   const setLook = useDesk((s) => s.setLook);
   const setCluster = useDesk((s) => s.setCluster);
-  const source = book.length ? book : rows.filter((r) => r.status === "raw");
+  const source = book;
   const plane = source.filter((r) => {
     if (cluster && r.cluster !== cluster) return false;
     if (!look) return true;
@@ -54,7 +55,7 @@ function L2() {
   const neq = plane.filter((r) => r.title.includes("≠") && r.type === "observation");
 
   function fromKit() {
-    const mapped: Omit<Row, "status">[] = ontSeed.map((r) => ({
+    const rows: Row[] = ontSeed.map((r) => ({
       id: r.id,
       cluster: r.cluster || "C",
       layer: r.layer || "2",
@@ -62,11 +63,9 @@ function L2() {
       title: r.title || r.id,
       body: (r.body || "").slice(0, 800),
       source: "kit ont",
+      status: "raw" as const,
     }));
-    const have = new Set(useDesk.getState().rows.map((r) => r.id));
-    mergeRows(mapped);
-    const added = useDesk.getState().rows.filter((r) => !have.has(r.id));
-    void plantToDb(added);
+    void plantToDb(rows);
   }
 
   return (
@@ -80,6 +79,7 @@ function L2() {
         </div>
         <button
           type="button"
+          {...writeProps(access)}
           onClick={fromKit}
           className="h-11 rounded-md border border-border bg-elevated px-4 text-sm"
         >
@@ -116,61 +116,41 @@ function L2() {
         />
         <button
           type="button"
+          {...writeProps(access)}
           className="h-10 rounded-md border border-border px-3 text-xs"
-          onClick={() => {
-            void (async () => {
-              await bridge("FILL");
-              await refreshBook();
-            })();
-          }}
+          onClick={() => void writeBulk("FILL")}
         >
           FILL NEQ∩RAW
         </button>
         <button
           type="button"
+          {...writeProps(access)}
           className="h-10 rounded-md border border-border px-3 text-xs"
-          onClick={() => {
-            void (async () => {
-              await bridge("SWEEP");
-              await refreshBook();
-            })();
-          }}
+          onClick={() => void writeBulk("SWEEP")}
         >
           SWEEP SESSION
         </button>
         <button
           type="button"
+          {...writeProps(access)}
           className="h-10 rounded-md border border-border px-3 text-xs"
-          onClick={() => {
-            void (async () => {
-              await bridge("GAP");
-              await refreshBook();
-            })();
-          }}
+          onClick={() => void writeDesk("GAP")}
         >
           GAP из приборов
         </button>
         <button
           type="button"
+          {...writeProps(access)}
           className="h-10 rounded-md border border-border px-3 text-xs"
-          onClick={() => {
-            void (async () => {
-              await bridge("PURGE");
-              await refreshBook();
-            })();
-          }}
+          onClick={() => void writeBulk("PURGE")}
         >
           PURGE JUNK
         </button>
         <button
           type="button"
+          {...writeProps(access)}
           className="h-10 rounded-md border border-border px-3 text-xs"
-          onClick={() => {
-            void (async () => {
-              await bridge("PROBE C A");
-              await refreshBook();
-            })();
-          }}
+          onClick={() => void writeDesk("PROBE C A")}
         >
           PROBE C→A
         </button>
@@ -288,11 +268,17 @@ function L2() {
                   <td className="px-3 py-2 font-mono text-xs">{r.obj || r.title}</td>
                   <td className="px-3 py-2" onClick={(e) => e.stopPropagation()}>
                     <div className="flex gap-3 whitespace-nowrap">
-                      <button type="button" className="text-xs underline" onClick={() => void acceptBoth(r.id)}>
+                      <button
+                        type="button"
+                        {...writeProps(access)}
+                        className="text-xs underline"
+                        onClick={() => void acceptBoth(r.id)}
+                      >
                         принять
                       </button>
                       <button
                         type="button"
+                        {...writeProps(access)}
                         className="text-xs text-subtle underline"
                         onClick={() => void takeBoth(r.id)}
                       >
