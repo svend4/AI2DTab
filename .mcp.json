@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "cards": {
+      "command": "python3",
+      "args": ["engine/cards/cards.py", "--db", "engine/cards/cards.sqlite", "serve", "--refresh"]
+    }
+  }
+}

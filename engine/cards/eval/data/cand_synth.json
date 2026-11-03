@@ -1,0 +1,5020 @@
+[
+ {
+  "id": "s_capability_capital_evo0",
+  "type": "evolution",
+  "term": "Capability Capital",
+  "text": "Как менялось в разговоре описание того, как измерять и учитывать Capability Capital: чем его предлагали описывать сначала (вместо одной цифры), какая классификация устойчивости добавилась позже и какие показатели отслеживают, когда он растёт от успешных Mission?",
+  "reference": "Сначала Capability Capital предлагали не оценивать одной цифрой, а вести «структурированную карту» с осями maturity, capacity, reuse и risk. Затем добавили классы удержания capability: PERSON_BOUND, TEAM_BOUND, RESOURCE_BOUND, ORGANIZATIONAL, INSTITUTIONALIZED. Ещё позже его рост связали с Mission (Mission → New Capability → Registry → Future Missions) и стали отслеживать reuse count, time saved и provider coverage, не выдумывая денежный ROI.",
+  "parts": [
+   {
+    "turn": "t038",
+    "ts": "2026-09-18 09:31",
+    "span": "структурированная карта",
+    "line": 1937,
+    "window": [
+     1885,
+     2118
+    ],
+    "turns_with_span": [
+     "t038"
+    ],
+    "check": "структурированная\\s+карта"
+   },
+   {
+    "turn": "t072",
+    "ts": "2026-09-18 15:12",
+    "span": "INSTITUTIONALIZED",
+    "line": 172,
+    "window": [
+     10,
+     214
+    ],
+    "turns_with_span": [
+     "t071",
+     "t072",
+     "t073"
+    ],
+    "check": "INSTITUTIONALIZED"
+   },
+   {
+    "turn": "t080",
+    "ts": "2026-09-18 17:42",
+    "span": "provider coverage",
+    "line": 5251,
+    "window": [
+     5224,
+     5462
+    ],
+    "turns_with_span": [
+     "t080"
+    ],
+    "check": "provider\\s+coverage"
+   }
+  ],
+  "check": [
+   "структурированная\\s+карта",
+   "INSTITUTIONALIZED",
+   "provider\\s+coverage"
+  ],
+  "turns": [
+   "t038",
+   "t072",
+   "t080"
+  ]
+ },
+ {
+  "id": "s_capability_capital_agg0",
+  "type": "aggregation",
+  "term": "Capability Capital",
+  "text": "Из каких видов активов состоит Capability Capital и какие классы удержания (Capability Retention Classes) предлагаются для оценки устойчивости capability?",
+  "reference": "Capability Capital включает trained people, software, knowledge, datasets, labs, processes, standards и networks. Устойчивость capability оценивается по пяти классам удержания: PERSON_BOUND, TEAM_BOUND, RESOURCE_BOUND, ORGANIZATIONAL и INSTITUTIONALIZED.",
+  "parts": [
+   {
+    "turn": "t038",
+    "ts": "2026-09-18 09:31",
+    "span": "trained people",
+    "line": 1920,
+    "window": [
+     1885,
+     2118
+    ],
+    "turns_with_span": [
+     "t038"
+    ],
+    "check": "trained\\s+people"
+   },
+   {
+    "turn": "t072",
+    "ts": "2026-09-18 15:12",
+    "span": "INSTITUTIONALIZED",
+    "line": 172,
+    "window": [
+     10,
+     214
+    ],
+    "turns_with_span": [
+     "t071",
+     "t072",
+     "t073"
+    ],
+    "check": "INSTITUTIONALIZED"
+   }
+  ],
+  "check": [
+   "trained\\s+people",
+   "INSTITUTIONALIZED"
+  ],
+  "turns": [
+   "t038",
+   "t072",
+   "t080"
+  ]
+ },
+ {
+  "id": "s_capability_capital_evo1",
+  "type": "evolution",
+  "term": "Capability Capital",
+  "text": "Как меняется описание Capability Capital между планом нового модуля и поздним примером с вычислительными узлами: из каких категорий он собирается в плане и при каких условиях новый compute-узел становится Capability Capital?",
+  "reference": "Сначала Capability Capital описан как часть модуля, который объединяет Capability History, Project Outcomes, Knowledge, Software и Infrastructure Capital, Human/Organizational Capability, Dependency Reduction, Failures, Reuse и Learning. Позже даётся конкретный пример: новый compute-узел ценен не сам по себе, а становится Compute Capability Capital после установки runtime, подтверждённых benchmarks verified (проверки бенчмарками) и развёрнутых пакетов.",
+  "parts": [
+   {
+    "turn": "t060",
+    "ts": "2026-09-18 13:05",
+    "span": "Human/Organizational Capability",
+    "line": 7654,
+    "window": [
+     7638,
+     7685
+    ],
+    "turns_with_span": [
+     "t060"
+    ],
+    "check": "Human/Organizational\\s+Capability"
+   },
+   {
+    "turn": "t075",
+    "ts": "2026-09-18 17:07",
+    "span": "benchmarks verified",
+    "line": 5763,
+    "window": [
+     5750,
+     6005
+    ],
+    "turns_with_span": [
+     "t075"
+    ],
+    "check": "benchmarks\\s+verified"
+   }
+  ],
+  "check": [
+   "Human/Organizational\\s+Capability",
+   "benchmarks\\s+verified"
+  ],
+  "turns": [
+   "t060",
+   "t073",
+   "t075"
+  ]
+ },
+ {
+  "id": "s_capability_capital_agg1",
+  "type": "aggregation",
+  "term": "Capability Capital",
+  "text": "Какие виды капитала и способностей объединяет модуль Innovation Evolution, Capability Capital & Ecosystem Learning Engine, и какие три условия превращают новый вычислительный узел в Compute Capability Capital?",
+  "reference": "Модуль объединяет Capability History, Project Outcomes, Knowledge Capital, Software Capital, Human/Organizational Capability, Infrastructure Capital, Dependency Reduction, Failures, Reuse и Learning. Новый вычислительный узел становится Compute Capability Capital, когда установлен runtime, benchmarks verified (бенчмарки проверены) и развернуты packages.",
+  "parts": [
+   {
+    "turn": "t060",
+    "ts": "2026-09-18 13:05",
+    "span": "Human/Organizational Capability",
+    "line": 7654,
+    "window": [
+     7638,
+     7685
+    ],
+    "turns_with_span": [
+     "t060"
+    ],
+    "check": "Human/Organizational\\s+Capability"
+   },
+   {
+    "turn": "t075",
+    "ts": "2026-09-18 17:07",
+    "span": "benchmarks verified",
+    "line": 5763,
+    "window": [
+     5750,
+     6005
+    ],
+    "turns_with_span": [
+     "t075"
+    ],
+    "check": "benchmarks\\s+verified"
+   }
+  ],
+  "check": [
+   "Human/Organizational\\s+Capability",
+   "benchmarks\\s+verified"
+  ],
+  "turns": [
+   "t060",
+   "t073",
+   "t075"
+  ]
+ },
+ {
+  "id": "s_foresight_evo0",
+  "type": "evolution",
+  "term": "Foresight",
+  "text": "Как менялось описание Foresight: чем он определяется и какие сценарные семьи и сигналы мониторинга приводятся в начале, и какую роль и какие стадии жизненного цикла стандартов он получает позже?",
+  "reference": "Сначала Foresight Engine описывается как расширение Counterfactual Engine, строящее пространство возможных миров («Foresight ≠ Prediction»), со сценарными семьями (например, Centralized cloud dominance, Local/edge AI growth) и signpost-мониторингом. Позже Foresight подключается к стандартам: внешний черновик становится стратегическим сигналом, а жизненный цикл включает стадии proposal, draft, candidate, published, effective, deprecated, где draft лишь влияет на планирование, а effective standard может ограничивать production.",
+  "parts": [
+   {
+    "turn": "t025",
+    "ts": "2026-09-18 08:47",
+    "span": "Foresight ≠ Prediction",
+    "line": 2027,
+    "window": [
+     1933,
+     2120
+    ],
+    "turns_with_span": [
+     "t025"
+    ],
+    "check": "Foresight\\s+≠\\s+Prediction"
+   },
+   {
+    "turn": "t068",
+    "ts": "2026-09-18 14:15",
+    "span": "proposal draft candidate published effective deprecated",
+    "line": null,
+    "window": [
+     8831,
+     9063
+    ],
+    "turns_with_span": [
+     "t068"
+    ],
+    "check": "proposal\\s+draft\\s+candidate\\s+published\\s+effective\\s+deprecated"
+   }
+  ],
+  "check": [
+   "Foresight\\s+≠\\s+Prediction",
+   "proposal\\s+draft\\s+candidate\\s+published\\s+effective\\s+deprecated"
+  ],
+  "turns": [
+   "t025",
+   "t064",
+   "t068"
+  ]
+ },
+ {
+  "id": "s_foresight_agg0",
+  "type": "aggregation",
+  "term": "Foresight",
+  "text": "Какие пять семейств сценариев Foresight приведены для Agent Infrastructure, какие шесть стадий жизненного цикла стандартов описаны в Foresight и какое состояние Foresight входит в формулу Command Center?",
+  "reference": "Семейства сценариев: Centralized cloud dominance, Local/edge AI growth, Open-source ecosystem growth, Strict regulation, Major model commoditization. Стадии Standards Lifecycle in Foresight: proposal, draft, candidate, published, effective, deprecated. В формулу Command Center входит Foresight State, который вместе с World, Runtime, Verification и Strategy State подаётся в Operational View Compiler.",
+  "parts": [
+   {
+    "turn": "t025",
+    "ts": "2026-09-18 08:47",
+    "span": "Centralized cloud dominance",
+    "line": 2049,
+    "window": [
+     1933,
+     2120
+    ],
+    "turns_with_span": [
+     "t025"
+    ],
+    "check": "Centralized\\s+cloud\\s+dominance"
+   },
+   {
+    "turn": "t064",
+    "ts": "2026-09-18 13:40",
+    "span": "Foresight State",
+    "line": 226,
+    "window": [
+     25,
+     269
+    ],
+    "turns_with_span": [
+     "t064"
+    ],
+    "check": "Foresight\\s+State"
+   },
+   {
+    "turn": "t068",
+    "ts": "2026-09-18 14:15",
+    "span": "Standards Lifecycle in Foresight",
+    "line": 8860,
+    "window": [
+     8831,
+     9063
+    ],
+    "turns_with_span": [
+     "t068"
+    ],
+    "check": "Standards\\s+Lifecycle\\s+in\\s+Foresight"
+   }
+  ],
+  "check": [
+   "Centralized\\s+cloud\\s+dominance",
+   "Foresight\\s+State",
+   "Standards\\s+Lifecycle\\s+in\\s+Foresight"
+  ],
+  "turns": [
+   "t025",
+   "t064",
+   "t068"
+  ]
+ },
+ {
+  "id": "s_foresight_evo1",
+  "type": "evolution",
+  "term": "Foresight",
+  "text": "Как менялось описание роли Foresight в системе: из каких этапов состоит его конвейер от внешних событий до пересмотра портфеля, в каком виде его состояние поступает в Command Center и какой сигнал и какое разделение с Data Fabric добавляются позже?",
+  "reference": "Сначала Foresight описан как движок с конвейером External Events → Weak Signals → Trend Hypotheses → Mission Relevance → Scenario Impact → Strategic Signposts → Portfolio Review. Затем «Foresight State» входит в формулу Operational View Compiler вместе с World, Runtime, Verification и Strategy State и попадает в Command Center. Позже уточняется, что Foresight может использовать «new vocabulary frequency» как слабый сигнал, но частота терминов не равна зрелости технологии, а Data Fabric поставляет наблюдения, и интерпретирует их Foresight.",
+  "parts": [
+   {
+    "turn": "t062",
+    "ts": "2026-09-18 13:30",
+    "span": "Strategic Signposts",
+    "line": 5796,
+    "window": [
+     5778,
+     5859
+    ],
+    "turns_with_span": [
+     "t043",
+     "t062",
+     "t063"
+    ],
+    "check": "Strategic\\s+Signposts"
+   },
+   {
+    "turn": "t064",
+    "ts": "2026-09-18 13:40",
+    "span": "Foresight State",
+    "line": 226,
+    "window": [
+     25,
+     269
+    ],
+    "turns_with_span": [
+     "t064"
+    ],
+    "check": "Foresight\\s+State"
+   },
+   {
+    "turn": "t065",
+    "ts": "2026-09-18 13:51",
+    "span": "new vocabulary frequency",
+    "line": 6946,
+    "window": [
+     6940,
+     7216
+    ],
+    "turns_with_span": [
+     "t065"
+    ],
+    "check": "new\\s+vocabulary\\s+frequency"
+   }
+  ],
+  "check": [
+   "Strategic\\s+Signposts",
+   "Foresight\\s+State",
+   "new\\s+vocabulary\\s+frequency"
+  ],
+  "turns": [
+   "t062",
+   "t064",
+   "t065"
+  ]
+ },
+ {
+  "id": "s_foresight_agg1",
+  "type": "aggregation",
+  "term": "Foresight",
+  "text": "Какие источники входных данных объединяет модуль Strategic Foresight (observatories, radar и т. д.) и какой дополнительный слабый сигнал он берёт из наблюдений Data Fabric?",
+  "reference": "Foresight объединяет Research Observatory, GitHub Observatory, HN/Talent Observatory, Funding Observatory, Technology Radar, Supply Chain, Standards и Markets. Кроме того, он использует как слабый сигнал частоту появления новой лексики (new vocabulary frequency): Data Fabric поставляет наблюдения, а Foresight их интерпретирует, при этом частота терминов не равна зрелости технологии.",
+  "parts": [
+   {
+    "turn": "t062",
+    "ts": "2026-09-18 13:30",
+    "span": "GitHub Observatory",
+    "line": 5807,
+    "window": [
+     5778,
+     5859
+    ],
+    "turns_with_span": [
+     "t032",
+     "t053",
+     "t054",
+     "t060",
+     "t062",
+     "t069",
+     "t070",
+     "t079"
+    ],
+    "check": "GitHub\\s+Observatory"
+   },
+   {
+    "turn": "t065",
+    "ts": "2026-09-18 13:51",
+    "span": "new vocabulary frequency",
+    "line": 6946,
+    "window": [
+     6940,
+     7216
+    ],
+    "turns_with_span": [
+     "t065"
+    ],
+    "check": "new\\s+vocabulary\\s+frequency"
+   }
+  ],
+  "check": [
+   "GitHub\\s+Observatory",
+   "new\\s+vocabulary\\s+frequency"
+  ],
+  "turns": [
+   "t062",
+   "t064",
+   "t065"
+  ]
+ },
+ {
+  "id": "s_signpost_evo0",
+  "type": "evolution",
+  "term": "Signpost",
+  "text": "Как менялось в разговоре описание Signpost в стратегическом движке: какие примеры сигналов и какое действие они запускают в ранней версии (в виде политики/объекта) и что добавлено в поздней версии про технологические signposts?",
+  "reference": "Сначала Signpost описывался как объект с полями scenario, metric (например, edge_inference_cost) и trigger: below_threshold, а policy rule предлагала reconsider_project: edge_agent_platform при падении стоимости локального инференса. Позже Signpost-Driven Technology Strategy добавила технологические примеры, например «GPU price falls below threshold» и «vendor releases ARM64 build», где событие запускает «roadmap review», а не автоматическую миграцию.",
+  "parts": [
+   {
+    "turn": "t025",
+    "ts": "2026-09-18 08:47",
+    "span": "metric: edge_inference_cost",
+    "line": 2091,
+    "window": [
+     2061,
+     2240
+    ],
+    "turns_with_span": [
+     "t025"
+    ],
+    "check": "metric:\\s+edge_inference_cost"
+   },
+   {
+    "turn": "t079",
+    "ts": "2026-09-18 17:36",
+    "span": "GPU price falls below threshold",
+    "line": 3178,
+    "window": [
+     3158,
+     3425
+    ],
+    "turns_with_span": [
+     "t079"
+    ],
+    "check": "GPU\\s+price\\s+falls\\s+below\\s+threshold"
+   }
+  ],
+  "check": [
+   "metric:\\s+edge_inference_cost",
+   "GPU\\s+price\\s+falls\\s+below\\s+threshold"
+  ],
+  "turns": [
+   "t025",
+   "t062",
+   "t079"
+  ]
+ },
+ {
+  "id": "s_signpost_agg0",
+  "type": "aggregation",
+  "term": "Signpost",
+  "text": "Какие примеры signpost приводятся в разговоре для сценария local_ai_growth (метрика в объекте signpost), на портфельном уровне и в технологической стратегии? Перечисли конкретные метрики, категории и события.",
+  "reference": "Для сценария local_ai_growth в объекте signpost указана метрика edge_inference_cost с триггером below_threshold. На портфельном уровне signposts: technology maturity, demand shift, cost change, regulation, funding, resource availability. В технологической стратегии это события вроде vendor releases ARM64 build, standard reaches stable version, GPU price falls below threshold и support contract ends.",
+  "parts": [
+   {
+    "turn": "t025",
+    "ts": "2026-09-18 08:47",
+    "span": "edge_inference_cost",
+    "line": 2091,
+    "window": [
+     2061,
+     2240
+    ],
+    "turns_with_span": [
+     "t025"
+    ],
+    "check": "edge_inference_cost"
+   },
+   {
+    "turn": "t062",
+    "ts": "2026-09-18 13:30",
+    "span": "demand shift",
+    "line": 1813,
+    "window": [
+     1804,
+     2055
+    ],
+    "turns_with_span": [
+     "t062"
+    ],
+    "check": "demand\\s+shift"
+   },
+   {
+    "turn": "t079",
+    "ts": "2026-09-18 17:36",
+    "span": "GPU price falls below threshold",
+    "line": 3178,
+    "window": [
+     3158,
+     3425
+    ],
+    "turns_with_span": [
+     "t079"
+    ],
+    "check": "GPU\\s+price\\s+falls\\s+below\\s+threshold"
+   }
+  ],
+  "check": [
+   "edge_inference_cost",
+   "demand\\s+shift",
+   "GPU\\s+price\\s+falls\\s+below\\s+threshold"
+  ],
+  "turns": [
+   "t025",
+   "t062",
+   "t079"
+  ]
+ },
+ {
+  "id": "s_signpost_evo1",
+  "type": "evolution",
+  "term": "Signpost",
+  "text": "Как менялось описание Signpost: какие источники сигналов отслеживаются для сигнпостов в ранней версии, какие формальные состояния сигнпоста введены позже и какие конкретные условия для переключения архитектуры названы в самой поздней версии?",
+  "reference": "Сначала World State следит за hiring, funding, repo activity и research, а при пересечении порога запускается REVIEW STRATEGY, без автоматического изменения стратегии. Позже добавлены формальные состояния сигнпоста NOT_OBSERVED, PARTIAL, OBSERVED, INVALIDATED (и класс StrategicSignpost). Ещё позже появились архитектурные сигнпосты: API price > threshold, network reliability < threshold, local model quality >= target; событие открывает review, а не заменяет прод автоматически.",
+  "parts": [
+   {
+    "turn": "t043",
+    "ts": "2026-09-18 09:58",
+    "span": "repo activity",
+    "line": 4694,
+    "window": [
+     4670,
+     4924
+    ],
+    "turns_with_span": [
+     "t043",
+     "t061"
+    ],
+    "check": "repo\\s+activity"
+   },
+   {
+    "turn": "t063",
+    "ts": "2026-09-18 13:36",
+    "span": "NOT_OBSERVED",
+    "line": 1273,
+    "window": [
+     1188,
+     1420
+    ],
+    "turns_with_span": [
+     "t063",
+     "t067",
+     "t068"
+    ],
+    "check": "NOT_OBSERVED"
+   },
+   {
+    "turn": "t069",
+    "ts": "2026-09-18 14:25",
+    "span": "network reliability < threshold",
+    "line": 4446,
+    "window": [
+     4437,
+     4694
+    ],
+    "turns_with_span": [
+     "t069"
+    ],
+    "check": "network\\s+reliability\\s+<\\s+threshold"
+   }
+  ],
+  "check": [
+   "repo\\s+activity",
+   "NOT_OBSERVED",
+   "network\\s+reliability\\s+<\\s+threshold"
+  ],
+  "turns": [
+   "t043",
+   "t063",
+   "t069"
+  ]
+ },
+ {
+  "id": "s_signpost_agg1",
+  "type": "aggregation",
+  "term": "Signpost",
+  "text": "За какими областями следит World State при мониторинге signpost-ов и какие три условия названы архитектурными signpost-ами, по которым может сработать будущее переключение?",
+  "reference": "World State следит за hiring, funding, repo activity и research. Архитектурные signpost-ы: API price > threshold, network reliability < threshold и local model quality >= target. Их срабатывание открывает review, а не автоматически заменяет production.",
+  "parts": [
+   {
+    "turn": "t043",
+    "ts": "2026-09-18 09:58",
+    "span": "repo activity",
+    "line": 4694,
+    "window": [
+     4670,
+     4924
+    ],
+    "turns_with_span": [
+     "t043",
+     "t061"
+    ],
+    "check": "repo\\s+activity"
+   },
+   {
+    "turn": "t069",
+    "ts": "2026-09-18 14:25",
+    "span": "network reliability < threshold",
+    "line": 4446,
+    "window": [
+     4437,
+     4694
+    ],
+    "turns_with_span": [
+     "t069"
+    ],
+    "check": "network\\s+reliability\\s+<\\s+threshold"
+   }
+  ],
+  "check": [
+   "repo\\s+activity",
+   "network\\s+reliability\\s+<\\s+threshold"
+  ],
+  "turns": [
+   "t043",
+   "t063",
+   "t069"
+  ]
+ },
+ {
+  "id": "s_acceptance_test_evo0",
+  "type": "evolution",
+  "term": "Acceptance Test",
+  "text": "Как менялся предмет Acceptance Test по ходу обсуждения: что проверяли первые пять тестов ядра (какой итоговый артефакт решения), чем их дополнили тесты исследовательского модуля при расхождении двух статей в разных датасетах и что проверяли тесты для форка с другой онтологией?",
+  "reference": "Сначала пять acceptance tests проверяли ядро: от пайплайна HN-постов до утверждения конфигурации человеком, которое даёт Decision и project.lock, и выполнения одной Action. Затем тесты исследовательского модуля проверяли корректность работы с научными знаниями: при расхождении статей на разных датасетах ожидается context partition, а не простое противоречие. Позже тесты для вики и форума добавили, что форк с другой онтологией требует mapping needed, а не принудительного слияния.",
+  "parts": [
+   {
+    "turn": "t055",
+    "ts": "2026-09-18 12:12",
+    "span": "context partition",
+    "line": 1507,
+    "window": [
+     4550,
+     4810
+    ],
+    "turns_with_span": [
+     "t043",
+     "t055"
+    ],
+    "check": "context\\s+partition"
+   },
+   {
+    "turn": "t059",
+    "ts": "2026-09-18 13:00",
+    "span": "mapping needed",
+    "line": 6109,
+    "window": [
+     6087,
+     6345
+    ],
+    "turns_with_span": [
+     "t059"
+    ],
+    "check": "mapping\\s+needed"
+   }
+  ],
+  "check": [
+   "context\\s+partition",
+   "mapping\\s+needed"
+  ],
+  "turns": [
+   "t029",
+   "t055",
+   "t059"
+  ]
+ },
+ {
+  "id": "s_acceptance_test_agg0",
+  "type": "aggregation",
+  "term": "Acceptance Test",
+  "text": "Какие ожидаемые результаты заданы в acceptance tests Innovation OS для двух сценариев, где система не должна автоматически объединять сущности: когда имя автора неоднозначно и когда форк использует другую онтологию?",
+  "reference": "Для неоднозначного имени автора ожидается «no automatic merge», то есть автоматического слияния нет. Для форка с другой онтологией ожидается «mapping needed»: нужен маппинг, а не принудительное слияние.",
+  "parts": [
+   {
+    "turn": "t055",
+    "ts": "2026-09-18 12:12",
+    "span": "no automatic merge",
+    "line": 4650,
+    "window": [
+     4550,
+     4810
+    ],
+    "turns_with_span": [
+     "t055"
+    ],
+    "check": "no\\s+automatic\\s+merge"
+   },
+   {
+    "turn": "t059",
+    "ts": "2026-09-18 13:00",
+    "span": "mapping needed",
+    "line": 6109,
+    "window": [
+     6087,
+     6345
+    ],
+    "turns_with_span": [
+     "t059"
+    ],
+    "check": "mapping\\s+needed"
+   }
+  ],
+  "check": [
+   "no\\s+automatic\\s+merge",
+   "mapping\\s+needed"
+  ],
+  "turns": [
+   "t029",
+   "t055",
+   "t059"
+  ]
+ },
+ {
+  "id": "s_acceptance_test_evo1",
+  "type": "evolution",
+  "term": "Acceptance Test",
+  "text": "Как менялись ожидаемые результаты acceptance-тестов от первого модуля (научные методы без кода при высоком спросе) через физический модуль (машина доступна, но нет сертифицированного оператора) до пространственного (пользователь перетаскивает реальный объект в Live Mode)? Назовите, что именно ожидается в каждом из этих трёх случаев.",
+  "reference": "В научном модуле метод с сильными доказательствами, без кода и с высоким спросом должен давать Translation Opportunity: Reference Implementation Project. В физическом модуле доступная машина без сертифицированного оператора даёт Composite Capability Gap. В пространственном модуле перетаскивание реального объекта в Live Mode должно создавать Action Proposal, а не мгновенно менять состояние.",
+  "parts": [
+   {
+    "turn": "t033",
+    "ts": "2026-09-18 09:13",
+    "span": "Reference Implementation Project",
+    "line": 2477,
+    "window": [
+     2381,
+     2561
+    ],
+    "turns_with_span": [
+     "t033"
+    ],
+    "check": "Reference\\s+Implementation\\s+Project"
+   },
+   {
+    "turn": "t057",
+    "ts": "2026-09-18 12:39",
+    "span": "Composite Capability Gap",
+    "line": 3329,
+    "window": [
+     3257,
+     3540
+    ],
+    "turns_with_span": [
+     "t057"
+    ],
+    "check": "Composite\\s+Capability\\s+Gap"
+   },
+   {
+    "turn": "t058",
+    "ts": "2026-09-18 12:50",
+    "span": "Action Proposal",
+    "line": 1738,
+    "window": [
+     5267,
+     5526
+    ],
+    "turns_with_span": [
+     "t027",
+     "t039",
+     "t058",
+     "t064",
+     "t067",
+     "t068"
+    ],
+    "check": "Action\\s+Proposal"
+   }
+  ],
+  "check": [
+   "Reference\\s+Implementation\\s+Project",
+   "Composite\\s+Capability\\s+Gap",
+   "Action\\s+Proposal"
+  ],
+  "turns": [
+   "t033",
+   "t057",
+   "t058"
+  ]
+ },
+ {
+  "id": "s_acceptance_test_agg1",
+  "type": "aggregation",
+  "term": "Acceptance Test",
+  "text": "Какие именованные метрики качества вводятся вместе с наборами acceptance tests для физического (ресурсы, станки) и для пространственного (Digital Twin) модулей? Перечислите их все.",
+  "reference": "Для физического модуля: False Feasibility Rate (ложная осуществимость) и Unknown Handling Accuracy. Для пространственного модуля: False Reality Rate (симулированные/плановые/выведенные состояния, ошибочно показанные как реально наблюдаемые), Stale State Misrepresentation Rate и Identity Fusion Error Rate.",
+  "parts": [
+   {
+    "turn": "t057",
+    "ts": "2026-09-18 12:39",
+    "span": "False Feasibility Rate",
+    "line": 3487,
+    "window": [
+     3257,
+     3540
+    ],
+    "turns_with_span": [
+     "t057"
+    ],
+    "check": "False\\s+Feasibility\\s+Rate"
+   },
+   {
+    "turn": "t058",
+    "ts": "2026-09-18 12:50",
+    "span": "False Reality Rate",
+    "line": 5495,
+    "window": [
+     5267,
+     5526
+    ],
+    "turns_with_span": [
+     "t058"
+    ],
+    "check": "False\\s+Reality\\s+Rate"
+   }
+  ],
+  "check": [
+   "False\\s+Feasibility\\s+Rate",
+   "False\\s+Reality\\s+Rate"
+  ],
+  "turns": [
+   "t033",
+   "t057",
+   "t058"
+  ]
+ },
+ {
+  "id": "s_technopedia_evo0",
+  "type": "evolution",
+  "term": "Technopedia",
+  "text": "Как менялось в разговоре описание роли Technopedia: в какую программу и вместе с какими проектами её сначала включали, и как её сущность определяется позже — какой формой она названа по отношению к семантическим стандартам и знаниям?",
+  "reference": "Сначала Technopedia рассматривалась как один из проектов программы «Open Knowledge Infrastructure» (вместе с Knowledge Git, AI Forum 2.0, Semantic Objects, Project IR standards), с общими ontology, identity, provenance, versioning. Позже она определена как «human-readable projection» семантических стандартов и знаний — не независимая база данных энциклопедии, а страницы, генерируемые из Registry + World State.",
+  "parts": [
+   {
+    "turn": "t023",
+    "ts": "2026-09-17 22:39",
+    "span": "Open Knowledge Infrastructure",
+    "line": 1590,
+    "window": [
+     1581,
+     1793
+    ],
+    "turns_with_span": [
+     "t023"
+    ],
+    "check": "Open\\s+Knowledge\\s+Infrastructure"
+   },
+   {
+    "turn": "t068",
+    "ts": "2026-09-18 14:15",
+    "span": "human-readable projection",
+    "line": 6322,
+    "window": [
+     6275,
+     6492
+    ],
+    "turns_with_span": [
+     "t068"
+    ],
+    "check": "human\\-readable\\s+projection"
+   }
+  ],
+  "check": [
+   "Open\\s+Knowledge\\s+Infrastructure",
+   "human\\-readable\\s+projection"
+  ],
+  "turns": [
+   "t023",
+   "t055",
+   "t068"
+  ]
+ },
+ {
+  "id": "s_technopedia_evo1",
+  "type": "evolution",
+  "term": "Technopedia",
+  "text": "Как менялась роль Technopedia в обсуждении: чем она выступала в федеративной сети узлов и что именно в ней предполагалось описывать в части самодокументации самой Innovation OS?",
+  "reference": "Сначала Technopedia рассматривалась как «distributed Technopedia» — федеративная сеть, где каждый node публикует pages/resources, и это не требует, чтобы одна организация владела всеми данными. В позднем обсуждении Technopedia получает отдельный раздел «Innovation OS itself» с самодокументацией: страницы описывают components, capabilities и procedures, а страница вроде Capability Resolver ссылается на code, tests, benchmarks, dependencies, decisions и open gaps.",
+  "parts": [
+   {
+    "turn": "t039",
+    "ts": "2026-09-18 09:34",
+    "span": "distributed Technopedia",
+    "line": 1747,
+    "window": [
+     1737,
+     2003
+    ],
+    "turns_with_span": [
+     "t039"
+    ],
+    "check": "distributed\\s+Technopedia"
+   },
+   {
+    "turn": "t060",
+    "ts": "2026-09-18 13:05",
+    "span": "Innovation OS itself",
+    "line": 263,
+    "window": [
+     4514,
+     4800
+    ],
+    "turns_with_span": [
+     "t040",
+     "t048",
+     "t054",
+     "t059",
+     "t060",
+     "t070",
+     "t079"
+    ],
+    "check": "Innovation\\s+OS\\s+itself"
+   }
+  ],
+  "check": [
+   "distributed\\s+Technopedia",
+   "Innovation\\s+OS\\s+itself"
+  ],
+  "turns": [
+   "t039",
+   "t058",
+   "t060"
+  ]
+ },
+ {
+  "id": "s_procedural_graph_evo0",
+  "type": "evolution",
+  "term": "Procedural Graph",
+  "text": "Как в разговоре меняется представление о Procedural Graph: чем он считался в начале по отношению к Project IR, какие управляющие (governance) узлы в него добавили позже и на какой уровень управления в итоге его поместили?",
+  "reference": "Сначала Procedural Graph описывался как «один из возможных backend execution formats», в который компилируется Project IR для исполнения агентами. Затем в него добавили governance-узлы APPROVAL, REVIEW, POLICY_CHECK и ESCALATION. В итоге он стал тактическим уровнем управления («Project / Procedural Graph») между стратегическим уровнем Program / Portfolio и операционным уровнем Runtime.",
+  "parts": [
+   {
+    "turn": "t014",
+    "ts": "2026-09-17 21:57",
+    "span": "один из возможных backend execution formats",
+    "line": 961,
+    "window": [
+     942,
+     1199
+    ],
+    "turns_with_span": [
+     "t014"
+    ],
+    "check": "один\\s+из\\s+возможных\\s+backend\\s+execution\\s+formats"
+   },
+   {
+    "turn": "t042",
+    "ts": "2026-09-18 09:54",
+    "span": "POLICY_CHECK",
+    "line": 2096,
+    "window": [
+     2086,
+     2321
+    ],
+    "turns_with_span": [
+     "t042"
+    ],
+    "check": "POLICY_CHECK"
+   },
+   {
+    "turn": "t071",
+    "ts": "2026-09-18 14:51",
+    "span": "Project / Procedural Graph",
+    "line": 4920,
+    "window": [
+     4886,
+     5120
+    ],
+    "turns_with_span": [
+     "t071"
+    ],
+    "check": "Project\\s+/\\s+Procedural\\s+Graph"
+   }
+  ],
+  "check": [
+   "один\\s+из\\s+возможных\\s+backend\\s+execution\\s+formats",
+   "POLICY_CHECK",
+   "Project\\s+/\\s+Procedural\\s+Graph"
+  ],
+  "turns": [
+   "t014",
+   "t042",
+   "t071"
+  ]
+ },
+ {
+  "id": "s_procedural_graph_agg0",
+  "type": "aggregation",
+  "term": "Procedural Graph",
+  "text": "Что в разговоре говорится о Procedural Graph: во что его компилируют и каким форматом он является, какие governance-узлы он может включать и на каком из трёх уровней управления Virtual Technopark он находится?",
+  "reference": "Procedural Graph компилируется из Project IR и является одним из возможных backend execution formats для агентного исполнения. Он может включать governance-узлы APPROVAL, REVIEW, POLICY_CHECK и ESCALATION. В Virtual Technopark он относится к тактическому уровню (TACTICAL): Project / Procedural Graph, между стратегическим уровнем Program / Portfolio и операционным уровнем Runtime / Execution Nodes.",
+  "parts": [
+   {
+    "turn": "t014",
+    "ts": "2026-09-17 21:57",
+    "span": "один из возможных backend execution formats",
+    "line": 961,
+    "window": [
+     942,
+     1199
+    ],
+    "turns_with_span": [
+     "t014"
+    ],
+    "check": "один\\s+из\\s+возможных\\s+backend\\s+execution\\s+formats"
+   },
+   {
+    "turn": "t042",
+    "ts": "2026-09-18 09:54",
+    "span": "POLICY_CHECK",
+    "line": 2096,
+    "window": [
+     2086,
+     2321
+    ],
+    "turns_with_span": [
+     "t042"
+    ],
+    "check": "POLICY_CHECK"
+   },
+   {
+    "turn": "t071",
+    "ts": "2026-09-18 14:51",
+    "span": "Project / Procedural Graph",
+    "line": 4920,
+    "window": [
+     4886,
+     5120
+    ],
+    "turns_with_span": [
+     "t071"
+    ],
+    "check": "Project\\s+/\\s+Procedural\\s+Graph"
+   }
+  ],
+  "check": [
+   "один\\s+из\\s+возможных\\s+backend\\s+execution\\s+formats",
+   "POLICY_CHECK",
+   "Project\\s+/\\s+Procedural\\s+Graph"
+  ],
+  "turns": [
+   "t014",
+   "t042",
+   "t071"
+  ]
+ },
+ {
+  "id": "s_procedural_graph_evo1",
+  "type": "evolution",
+  "term": "Procedural Graph",
+  "text": "Как изменилось описание Procedural Graph: чем он определялся как слой в цепочке уровней в начале и какую роль и какие типы узлов он получил позже в связке с Semantic M2M протоколом?",
+  "reference": "Сначала Procedural Graph был слоем «how an executor performs a task» между Task Graph и Tool Calls (локальная стратегия исполнения, отличная от World Graph и Task Graph). Позже он стал распределённым исполняемым графом поверх Semantic M2M: узлы ACTION, WAIT, DECISION и CHECK сериализуются в сообщения протокола (например, ACTION → COMMAND_REQUEST, CHECK → QUERY), а разные шаги выполняют разные узлы, при этом координатор отслеживает граф.",
+  "parts": [
+   {
+    "turn": "t027",
+    "ts": "2026-09-18 08:54",
+    "span": "how an executor performs a task",
+    "line": 2832,
+    "window": [
+     2799,
+     3045
+    ],
+    "turns_with_span": [
+     "t027"
+    ],
+    "check": "how\\s+an\\s+executor\\s+performs\\s+a\\s+task"
+   },
+   {
+    "turn": "t067",
+    "ts": "2026-09-18 14:04",
+    "span": "ACTION node",
+    "line": 2117,
+    "window": [
+     6675,
+     6926
+    ],
+    "turns_with_span": [
+     "t041",
+     "t058",
+     "t067"
+    ],
+    "check": "ACTION\\s+node"
+   }
+  ],
+  "check": [
+   "how\\s+an\\s+executor\\s+performs\\s+a\\s+task",
+   "ACTION\\s+node"
+  ],
+  "turns": [
+   "t027",
+   "t056",
+   "t067"
+  ]
+ },
+ {
+  "id": "s_procedural_graph_agg1",
+  "type": "aggregation",
+  "term": "Procedural Graph",
+  "text": "Что в разговоре сказано о Procedural Graph: на какой вопрос он отвечает в отличие от World Graph и Task Graph, какую дату он вычисляет по ожидаемым длительностям задач и в какое сообщение протокола сериализуется его ACTION-узел?",
+  "reference": "Procedural Graph описывает, «how an executor performs a task», то есть как исполнитель выполняет задачу (World Graph — что существует, Task Graph — что нужно сделать). Для дедлайнов он вычисляет «latest safe start date» (последнюю безопасную дату старта). ACTION-узел сериализуется в сообщение COMMAND_REQUEST.",
+  "parts": [
+   {
+    "turn": "t027",
+    "ts": "2026-09-18 08:54",
+    "span": "how an executor performs a task",
+    "line": 2832,
+    "window": [
+     2799,
+     3045
+    ],
+    "turns_with_span": [
+     "t027"
+    ],
+    "check": "how\\s+an\\s+executor\\s+performs\\s+a\\s+task"
+   },
+   {
+    "turn": "t056",
+    "ts": "2026-09-18 12:28",
+    "span": "latest safe start date",
+    "line": 4414,
+    "window": [
+     4384,
+     4626
+    ],
+    "turns_with_span": [
+     "t056"
+    ],
+    "check": "latest\\s+safe\\s+start\\s+date"
+   },
+   {
+    "turn": "t067",
+    "ts": "2026-09-18 14:04",
+    "span": "COMMAND_REQUEST",
+    "line": 312,
+    "window": [
+     6675,
+     6926
+    ],
+    "turns_with_span": [
+     "t067"
+    ],
+    "check": "COMMAND_REQUEST"
+   }
+  ],
+  "check": [
+   "how\\s+an\\s+executor\\s+performs\\s+a\\s+task",
+   "latest\\s+safe\\s+start\\s+date",
+   "COMMAND_REQUEST"
+  ],
+  "turns": [
+   "t027",
+   "t056",
+   "t067"
+  ]
+ },
+ {
+  "id": "s_handoff_evo0",
+  "type": "evolution",
+  "term": "Handoff",
+  "text": "Как менялось описание Handoff: какие поля обязан содержать handoff-протокол в начале разговора, как человеческий и AI-handoff показываются в интерфейсе и что именно добавляется в итоговом контракте для передачи между агентами?",
+  "reference": "Сначала handoff задавался как протокол с полями task, current state, completed work, remaining work, blocker, required capability и relevant artifacts. Затем описали интерфейс: задача, ожидающая человека (Human Handoff), появляется в personal inbox, а AI Handoff остаётся фоновым. В поздней версии это Handoff Contract (что сделано, открытые вопросы, артефакты, следующее действие). Вместо «continue from previous agent» без состояния используют Context Capsule вместе с Handoff Artifact, а для людей пишется handoff note.",
+  "parts": [
+   {
+    "turn": "t027",
+    "ts": "2026-09-18 08:54",
+    "span": "remaining work",
+    "line": 663,
+    "window": [
+     646,
+     901
+    ],
+    "turns_with_span": [
+     "t027",
+     "t047",
+     "t067"
+    ],
+    "check": "remaining\\s+work"
+   },
+   {
+    "turn": "t049",
+    "ts": "2026-09-18 10:33",
+    "span": "personal inbox",
+    "line": 5260,
+    "window": [
+     5252,
+     5519
+    ],
+    "turns_with_span": [
+     "t049"
+    ],
+    "check": "personal\\s+inbox"
+   },
+   {
+    "turn": "t080",
+    "ts": "2026-09-18 17:42",
+    "span": "Context Capsule",
+    "line": 3827,
+    "window": [
+     3953,
+     4207
+    ],
+    "turns_with_span": [
+     "t067",
+     "t072",
+     "t075",
+     "t080"
+    ],
+    "check": "Context\\s+Capsule"
+   }
+  ],
+  "check": [
+   "remaining\\s+work",
+   "personal\\s+inbox",
+   "Context\\s+Capsule"
+  ],
+  "turns": [
+   "t027",
+   "t049",
+   "t080"
+  ]
+ },
+ {
+  "id": "s_handoff_evo1",
+  "type": "evolution",
+  "term": "Handoff",
+  "text": "Как менялось представление о Handoff в разговоре: какую роль он играл как организационная практика (в каком контексте и что с ним предлагалось делать) и какие поля/структуру и какой формат передачи он получил позднее при передаче между агентами?",
+  "reference": "Сначала handoff рассматривался на уровне организационных единиц: слишком много handoffs считалось признаком организационного долга, а в числе действий организационного рефакторинга было «automate handoff» — автоматизация через team contract, когда Project Runtime вызывает провайдера capability (Security Office) как сервис. Позже handoff стал machine-to-machine: он включает objective, current state, completed work, remaining work, artifacts, unknowns, чтобы избежать потери при свободном тексте, а для больших передач используется Semantic Context Capsule (Goal, Relevant Claims, Artifacts, Decisions, Open Questions); ещё позже Agent Handoff между Agent Instance A и B через Context Capsule трактуется как «controlled semantic state transfer», а не перенос скрытого внутреннего состояния, и может двигать работу cloud ↔ local.",
+  "parts": [
+   {
+    "turn": "t037",
+    "ts": "2026-09-18 09:28",
+    "span": "automate handoff",
+    "line": 2051,
+    "window": [
+     2020,
+     2244
+    ],
+    "turns_with_span": [
+     "t037"
+    ],
+    "check": "automate\\s+handoff"
+   },
+   {
+    "turn": "t067",
+    "ts": "2026-09-18 14:04",
+    "span": "This prevents free-text handoff loss.",
+    "line": 3555,
+    "window": [
+     3523,
+     3749
+    ],
+    "turns_with_span": [
+     "t067"
+    ],
+    "check": "This\\s+prevents\\s+free\\-text\\s+handoff\\s+loss\\."
+   },
+   {
+    "turn": "t075",
+    "ts": "2026-09-18 17:07",
+    "span": "controlled semantic state transfer.",
+    "line": 6852,
+    "window": [
+     6813,
+     7060
+    ],
+    "turns_with_span": [
+     "t075"
+    ],
+    "check": "controlled\\s+semantic\\s+state\\s+transfer\\."
+   }
+  ],
+  "check": [
+   "automate\\s+handoff",
+   "This\\s+prevents\\s+free\\-text\\s+handoff\\s+loss\\.",
+   "controlled\\s+semantic\\s+state\\s+transfer\\."
+  ],
+  "turns": [
+   "t037",
+   "t067",
+   "t075"
+  ]
+ },
+ {
+  "id": "s_handoff_agg1",
+  "type": "aggregation",
+  "term": "Handoff",
+  "text": "Какие три уровня или формы handoff обсуждаются в разговоре (между организационными единицами, между машинами и между экземплярами агента) и как каждый из них реализуется или что в нём передаётся?",
+  "reference": "Организационные handoffs автоматизируются через Team Contract: Project Runtime видит, что нужен Security Review, и вызывает capability provider (Security Office) как software service. В machine-to-machine handoff передаются objective, current state, completed work, remaining work, artifacts и unknowns. Agent Handoff идёт от Agent Instance A через Context Capsule к Agent Instance B (в том числе cloud → local и обратно) как controlled semantic state transfer с сохранением identity/provenance.",
+  "parts": [
+   {
+    "turn": "t037",
+    "ts": "2026-09-18 09:28",
+    "span": "вызывает capability provider",
+    "line": 2115,
+    "window": [
+     2020,
+     2244
+    ],
+    "turns_with_span": [
+     "t037"
+    ],
+    "check": "вызывает\\s+capability\\s+provider"
+   },
+   {
+    "turn": "t067",
+    "ts": "2026-09-18 14:04",
+    "span": "remaining work",
+    "line": 3548,
+    "window": [
+     3523,
+     3749
+    ],
+    "turns_with_span": [
+     "t027",
+     "t047",
+     "t067"
+    ],
+    "check": "remaining\\s+work"
+   },
+   {
+    "turn": "t075",
+    "ts": "2026-09-18 17:07",
+    "span": "controlled semantic state transfer.",
+    "line": 6852,
+    "window": [
+     6813,
+     7060
+    ],
+    "turns_with_span": [
+     "t075"
+    ],
+    "check": "controlled\\s+semantic\\s+state\\s+transfer\\."
+   }
+  ],
+  "check": [
+   "вызывает\\s+capability\\s+provider",
+   "remaining\\s+work",
+   "controlled\\s+semantic\\s+state\\s+transfer\\."
+  ],
+  "turns": [
+   "t037",
+   "t067",
+   "t075"
+  ]
+ },
+ {
+  "id": "s_capability_package_evo0",
+  "type": "evolution",
+  "term": "Capability Package",
+  "text": "Как менялось в разговоре понимание «Capability Package»: что это за объект на рынке в начале (пример пакета и с чем его предлагалось сравнивать), чем он стал в модели с ресурсами и верификацией, и как его стали использовать вовне в более поздней части?",
+  "reference": "Сначала Capability Package был новой рыночной сущностью рядом с Candidate/Job — пакет вроде «Package #174» (2 инженера, дизайнер, специалист по безопасности) с набором capabilities, который можно сравнивать сразу с несколькими компаниями. Затем он стал моделью CapabilityPackage: Resources + Integration Actions + Verification, с полями resource_ids, required_actions, verification_contract_id и remaining_unknowns, как «гораздо сильнее, чем нашли repository». Позже появился «Open Capability Package»: при допустимой лицензии новая capability может быть опубликована, другие организации импортируют пакет, проверяют его локально, а их улучшения дают forks и upstream contributions.",
+  "parts": [
+   {
+    "turn": "t011",
+    "ts": "2026-09-17 21:24",
+    "span": "Package #174",
+    "line": 133,
+    "window": [
+     107,
+     306
+    ],
+    "turns_with_span": [
+     "t011"
+    ],
+    "check": "Package\\s+\\#174"
+   },
+   {
+    "turn": "t054",
+    "ts": "2026-09-18 12:07",
+    "span": "verification_contract_id",
+    "line": 1173,
+    "window": [
+     1130,
+     1374
+    ],
+    "turns_with_span": [
+     "t054"
+    ],
+    "check": "verification_contract_id"
+   }
+  ],
+  "check": [
+   "Package\\s+\\#174",
+   "verification_contract_id"
+  ],
+  "turns": [
+   "t011",
+   "t054",
+   "t080"
+  ]
+ },
+ {
+  "id": "s_capability_package_agg0",
+  "type": "aggregation",
+  "term": "Capability Package",
+  "text": "Из каких элементов складывается описание Capability Package в разговоре? Назови блоки примера пакета людей (Capabilities и другие), составные части и поля модели данных CapabilityPackage, а также что получается, когда другие организации импортируют пакет и улучшают его.",
+  "reference": "Пример пакета-команды описывается составом людей, Capabilities, Availability и блоком «Best suited for». Модель CapabilityPackage состоит из Resources, Integration Actions и Verification: поля resource_ids, required_actions, verification_contract_id и remaining_unknowns. При внешнем повторном использовании другие организации импортируют пакет и проверяют его локально, а их улучшения дают forks и upstream contributions.",
+  "parts": [
+   {
+    "turn": "t011",
+    "ts": "2026-09-17 21:24",
+    "span": "Best suited for:",
+    "line": 150,
+    "window": [
+     107,
+     306
+    ],
+    "turns_with_span": [
+     "t011"
+    ],
+    "check": "Best\\s+suited\\s+for:"
+   },
+   {
+    "turn": "t054",
+    "ts": "2026-09-18 12:07",
+    "span": "verification_contract_id",
+    "line": 1173,
+    "window": [
+     1130,
+     1374
+    ],
+    "turns_with_span": [
+     "t054"
+    ],
+    "check": "verification_contract_id"
+   },
+   {
+    "turn": "t080",
+    "ts": "2026-09-18 17:42",
+    "span": "upstream contributions",
+    "line": 5314,
+    "window": [
+     5273,
+     5521
+    ],
+    "turns_with_span": [
+     "t080"
+    ],
+    "check": "upstream\\s+contributions"
+   }
+  ],
+  "check": [
+   "Best\\s+suited\\s+for:",
+   "verification_contract_id",
+   "upstream\\s+contributions"
+  ],
+  "turns": [
+   "t011",
+   "t054",
+   "t080"
+  ]
+ },
+ {
+  "id": "s_capability_package_evo1",
+  "type": "evolution",
+  "term": "Capability Package",
+  "text": "Как менялось понимание «Capability Package» в разговоре: чем он был в начале (описание команды) и во что превратился позже, в аналогии с менеджером пакетов и в инфраструктурном контексте?",
+  "reference": "Сначала Capability Package описывался как профиль команды: члены A–D, список capabilities (distributed_systems, agent_orchestration и т.д.) и missing — go_to_market, по которому Opportunity Engine ищет проблемы. Затем он появился в аналогии с менеджером пакетов: «package → capability package», где dependency соответствует capability requirement, а registry — semantic package registry. Позже появился «Infrastructure Capability Package», инкапсулирующий compute, storage, network, runtime (пример — Private AI Node), и уточнено, что Node Appliance — это «Resource + Capability Package».",
+  "parts": [
+   {
+    "turn": "t021",
+    "ts": "2026-09-17 22:35",
+    "span": "go_to_market",
+    "line": 241,
+    "window": [
+     215,
+     428
+    ],
+    "turns_with_span": [
+     "t021"
+    ],
+    "check": "go_to_market"
+   },
+   {
+    "turn": "t070",
+    "ts": "2026-09-18 14:38",
+    "span": "package → capability package",
+    "line": 1838,
+    "window": [
+     1796,
+     2046
+    ],
+    "turns_with_span": [
+     "t070"
+    ],
+    "check": "package\\s+→\\s+capability\\s+package"
+   },
+   {
+    "turn": "t075",
+    "ts": "2026-09-18 17:07",
+    "span": "Infrastructure Capability Package",
+    "line": 6334,
+    "window": [
+     6331,
+     6607
+    ],
+    "turns_with_span": [
+     "t075"
+    ],
+    "check": "Infrastructure\\s+Capability\\s+Package"
+   }
+  ],
+  "check": [
+   "go_to_market",
+   "package\\s+→\\s+capability\\s+package",
+   "Infrastructure\\s+Capability\\s+Package"
+  ],
+  "turns": [
+   "t021",
+   "t070",
+   "t075"
+  ]
+ },
+ {
+  "id": "s_capability_package_agg1",
+  "type": "aggregation",
+  "term": "Capability Package",
+  "text": "Какие варианты «Capability Package» разбираются в разговоре: пакет возможностей команды, аналогия с менеджером пакетов и инфраструктурный пакет? Что входит в каждый из них или с чем сопоставляется?",
+  "reference": "Командный пакет содержит capabilities distributed_systems, agent_orchestration, agent_evaluation, application_security, product_design, а недостающей названа go_to_market. В аналогии с менеджером пакетов package соответствует capability package, dependency → capability requirement, registry → semantic package registry. Инфраструктурный пакет объединяет compute, storage, network, runtime; пример — Private AI Node, дающий LOCAL_LLM_INFERENCE, VECTOR_SEARCH и DOCUMENT_PROCESSING.",
+  "parts": [
+   {
+    "turn": "t021",
+    "ts": "2026-09-17 22:35",
+    "span": "agent_orchestration",
+    "line": 235,
+    "window": [
+     215,
+     428
+    ],
+    "turns_with_span": [
+     "t014",
+     "t015",
+     "t017",
+     "t018",
+     "t021",
+     "t031"
+    ],
+    "check": "agent_orchestration"
+   },
+   {
+    "turn": "t070",
+    "ts": "2026-09-18 14:38",
+    "span": "dependency → capability requirement",
+    "line": 1839,
+    "window": [
+     1796,
+     2046
+    ],
+    "turns_with_span": [
+     "t070"
+    ],
+    "check": "dependency\\s+→\\s+capability\\s+requirement"
+   },
+   {
+    "turn": "t075",
+    "ts": "2026-09-18 17:07",
+    "span": "Private AI Node",
+    "line": 6350,
+    "window": [
+     6331,
+     6607
+    ],
+    "turns_with_span": [
+     "t075"
+    ],
+    "check": "Private\\s+AI\\s+Node"
+   }
+  ],
+  "check": [
+   "agent_orchestration",
+   "dependency\\s+→\\s+capability\\s+requirement",
+   "Private\\s+AI\\s+Node"
+  ],
+  "turns": [
+   "t021",
+   "t070",
+   "t075"
+  ]
+ },
+ {
+  "id": "s_promotion_evo0",
+  "type": "evolution",
+  "term": "Promotion",
+  "text": "Как различается описание Promotion в разных частях обсуждения: что именно повышается, через какие ступени или состояния это проходит и какой итоговый уровень достигается (для знаний агентов, для сообщений обсуждений и для компонентов в sandbox)?",
+  "reference": "Сначала Promotion описан как политика для знаний: вывод LLM становится гипотезой проекта, проверенный источник даёт факт проекта, а «multiple verified sources» дают world claim. Затем для обсуждений: Message → Candidate Claim → Evidence → Review → «Canonical Claim». Позже Promotion применяется к компонентам в sandbox: состояния EXPERIMENT → PILOT → SUPPORTED → «CORE_CANDIDATE» с обязательными evidence gates.",
+  "parts": [
+   {
+    "turn": "t027",
+    "ts": "2026-09-18 08:54",
+    "span": "multiple verified sources",
+    "line": 572,
+    "window": [
+     532,
+     797
+    ],
+    "turns_with_span": [
+     "t027"
+    ],
+    "check": "multiple\\s+verified\\s+sources"
+   },
+   {
+    "turn": "t059",
+    "ts": "2026-09-18 13:00",
+    "span": "Canonical Claim",
+    "line": 586,
+    "window": [
+     568,
+     813
+    ],
+    "turns_with_span": [
+     "t030",
+     "t044",
+     "t052",
+     "t053",
+     "t055",
+     "t058",
+     "t059",
+     "t065"
+    ],
+    "check": "Canonical\\s+Claim"
+   },
+   {
+    "turn": "t079",
+    "ts": "2026-09-18 17:36",
+    "span": "CORE_CANDIDATE",
+    "line": 6246,
+    "window": [
+     6235,
+     6501
+    ],
+    "turns_with_span": [
+     "t079"
+    ],
+    "check": "CORE_CANDIDATE"
+   }
+  ],
+  "check": [
+   "multiple\\s+verified\\s+sources",
+   "Canonical\\s+Claim",
+   "CORE_CANDIDATE"
+  ],
+  "turns": [
+   "t027",
+   "t059",
+   "t079"
+  ]
+ },
+ {
+  "id": "s_promotion_agg0",
+  "type": "aggregation",
+  "term": "Promotion",
+  "text": "Какие виды Promotion описаны в разговоре (для знаний и утверждений агентов, для сообщений обсуждения, для компонентов в песочнице) и какие стадии, уровни или состояния проходит или получает объект в каждом из них?",
+  "reference": "Knowledge Promotion: вывод LLM даёт project hypothesis, verified source даёт project fact, а multiple verified sources дают world claim. Сообщение обсуждения проходит путь Message → Candidate Claim → Evidence → Review → Canonical Claim. Sandbox Promotion идёт через состояния EXPERIMENT, PILOT, SUPPORTED, CORE_CANDIDATE и требует evidence gates.",
+  "parts": [
+   {
+    "turn": "t027",
+    "ts": "2026-09-18 08:54",
+    "span": "multiple verified sources",
+    "line": 572,
+    "window": [
+     532,
+     797
+    ],
+    "turns_with_span": [
+     "t027"
+    ],
+    "check": "multiple\\s+verified\\s+sources"
+   },
+   {
+    "turn": "t059",
+    "ts": "2026-09-18 13:00",
+    "span": "Canonical Claim",
+    "line": 586,
+    "window": [
+     568,
+     813
+    ],
+    "turns_with_span": [
+     "t030",
+     "t044",
+     "t052",
+     "t053",
+     "t055",
+     "t058",
+     "t059",
+     "t065"
+    ],
+    "check": "Canonical\\s+Claim"
+   },
+   {
+    "turn": "t079",
+    "ts": "2026-09-18 17:36",
+    "span": "CORE_CANDIDATE",
+    "line": 6246,
+    "window": [
+     6235,
+     6501
+    ],
+    "turns_with_span": [
+     "t079"
+    ],
+    "check": "CORE_CANDIDATE"
+   }
+  ],
+  "check": [
+   "multiple\\s+verified\\s+sources",
+   "Canonical\\s+Claim",
+   "CORE_CANDIDATE"
+  ],
+  "turns": [
+   "t027",
+   "t059",
+   "t079"
+  ]
+ },
+ {
+  "id": "s_promotion_evo1",
+  "type": "evolution",
+  "term": "Promotion",
+  "text": "Как в разговоре меняется описание «Promotion»: какие стадии жизненного цикла и какое доказательство требовалось для продвижения компонента в начале, и какие виды продвижения (знаний и стандартов) и критерии добавились позже?",
+  "reference": "Сначала Promotion описывался как продвижение версии компонента по жизненному циклу EXPERIMENTAL → SHADOW → LIMITED → PRODUCTION, при этом требовались доказательства из бенчмарков. Позже появились уровни Knowledge Promotion (Observation, Pattern, Hypothesis, Validated Pattern, Policy/Package) с более строгим ревью для высокоэффективных продвижений, а затем Standards Promotion с критериями: несколько реализаций, реальное использование, conformance tests и документированная семантика, например профиль, используемый 3 независимыми узлами, при этом точные пороги определяет governance.",
+  "parts": [
+   {
+    "turn": "t043",
+    "ts": "2026-09-18 09:58",
+    "span": "Promotion requires benchmark evidence",
+    "line": 4568,
+    "window": [
+     4549,
+     4799
+    ],
+    "turns_with_span": [
+     "t043"
+    ],
+    "check": "Promotion\\s+requires\\s+benchmark\\s+evidence"
+   },
+   {
+    "turn": "t061",
+    "ts": "2026-09-18 13:25",
+    "span": "Validated Pattern",
+    "line": 1589,
+    "window": [
+     4640,
+     4883
+    ],
+    "turns_with_span": [
+     "t044",
+     "t061"
+    ],
+    "check": "Validated\\s+Pattern"
+   },
+   {
+    "turn": "t068",
+    "ts": "2026-09-18 14:15",
+    "span": "3 independent nodes",
+    "line": 8521,
+    "window": [
+     8498,
+     8744
+    ],
+    "turns_with_span": [
+     "t068"
+    ],
+    "check": "3\\s+independent\\s+nodes"
+   }
+  ],
+  "check": [
+   "Promotion\\s+requires\\s+benchmark\\s+evidence",
+   "Validated\\s+Pattern",
+   "3\\s+independent\\s+nodes"
+  ],
+  "turns": [
+   "t043",
+   "t061",
+   "t068"
+  ]
+ },
+ {
+  "id": "s_promotion_agg1",
+  "type": "aggregation",
+  "term": "Promotion",
+  "text": "Какие стадии жизненного цикла проходит новый компонент при Version Promotion, какие пять уровней выделены в Knowledge Promotion и какие критерии названы для Standards Promotion?",
+  "reference": "Version Promotion: EXPERIMENTAL → SHADOW → LIMITED → PRODUCTION. Knowledge Promotion: Observation, Pattern, Hypothesis, Validated Pattern, Policy/Package. Критерии Standards Promotion: multiple implementations, real usage, conformance tests, documented semantics.",
+  "parts": [
+   {
+    "turn": "t061",
+    "ts": "2026-09-18 13:25",
+    "span": "Validated Pattern",
+    "line": 1589,
+    "window": [
+     4640,
+     4883
+    ],
+    "turns_with_span": [
+     "t044",
+     "t061"
+    ],
+    "check": "Validated\\s+Pattern"
+   },
+   {
+    "turn": "t068",
+    "ts": "2026-09-18 14:15",
+    "span": "conformance tests",
+    "line": 3495,
+    "window": [
+     8498,
+     8744
+    ],
+    "turns_with_span": [
+     "t067",
+     "t068",
+     "t081"
+    ],
+    "check": "conformance\\s+tests"
+   }
+  ],
+  "check": [
+   "Validated\\s+Pattern",
+   "conformance\\s+tests"
+  ],
+  "turns": [
+   "t043",
+   "t061",
+   "t068"
+  ]
+ },
+ {
+  "id": "s_team_builder_evo0",
+  "type": "evolution",
+  "term": "Team Builder",
+  "text": "Как развивается описание компонента Team Builder: что он делает для проектов с несколькими ролями, с каким модулем он связан в плане версий и какой первый алгоритм и формат результата для него в итоге определены?",
+  "reference": "Сначала Team Builder описан как инструмент, который для проектов с несколькими ролями ищет комбинацию людей. Затем он попадает в план версии v0.3 вместе с coverage и Gap Resolver. В итоге для него задан первый алгоритм greedy set cover, который собирает смешанную команду из людей и репозиториев и выдаёт TeamHypothesis со статусом HYPOTHESIS, а согласие кандидатов остаётся UNKNOWN.",
+  "parts": [
+   {
+    "turn": "t005",
+    "ts": "2026-09-17 20:31",
+    "span": "Team Builder ищет комбинацию людей",
+    "line": 927,
+    "window": [
+     924,
+     974
+    ],
+    "turns_with_span": [
+     "t005"
+    ],
+    "check": "Team\\s+Builder\\s+ищет\\s+комбинацию\\s+людей"
+   },
+   {
+    "turn": "t016",
+    "ts": "2026-09-17 22:11",
+    "span": "Gap Resolver",
+    "line": 1454,
+    "window": [
+     1343,
+     1525
+    ],
+    "turns_with_span": [
+     "t012",
+     "t016",
+     "t024",
+     "t028",
+     "t033",
+     "t050",
+     "t057"
+    ],
+    "check": "Gap\\s+Resolver"
+   },
+   {
+    "turn": "t053",
+    "ts": "2026-09-18 12:00",
+    "span": "greedy set cover",
+    "line": 1967,
+    "window": [
+     1939,
+     2221
+    ],
+    "turns_with_span": [
+     "t015",
+     "t017",
+     "t028",
+     "t050",
+     "t053"
+    ],
+    "check": "greedy\\s+set\\s+cover"
+   }
+  ],
+  "check": [
+   "Team\\s+Builder\\s+ищет\\s+комбинацию\\s+людей",
+   "Gap\\s+Resolver",
+   "greedy\\s+set\\s+cover"
+  ],
+  "turns": [
+   "t005",
+   "t016",
+   "t053"
+  ]
+ },
+ {
+  "id": "s_team_builder_agg0",
+  "type": "aggregation",
+  "term": "Team Builder",
+  "text": "Какие три типа входных данных получает Team Builder в описанной архитектуре и какие дополнительные роли он может добавить к уже подобранной команде?",
+  "reference": "На вход Team Builder получает Project MUST capabilities, Candidate Resources и Constraints. К уже подобранной команде он может добавить infra engineer и security specialist.",
+  "parts": [
+   {
+    "turn": "t053",
+    "ts": "2026-09-18 12:00",
+    "span": "Project MUST capabilities",
+    "line": 1957,
+    "window": [
+     1939,
+     2221
+    ],
+    "turns_with_span": [
+     "t053"
+    ],
+    "check": "Project\\s+MUST\\s+capabilities"
+   },
+   {
+    "turn": "t016",
+    "ts": "2026-09-17 22:11",
+    "span": "infra engineer",
+    "line": 1351,
+    "window": [
+     1343,
+     1525
+    ],
+    "turns_with_span": [
+     "t006",
+     "t011",
+     "t016"
+    ],
+    "check": "infra\\s+engineer"
+   }
+  ],
+  "check": [
+   "Project\\s+MUST\\s+capabilities",
+   "infra\\s+engineer"
+  ],
+  "turns": [
+   "t005",
+   "t016",
+   "t053"
+  ]
+ },
+ {
+  "id": "s_team_builder_evo1",
+  "type": "evolution",
+  "term": "Team Builder",
+  "text": "Как менялось описание Team Builder: по каким критериям он сначала сравнивал команды и какие варианты команд выдавал, а в какой более поздней версии его расширили на людей, лаборатории, ПО и оборудование?",
+  "reference": "Сначала Team Builder рассматривал одновременно capability coverage, cost, availability, location, timezone, employment model, experience и complementarity и выдавал несколько вариантов команд (TEAM A small / senior / expensive, TEAM B, TEAM C mostly remote EU). Позже появилась версия Research Team Builder, в которой people + labs + software + equipment вместе покрывают requirements, а результат фиксируется в Research Project Lock.",
+  "parts": [
+   {
+    "turn": "t007",
+    "ts": "2026-09-17 20:59",
+    "span": "mostly remote EU",
+    "line": 752,
+    "window": [
+     640,
+     867
+    ],
+    "turns_with_span": [
+     "t007",
+     "t011"
+    ],
+    "check": "mostly\\s+remote\\s+EU"
+   },
+   {
+    "turn": "t033",
+    "ts": "2026-09-18 09:13",
+    "span": "Research Team Builder",
+    "line": 1016,
+    "window": [
+     1013,
+     1252
+    ],
+    "turns_with_span": [
+     "t033"
+    ],
+    "check": "Research\\s+Team\\s+Builder"
+   }
+  ],
+  "check": [
+   "mostly\\s+remote\\s+EU",
+   "Research\\s+Team\\s+Builder"
+  ],
+  "turns": [
+   "t007",
+   "t017",
+   "t033"
+  ]
+ },
+ {
+  "id": "s_team_builder_agg1",
+  "type": "aggregation",
+  "term": "Team Builder",
+  "text": "Как в разговоре описано развитие Team Builder: что система ищет вместо «лучшего кандидата», каким алгоритмом строится самая первая простая версия и какие типы ресурсов объединяет исследовательская версия?",
+  "reference": "Вместо одного лучшего кандидата Team Builder ищет best combination of candidates, то есть лучшую комбинацию кандидатов. Первая простая версия реализуется как Greedy Set Cover. Research Team Builder объединяет людей, лаборатории (labs), программное обеспечение и оборудование (equipment), которые вместе покрывают требования.",
+  "parts": [
+   {
+    "turn": "t007",
+    "ts": "2026-09-17 20:59",
+    "span": "best combination of candidates",
+    "line": 698,
+    "window": [
+     640,
+     867
+    ],
+    "turns_with_span": [
+     "t007"
+    ],
+    "check": "best\\s+combination\\s+of\\s+candidates"
+   },
+   {
+    "turn": "t017",
+    "ts": "2026-09-17 22:20",
+    "span": "Greedy Set Cover",
+    "line": 1187,
+    "window": [
+     1182,
+     1385
+    ],
+    "turns_with_span": [
+     "t015",
+     "t017",
+     "t028",
+     "t050",
+     "t053"
+    ],
+    "check": "Greedy\\s+Set\\s+Cover"
+   }
+  ],
+  "check": [
+   "best\\s+combination\\s+of\\s+candidates",
+   "Greedy\\s+Set\\s+Cover"
+  ],
+  "turns": [
+   "t007",
+   "t017",
+   "t033"
+  ]
+ },
+ {
+  "id": "s_capability_contract_evo0",
+  "type": "evolution",
+  "term": "Capability Contract",
+  "text": "Как менялось в разговоре понимание Capability Contract: что он фиксирует для агента в начале (какие формы записи ограничений) и какие функции/механизмы (проверка совместимости, типы gap, версионирование) к нему добавились позже?",
+  "reference": "Сначала Capability Contract описывался как заранее известные runtime ограничения агента: что он PROVIDES (например, research_search, draft_generation) и что он CANNOT (approve_legal_document), в противовес «умный AI, пусть делает всё». Позже контракт стал machine-readable описанием capability (inputs, outputs, limitations, verification) с проверкой совместимости до запуска и типами Self Capability Gap (MISSING, DEGRADED, INSUFFICIENT_QUALITY и т.д.), а ещё позже — стабильным интерфейсом с версионированием (Contract Version Graph: extends, supersedes, compatible_with), благодаря которому провайдеры меняются, а потребители не затронуты.",
+  "parts": [
+   {
+    "turn": "t027",
+    "ts": "2026-09-18 08:54",
+    "span": "approve_legal_document",
+    "line": 222,
+    "window": [
+     198,
+     440
+    ],
+    "turns_with_span": [
+     "t027"
+    ],
+    "check": "approve_legal_document"
+   },
+   {
+    "turn": "t060",
+    "ts": "2026-09-18 13:05",
+    "span": "INSUFFICIENT_QUALITY",
+    "line": 909,
+    "window": [
+     798,
+     1055
+    ],
+    "turns_with_span": [
+     "t060",
+     "t062"
+    ],
+    "check": "INSUFFICIENT_QUALITY"
+   },
+   {
+    "turn": "t079",
+    "ts": "2026-09-18 17:36",
+    "span": "extends supersedes compatible_with",
+    "line": null,
+    "window": [
+     6382,
+     6635
+    ],
+    "turns_with_span": [
+     "t079"
+    ],
+    "check": "extends\\s+supersedes\\s+compatible_with"
+   }
+  ],
+  "check": [
+   "approve_legal_document",
+   "INSUFFICIENT_QUALITY",
+   "extends\\s+supersedes\\s+compatible_with"
+  ],
+  "turns": [
+   "t027",
+   "t060",
+   "t079"
+  ]
+ },
+ {
+  "id": "s_capability_contract_agg0",
+  "type": "aggregation",
+  "term": "Capability Contract",
+  "text": "Какие поля описывает Capability Contract для каждой capability и какие типы связей между версиями контрактов может поддерживать Contract Version Graph?",
+  "reference": "Для каждой capability контракт задаёт: what it does, inputs, outputs, constraints, verification, providers и dependencies. Contract Version Graph может поддерживать связи extends, supersedes и compatible_with.",
+  "parts": [
+   {
+    "turn": "t060",
+    "ts": "2026-09-18 13:05",
+    "span": "what it does",
+    "line": 806,
+    "window": [
+     798,
+     1055
+    ],
+    "turns_with_span": [
+     "t040",
+     "t060"
+    ],
+    "check": "what\\s+it\\s+does"
+   },
+   {
+    "turn": "t079",
+    "ts": "2026-09-18 17:36",
+    "span": "supersedes",
+    "line": 2542,
+    "window": [
+     6382,
+     6635
+    ],
+    "turns_with_span": [
+     "t029",
+     "t044",
+     "t052",
+     "t053",
+     "t066",
+     "t072",
+     "t076",
+     "t079"
+    ],
+    "check": "supersedes"
+   }
+  ],
+  "check": [
+   "what\\s+it\\s+does",
+   "supersedes"
+  ],
+  "turns": [
+   "t027",
+   "t060",
+   "t079"
+  ]
+ },
+ {
+  "id": "s_capability_contract_evo1",
+  "type": "evolution",
+  "term": "Capability Contract",
+  "text": "Как менялось описание Capability Contract по ходу разговора: как контракт использовался и какие поля имел сначала, что добавилось позже (машиночитаемость, дополнительные поля) и какой признак появился для физических capability?",
+  "reference": "Сначала контракт состоял из Inputs, Outputs, Constraints, Side Effects и Verification и служил для contract test: «Check provider against capability contract». Затем добавились what it does, providers и dependencies, и контракт стал machine-readable, чтобы агент мог проверить, может ли он выполнить задачу, до запуска. Позже в состав вошли preconditions и quality constraints, а для физических capability появился контракт с effects и «risk_class: PHYSICAL», по которому видно, что это физический side effect, а не read-only вычисление.",
+  "parts": [
+   {
+    "turn": "t043",
+    "ts": "2026-09-18 09:58",
+    "span": "Check provider against capability contract",
+    "line": 1260,
+    "window": [
+     1257,
+     1517
+    ],
+    "turns_with_span": [
+     "t043"
+    ],
+    "check": "Check\\s+provider\\s+against\\s+capability\\s+contract"
+   },
+   {
+    "turn": "t067",
+    "ts": "2026-09-18 14:04",
+    "span": "risk_class: PHYSICAL",
+    "line": 512,
+    "window": [
+     459,
+     735
+    ],
+    "turns_with_span": [
+     "t067"
+    ],
+    "check": "risk_class:\\s+PHYSICAL"
+   }
+  ],
+  "check": [
+   "Check\\s+provider\\s+against\\s+capability\\s+contract",
+   "risk_class:\\s+PHYSICAL"
+  ],
+  "turns": [
+   "t043",
+   "t060",
+   "t067"
+  ]
+ },
+ {
+  "id": "s_research_observatory_evo0",
+  "type": "evolution",
+  "term": "Research Observatory",
+  "text": "Как менялось описание Research Observatory: из какого объёма данных предлагалось собрать пробный датасет для первого MVP и что, согласно более позднему критерию успеха, она должна возвращать пользователю вместо документов?",
+  "reference": "Сначала для MVP предлагалась узкая предметная область с небольшим датасетом: 50 papers, 20 repos, 20 researchers, 5 datasets и 5 labs, чтобы проверить schema. Позже уточняется, что Research Observatory не зеркало статей: в отличие от поисковика, возвращающего documents, она возвращает structured epistemic state.",
+  "parts": [
+   {
+    "turn": "t033",
+    "ts": "2026-09-18 09:13",
+    "span": "50 papers",
+    "line": 2373,
+    "window": [
+     2138,
+     2384
+    ],
+    "turns_with_span": [
+     "t033"
+    ],
+    "check": "50\\s+papers"
+   },
+   {
+    "turn": "t055",
+    "ts": "2026-09-18 12:12",
+    "span": "structured epistemic state",
+    "line": 5843,
+    "window": [
+     5624,
+     5888
+    ],
+    "turns_with_span": [
+     "t055"
+    ],
+    "check": "structured\\s+epistemic\\s+state"
+   }
+  ],
+  "check": [
+   "50\\s+papers",
+   "structured\\s+epistemic\\s+state"
+  ],
+  "turns": [
+   "t033",
+   "t055",
+   "t060"
+  ]
+ },
+ {
+  "id": "s_research_observatory_agg0",
+  "type": "aggregation",
+  "term": "Research Observatory",
+  "text": "Какие три вещи говорятся о Research Observatory: чем она становится внутри Innovation OS, что она возвращает вместо списка документов, как у поисковика, и что она может найти для gap «2D graph visualization»?",
+  "reference": "Research Observatory становится scientific feedback subsystem Innovation OS. Вместо документов она возвращает structured epistemic state. Для gap «2D graph visualization» она может найти layout algorithms и visualization methods.",
+  "parts": [
+   {
+    "turn": "t033",
+    "ts": "2026-09-18 09:13",
+    "span": "scientific feedback subsystem",
+    "line": 2141,
+    "window": [
+     2138,
+     2384
+    ],
+    "turns_with_span": [
+     "t033"
+    ],
+    "check": "scientific\\s+feedback\\s+subsystem"
+   },
+   {
+    "turn": "t055",
+    "ts": "2026-09-18 12:12",
+    "span": "structured epistemic state",
+    "line": 5843,
+    "window": [
+     5624,
+     5888
+    ],
+    "turns_with_span": [
+     "t055"
+    ],
+    "check": "structured\\s+epistemic\\s+state"
+   },
+   {
+    "turn": "t060",
+    "ts": "2026-09-18 13:05",
+    "span": "layout algorithms",
+    "line": 1222,
+    "window": [
+     1185,
+     1461
+    ],
+    "turns_with_span": [
+     "t060"
+    ],
+    "check": "layout\\s+algorithms"
+   }
+  ],
+  "check": [
+   "scientific\\s+feedback\\s+subsystem",
+   "structured\\s+epistemic\\s+state",
+   "layout\\s+algorithms"
+  ],
+  "turns": [
+   "t033",
+   "t055",
+   "t060"
+  ]
+ },
+ {
+  "id": "s_architecture_freeze_evo0",
+  "type": "evolution",
+  "term": "Architecture Freeze",
+  "text": "Как менялось описание «Architecture Freeze»: что именно предполагалось зафиксировать в первоначальном плане v0.1 (какие схемы и модели) и во что превратился этот документ в итоге — как файл в репозитории и затем как проверяемая машиной политика?",
+  "reference": "Сначала Architecture Freeze v0.1 был планом зафиксировать 10–12 canonical entity types, canonical predicates, Project IR schema, Resource IR schema, Claim/Evidence model и Event model. Затем он стал файлом ARCHITECTURE_FREEZE_v0.1.md в репозитории (12 core types, 20 predicates, truth semantics, claim/evidence rules) как контракт для контрибьюторов и AI-агентов. В итоге заморозка превратилась в машинно-проверяемую политику kernel_manifest.yaml (root types, core predicates, invariants), где CI отклоняет случайное добавление новых корневых типов.",
+  "parts": [
+   {
+    "turn": "t028",
+    "ts": "2026-09-18 08:58",
+    "span": "зафиксировать Project IR schema;",
+    "line": 2326,
+    "window": [
+     2318,
+     2388
+    ],
+    "turns_with_span": [
+     "t028"
+    ],
+    "check": "зафиксировать\\s+Project\\s+IR\\s+schema;"
+   },
+   {
+    "turn": "t051",
+    "ts": "2026-09-18 10:48",
+    "span": "ARCHITECTURE_FREEZE_v0.1.md",
+    "line": 5669,
+    "window": [
+     5578,
+     5832
+    ],
+    "turns_with_span": [
+     "t051",
+     "t052"
+    ],
+    "check": "ARCHITECTURE_FREEZE_v0\\.1\\.md"
+   },
+   {
+    "turn": "t068",
+    "ts": "2026-09-18 14:15",
+    "span": "kernel_manifest.yaml",
+    "line": 9507,
+    "window": [
+     9499,
+     9745
+    ],
+    "turns_with_span": [
+     "t068"
+    ],
+    "check": "kernel_manifest\\.yaml"
+   }
+  ],
+  "check": [
+   "зафиксировать\\s+Project\\s+IR\\s+schema;",
+   "ARCHITECTURE_FREEZE_v0\\.1\\.md",
+   "kernel_manifest\\.yaml"
+  ],
+  "turns": [
+   "t028",
+   "t051",
+   "t068"
+  ]
+ },
+ {
+  "id": "s_architecture_freeze_agg0",
+  "type": "aggregation",
+  "term": "Architecture Freeze",
+  "text": "Что именно должен фиксировать Architecture Freeze v0.1? Перечисли все элементы его состава: что предлагалось зафиксировать в первоначальном плане, что включается в файл ARCHITECTURE_FREEZE_v0.1.md в репозитории и что входит в машинно-проверяемый kernel_manifest.yaml.",
+  "reference": "В первоначальном плане фиксируются 10–12 canonical entity types, canonical predicates, Project IR schema, Resource IR schema, Claim/Evidence model и Event model. Файл в репозитории включает 12 core types, 20 predicates, truth semantics и claim/evidence rules. Машинно-проверяемый kernel_manifest.yaml содержит root types, core predicates и invariants.",
+  "parts": [
+   {
+    "turn": "t028",
+    "ts": "2026-09-18 08:58",
+    "span": "Project IR schema",
+    "line": 1694,
+    "window": [
+     2318,
+     2388
+    ],
+    "turns_with_span": [
+     "t028"
+    ],
+    "check": "Project\\s+IR\\s+schema"
+   },
+   {
+    "turn": "t051",
+    "ts": "2026-09-18 10:48",
+    "span": "truth semantics",
+    "line": 5679,
+    "window": [
+     5578,
+     5832
+    ],
+    "turns_with_span": [
+     "t051",
+     "t068"
+    ],
+    "check": "truth\\s+semantics"
+   }
+  ],
+  "check": [
+   "Project\\s+IR\\s+schema",
+   "truth\\s+semantics"
+  ],
+  "turns": [
+   "t028",
+   "t051",
+   "t068"
+  ]
+ },
+ {
+  "id": "s_strategy_engine_evo0",
+  "type": "evolution",
+  "term": "Strategy Engine",
+  "text": "Как менялось в разговоре описание роли Strategy Engine: чем она определялась в начале (как отвечает на вопрос о вложениях и что делает со стадиями) и что добавилось позже в отношении обратимости шагов при выборе архитектуры?",
+  "reference": "Сначала Strategy Engine определялся как ответ на вопрос «when and how much should we commit, given uncertainty and future decisions» — то есть о том, когда и сколько вкладывать, с поэтапным паттерном observe → дешёвое обратимое действие → verify → update beliefs → большее обязательство. Позже, в контексте Architecture Search, добавилось, что Strategy Engine ценит обратимые шаги, и кандидат архитектуры может разворачиваться поэтапно: Pilot → Partial Deployment → Scale вместо одного необратимого rollout.",
+  "parts": [
+   {
+    "turn": "t046",
+    "ts": "2026-09-18 10:16",
+    "span": "when and how much should we commit,",
+    "line": 2036,
+    "window": [
+     2022,
+     2255
+    ],
+    "turns_with_span": [
+     "t046"
+    ],
+    "check": "when\\s+and\\s+how\\s+much\\s+should\\s+we\\s+commit,"
+   },
+   {
+    "turn": "t069",
+    "ts": "2026-09-18 14:25",
+    "span": "Strategy Engine values reversible steps.",
+    "line": 2703,
+    "window": [
+     2472,
+     2721
+    ],
+    "turns_with_span": [
+     "t069"
+    ],
+    "check": "Strategy\\s+Engine\\s+values\\s+reversible\\s+steps\\."
+   }
+  ],
+  "check": [
+   "when\\s+and\\s+how\\s+much\\s+should\\s+we\\s+commit,",
+   "Strategy\\s+Engine\\s+values\\s+reversible\\s+steps\\."
+  ],
+  "turns": [
+   "t046",
+   "t057",
+   "t069"
+  ]
+ },
+ {
+  "id": "s_strategy_engine_agg0",
+  "type": "aggregation",
+  "term": "Strategy Engine",
+  "text": "Какие конкретные примеры commitment под управлением Strategy Engine приводятся: порядок шагов в исследованиях, варианты получения промышленного CT-сканера и стадии постепенного развёртывания кандидата архитектуры?",
+  "reference": "Исследования: сначала literature review, затем дешёвый эксперимент, потом большой эксперимент. Для промышленного CT-сканера варианты такие: buy, lease, external service и university facility. Развёртывание идёт поэтапно: Pilot → Partial Deployment → Scale, вместо одного необратимого запуска.",
+  "parts": [
+   {
+    "turn": "t046",
+    "ts": "2026-09-18 10:16",
+    "span": "Literature review first",
+    "line": 2108,
+    "window": [
+     2022,
+     2255
+    ],
+    "turns_with_span": [
+     "t046"
+    ],
+    "check": "Literature\\s+review\\s+first"
+   },
+   {
+    "turn": "t057",
+    "ts": "2026-09-18 12:39",
+    "span": "university facility",
+    "line": 2583,
+    "window": [
+     2550,
+     2808
+    ],
+    "turns_with_span": [
+     "t057"
+    ],
+    "check": "university\\s+facility"
+   },
+   {
+    "turn": "t069",
+    "ts": "2026-09-18 14:25",
+    "span": "Partial Deployment",
+    "line": 2712,
+    "window": [
+     2472,
+     2721
+    ],
+    "turns_with_span": [
+     "t069"
+    ],
+    "check": "Partial\\s+Deployment"
+   }
+  ],
+  "check": [
+   "Literature\\s+review\\s+first",
+   "university\\s+facility",
+   "Partial\\s+Deployment"
+  ],
+  "turns": [
+   "t046",
+   "t057",
+   "t069"
+  ]
+ },
+ {
+  "id": "s_package_manager_evo0",
+  "type": "evolution",
+  "term": "Package Manager",
+  "text": "Как менялось описание Package Manager в Innovation OS: какой жизненный цикл пакета и какие типы пакетов были заданы сначала, что именно он «поставляет» в общей архитектуре и какое ограничение аналогии с программными менеджерами пакетов отмечено позже?",
+  "reference": "Сначала Package Manager описан как менеджер пакетов Innovation OS с шестью типами пакетов (в том числе Tool Binding Package) и жизненным циклом от discover до version/update/rollback. Затем в архитектуре он определён как слой, который поставляет «how capabilities can be implemented», в отличие от Capability Market, World State и Policy. Ещё позже он выступает источником аналогии (package → capability package, registry → semantic package registry), и фиксируется её слабое место: physical resources cannot be copied like software.",
+  "parts": [
+   {
+    "turn": "t039",
+    "ts": "2026-09-18 09:34",
+    "span": "version/update/rollback",
+    "line": 4690,
+    "window": [
+     4657,
+     4697
+    ],
+    "turns_with_span": [
+     "t039"
+    ],
+    "check": "version/update/rollback"
+   },
+   {
+    "turn": "t041",
+    "ts": "2026-09-18 09:46",
+    "span": "how capabilities can be implemented",
+    "line": 3674,
+    "window": [
+     3666,
+     3790
+    ],
+    "turns_with_span": [
+     "t041"
+    ],
+    "check": "how\\s+capabilities\\s+can\\s+be\\s+implemented"
+   },
+   {
+    "turn": "t070",
+    "ts": "2026-09-18 14:38",
+    "span": "physical resources cannot be copied like software",
+    "line": 1848,
+    "window": [
+     1786,
+     2038
+    ],
+    "turns_with_span": [
+     "t070"
+    ],
+    "check": "physical\\s+resources\\s+cannot\\s+be\\s+copied\\s+like\\s+software"
+   }
+  ],
+  "check": [
+   "version/update/rollback",
+   "how\\s+capabilities\\s+can\\s+be\\s+implemented",
+   "physical\\s+resources\\s+cannot\\s+be\\s+copied\\s+like\\s+software"
+  ],
+  "turns": [
+   "t039",
+   "t041",
+   "t070"
+  ]
+ },
+ {
+  "id": "s_package_manager_agg0",
+  "type": "aggregation",
+  "term": "Package Manager",
+  "text": "Какие шесть типов пакетов определяет Package Manager в Innovation OS и что именно он поставляет в общей архитектуре по отношению к capabilities?",
+  "reference": "Package Manager определяет типы пакетов: Capability Package, Skill Package, Ontology Package, Workflow Package, Tool Binding Package и Agent Package. В общей архитектуре он поставляет знание о том, how capabilities can be implemented, то есть как capabilities могут быть реализованы.",
+  "parts": [
+   {
+    "turn": "t039",
+    "ts": "2026-09-18 09:34",
+    "span": "Tool Binding Package",
+    "line": 4669,
+    "window": [
+     4657,
+     4697
+    ],
+    "turns_with_span": [
+     "t039",
+     "t040"
+    ],
+    "check": "Tool\\s+Binding\\s+Package"
+   },
+   {
+    "turn": "t041",
+    "ts": "2026-09-18 09:46",
+    "span": "how capabilities can be implemented",
+    "line": 3674,
+    "window": [
+     3666,
+     3790
+    ],
+    "turns_with_span": [
+     "t041"
+    ],
+    "check": "how\\s+capabilities\\s+can\\s+be\\s+implemented"
+   }
+  ],
+  "check": [
+   "Tool\\s+Binding\\s+Package",
+   "how\\s+capabilities\\s+can\\s+be\\s+implemented"
+  ],
+  "turns": [
+   "t039",
+   "t041",
+   "t070"
+  ]
+ },
+ {
+  "id": "s_open_knowledge_evo0",
+  "type": "evolution",
+  "term": "Open Knowledge",
+  "text": "Как менялась трактовка Open Knowledge в архитектуре Innovation OS: какие проекты и общие сущности объединяла программа Open Knowledge, как Open Knowledge Development Layer связывает Technopedia с World State и какое место Open Knowledge занимает среди видов состояния в итоговой федеративной подложке?",
+  "reference": "Сначала Open Knowledge трактовалась как программа-инфраструктура, объединяющая Technopedia, Knowledge Git, AI Forum 2.0, Semantic Objects и Project IR standards на общих ontology, identity, provenance и versioning. Затем она оформилась как слой разработки: Technopedia стала семантической проекцией над World State, а страница собирается через Knowledge View Compiler в гибридном режиме. В итоге open knowledge стала одним из видов состояния (наряду с operational state, scientific claims, private overlays, offline nodes) в распределённой, версионируемой, федеративной подложке знаний.",
+  "parts": [
+   {
+    "turn": "t023",
+    "ts": "2026-09-17 22:39",
+    "span": "Knowledge Git",
+    "line": 1597,
+    "window": [
+     1579,
+     1793
+    ],
+    "turns_with_span": [
+     "t023",
+     "t044",
+     "t049"
+    ],
+    "check": "Knowledge\\s+Git"
+   },
+   {
+    "turn": "t059",
+    "ts": "2026-09-18 13:00",
+    "span": "Knowledge View Compiler",
+    "line": 119,
+    "window": [
+     8,
+     234
+    ],
+    "turns_with_span": [
+     "t059"
+    ],
+    "check": "Knowledge\\s+View\\s+Compiler"
+   },
+   {
+    "turn": "t076",
+    "ts": "2026-09-18 17:16",
+    "span": "private overlays",
+    "line": 6260,
+    "window": [
+     6239,
+     6514
+    ],
+    "turns_with_span": [
+     "t076"
+    ],
+    "check": "private\\s+overlays"
+   }
+  ],
+  "check": [
+   "Knowledge\\s+Git",
+   "Knowledge\\s+View\\s+Compiler",
+   "private\\s+overlays"
+  ],
+  "turns": [
+   "t023",
+   "t059",
+   "t076"
+  ]
+ },
+ {
+  "id": "s_open_knowledge_agg0",
+  "type": "aggregation",
+  "term": "Open Knowledge",
+  "text": "Какие пять проектов объединены в программу Open Knowledge Infrastructure и какие свойства знаний (в каком виде они перестают быть статичными страницами) задаёт слой Open Knowledge Development Layer v0.1?",
+  "reference": "В программу Open Knowledge Infrastructure входят Technopedia, Knowledge Git, AI Forum 2.0, Semantic Objects и Project IR standards (с общими ontology, identity, provenance, versioning). Слой Open Knowledge Development Layer v0.1 делает знания версионируемыми, обсуждаемыми, форкаемыми и напрямую связанными с Claims, Evidence, Projects и агентами.",
+  "parts": [
+   {
+    "turn": "t023",
+    "ts": "2026-09-17 22:39",
+    "span": "Project IR standards",
+    "line": 1600,
+    "window": [
+     1579,
+     1793
+    ],
+    "turns_with_span": [
+     "t023"
+    ],
+    "check": "Project\\s+IR\\s+standards"
+   },
+   {
+    "turn": "t059",
+    "ts": "2026-09-18 13:00",
+    "span": "версионируемыми, обсуждаемыми, форкаемыми",
+    "line": 11,
+    "window": [
+     8,
+     234
+    ],
+    "turns_with_span": [
+     "t059"
+    ],
+    "check": "версионируемыми,\\s+обсуждаемыми,\\s+форкаемыми"
+   }
+  ],
+  "check": [
+   "Project\\s+IR\\s+standards",
+   "версионируемыми,\\s+обсуждаемыми,\\s+форкаемыми"
+  ],
+  "turns": [
+   "t023",
+   "t059",
+   "t076"
+  ]
+ },
+ {
+  "id": "s_team_hypothesis_evo0",
+  "type": "evolution",
+  "term": "Team Hypothesis",
+  "text": "Как менялось описание «Team Hypothesis» в разговоре: как её сначала требовалось формулировать, какое место она заняла в первом end-to-end сценарии и какие поля, статус и оговорку про согласие людей она получила в итоговой модели вывода?",
+  "reference": "Сначала Team Hypothesis предлагалось записывать как «technical team hypothesis», а не как утверждение, что люди должны работать вместе, поскольку интерес и доступность неизвестны. Затем она стала шагом 11 сценария («11. предлагает Team Hypothesis») после показа missing capabilities и перед формированием Project Workspace. В итоге её оформили как модель TeamHypothesis с полями resource_ids, covered_capabilities, uncovered_capabilities и constraint_unknowns и статусом HYPOTHESIS. При этом согласие (consent) остаётся UNKNOWN, пока нет явного evidence.",
+  "parts": [
+   {
+    "turn": "t031",
+    "ts": "2026-09-18 09:08",
+    "span": "technical team hypothesis",
+    "line": 860,
+    "window": [
+     852,
+     1044
+    ],
+    "turns_with_span": [
+     "t031"
+    ],
+    "check": "technical\\s+team\\s+hypothesis"
+   },
+   {
+    "turn": "t050",
+    "ts": "2026-09-18 10:42",
+    "span": "11. предлагает Team Hypothesis",
+    "line": 201,
+    "window": [
+     170,
+     398
+    ],
+    "turns_with_span": [
+     "t050"
+    ],
+    "check": "11\\.\\s+предлагает\\s+Team\\s+Hypothesis"
+   },
+   {
+    "turn": "t053",
+    "ts": "2026-09-18 12:00",
+    "span": "uncovered_capabilities: list[UUID]",
+    "line": 2036,
+    "window": [
+     2000,
+     2263
+    ],
+    "turns_with_span": [
+     "t053"
+    ],
+    "check": "uncovered_capabilities:\\s+list\\[UUID\\]"
+   }
+  ],
+  "check": [
+   "technical\\s+team\\s+hypothesis",
+   "11\\.\\s+предлагает\\s+Team\\s+Hypothesis",
+   "uncovered_capabilities:\\s+list\\[UUID\\]"
+  ],
+  "turns": [
+   "t031",
+   "t050",
+   "t053"
+  ]
+ },
+ {
+  "id": "s_team_hypothesis_agg0",
+  "type": "aggregation",
+  "term": "Team Hypothesis",
+  "text": "Какие именованные разновидности Team Hypothesis выделяются в обсуждении и чем характеризуется каждая из них?",
+  "reference": "Latent Team Hypothesis создаётся Latent Team Detector, когда несколько доступных ресурсов (например, 3) вместе покрывают редкий повторяющийся кластер capabilities. Composite Team Hypothesis — смешанная команда, например Person 1 + Person 2 + Repo X (люди плюс программный ресурс), которая закрывает весь capability graph.",
+  "parts": [
+   {
+    "turn": "t031",
+    "ts": "2026-09-18 09:08",
+    "span": "Latent Team Hypothesis",
+    "line": 908,
+    "window": [
+     852,
+     1044
+    ],
+    "turns_with_span": [
+     "t031",
+     "t070"
+    ],
+    "check": "Latent\\s+Team\\s+Hypothesis"
+   },
+   {
+    "turn": "t053",
+    "ts": "2026-09-18 12:00",
+    "span": "Composite Team Hypothesis",
+    "line": 2003,
+    "window": [
+     2000,
+     2263
+    ],
+    "turns_with_span": [
+     "t053"
+    ],
+    "check": "Composite\\s+Team\\s+Hypothesis"
+   }
+  ],
+  "check": [
+   "Latent\\s+Team\\s+Hypothesis",
+   "Composite\\s+Team\\s+Hypothesis"
+  ],
+  "turns": [
+   "t031",
+   "t050",
+   "t053"
+  ]
+ },
+ {
+  "id": "s_resource_resolver_agg0",
+  "type": "aggregation",
+  "term": "Resource Resolver",
+  "text": "Какие дополнительные виды Resource Resolver предлагаются в разговоре сверх основных Talent, Tech и Funding? Назовите resolver-ы, которые можно добавлять без изменения Project IR, resolver для физической инфраструктуры и resolver из MVP для ручного добавления ресурса.",
+  "reference": "Без изменения Project IR можно добавить Equipment Resolver, Patent Resolver, Supplier Resolver и Researcher Resolver. Для физической инфраструктуры (robot arm, GPU cluster, microscope, wind tunnel, 3D printer) предлагается Physical Resource Resolver. В MVP нужен Manual Resource Resolver, чтобы человек мог вручную добавить ресурс, которого нет в автоматических источниках.",
+  "parts": [
+   {
+    "turn": "t014",
+    "ts": "2026-09-17 21:57",
+    "span": "Supplier Resolver",
+    "line": 1484,
+    "window": [
+     1321,
+     1520
+    ],
+    "turns_with_span": [
+     "t014"
+    ],
+    "check": "Supplier\\s+Resolver"
+   },
+   {
+    "turn": "t019",
+    "ts": "2026-09-17 22:26",
+    "span": "Physical Resource Resolver",
+    "line": 2353,
+    "window": [
+     2350,
+     2541
+    ],
+    "turns_with_span": [
+     "t019",
+     "t035",
+     "t055"
+    ],
+    "check": "Physical\\s+Resource\\s+Resolver"
+   }
+  ],
+  "check": [
+   "Supplier\\s+Resolver",
+   "Physical\\s+Resource\\s+Resolver"
+  ],
+  "turns": [
+   "t014",
+   "t019",
+   "t028"
+  ]
+ },
+ {
+  "id": "s_entity_resolution_evo0",
+  "type": "evolution",
+  "term": "Entity Resolution",
+  "text": "Как менялось описание Entity Resolution в разговоре: какие сигналы совпадения и какие состояния результата сопоставления идентичности предлагались сначала, и какие внешние идентификаторы и состояния Identity Match появились позже?",
+  "reference": "Сначала Entity Resolution опирался на сигналы вроде same GitHub, same domain, same email hash и давал Resource Identity с несколькими source records; слабые совпадения вроде «John Smith» не объединялись, а идентичность имела состояния YES / NO / UNKNOWN. Позже добавились внешние идентификаторы (ORCID, GitHub ID, DOI, company registry IDs) и пятиуровневые состояния Identity Match: SAME_CONFIRMED, SAME_PROBABLE, POSSIBLE, DIFFERENT, UNKNOWN, причём POSSIBLE не объединяет UUID, а создаёт identity link claim.",
+  "parts": [
+   {
+    "turn": "t019",
+    "ts": "2026-09-17 22:26",
+    "span": "same email hash",
+    "line": 743,
+    "window": [
+     727,
+     971
+    ],
+    "turns_with_span": [
+     "t019"
+    ],
+    "check": "same\\s+email\\s+hash"
+   },
+   {
+    "turn": "t076",
+    "ts": "2026-09-18 17:16",
+    "span": "SAME_CONFIRMED",
+    "line": 2899,
+    "window": [
+     2872,
+     3156
+    ],
+    "turns_with_span": [
+     "t076"
+    ],
+    "check": "SAME_CONFIRMED"
+   }
+  ],
+  "check": [
+   "same\\s+email\\s+hash",
+   "SAME_CONFIRMED"
+  ],
+  "turns": [
+   "t019",
+   "t068",
+   "t076"
+  ]
+ },
+ {
+  "id": "s_entity_resolution_agg0",
+  "type": "aggregation",
+  "term": "Entity Resolution",
+  "text": "Какие сигналы совпадения и какие существующие внешние идентификаторы в разговоре названы для Entity Resolution (сопоставления одной и той же сущности из разных источников)?",
+  "reference": "Сигналы совпадения: same GitHub, same domain, same name, same email hash, same company, same linked profile. Внешние идентификаторы, которые помогают при сопоставлении: ORCID, GitHub ID, DOI и company registry IDs.",
+  "parts": [
+   {
+    "turn": "t019",
+    "ts": "2026-09-17 22:26",
+    "span": "same email hash",
+    "line": 743,
+    "window": [
+     727,
+     971
+    ],
+    "turns_with_span": [
+     "t019"
+    ],
+    "check": "same\\s+email\\s+hash"
+   },
+   {
+    "turn": "t076",
+    "ts": "2026-09-18 17:16",
+    "span": "company registry IDs",
+    "line": 2885,
+    "window": [
+     2872,
+     3156
+    ],
+    "turns_with_span": [
+     "t076"
+    ],
+    "check": "company\\s+registry\\s+IDs"
+   }
+  ],
+  "check": [
+   "same\\s+email\\s+hash",
+   "company\\s+registry\\s+IDs"
+  ],
+  "turns": [
+   "t019",
+   "t068",
+   "t076"
+  ]
+ },
+ {
+  "id": "s_funding_resolver_evo0",
+  "type": "evolution",
+  "term": "Funding Resolver",
+  "text": "Как менялось описание Funding Resolver: какими вариантами закрытия пробела по финансированию (на примере funding_200k) он оперировал вначале, и какие параметры запроса и пункты вывода (риски и блокеры) были добавлены позже?",
+  "reference": "Сначала финансирование было просто ещё одним capability gap: funding_200k мог закрываться через EU grant, angel, corporate sponsor или VC. Позже появился формальный запрос (gap_type: funding, сумма 300000–600000 EUR, типы организаций SME и university, география EU), а на выходе — варианты Funding Option A/B/C плюс Hard blockers, Unknown eligibility, Consortium requirements и Deadline risks.",
+  "parts": [
+   {
+    "turn": "t014",
+    "ts": "2026-09-17 21:57",
+    "span": "corporate sponsor",
+    "line": 1280,
+    "window": [
+     1253,
+     1494
+    ],
+    "turns_with_span": [
+     "t014",
+     "t034",
+     "t056"
+    ],
+    "check": "corporate\\s+sponsor"
+   },
+   {
+    "turn": "t034",
+    "ts": "2026-09-18 09:17",
+    "span": "Unknown eligibility",
+    "line": 2151,
+    "window": [
+     2117,
+     2360
+    ],
+    "turns_with_span": [
+     "t034",
+     "t056"
+    ],
+    "check": "Unknown\\s+eligibility"
+   }
+  ],
+  "check": [
+   "corporate\\s+sponsor",
+   "Unknown\\s+eligibility"
+  ],
+  "turns": [
+   "t014",
+   "t034",
+   "t058"
+  ]
+ },
+ {
+  "id": "s_funding_resolver_agg0",
+  "type": "aggregation",
+  "term": "Funding Resolver",
+  "text": "Какие источники финансирования, по обсуждению, ищет Funding Resolver: в общем случае (на примере закрытия потребности funding_200k) и для open-source проекта с GitHub?",
+  "reference": "В общем случае Funding Resolver ищет гранты, инвесторов и спонсоров; потребность funding_200k может закрыть EU grant, angel, corporate sponsor или VC. Для OSS-проекта он ищет open-source infrastructure grants, спонсоров и bounties.",
+  "parts": [
+   {
+    "turn": "t014",
+    "ts": "2026-09-17 21:57",
+    "span": "corporate sponsor",
+    "line": 1280,
+    "window": [
+     1253,
+     1494
+    ],
+    "turns_with_span": [
+     "t014",
+     "t034",
+     "t056"
+    ],
+    "check": "corporate\\s+sponsor"
+   },
+   {
+    "turn": "t034",
+    "ts": "2026-09-18 09:17",
+    "span": "open-source infrastructure grants",
+    "line": 2252,
+    "window": [
+     2117,
+     2360
+    ],
+    "turns_with_span": [
+     "t034"
+    ],
+    "check": "open\\-source\\s+infrastructure\\s+grants"
+   }
+  ],
+  "check": [
+   "corporate\\s+sponsor",
+   "open\\-source\\s+infrastructure\\s+grants"
+  ],
+  "turns": [
+   "t014",
+   "t034",
+   "t058"
+  ]
+ },
+ {
+  "id": "s_causal_engine_evo0",
+  "type": "evolution",
+  "term": "Causal Engine",
+  "text": "Как в обсуждении Causal Engine изменилась картина того, чем он оперирует при поиске и оценке интервенций: какие классы переменных вводились сначала, и какая структура (с какими элементами) требуется позже перед симуляцией?",
+  "reference": "Раньше Causal Engine различал переменные по управляемости на три класса — CONTROLLABLE, INFLUENCEABLE и OBSERVABLE_ONLY — и искал интервенции обратным обходом к управляемым узлам. Позже добавляется механизм-гипотеза «Intervention I AFFECTS mediator M AFFECTS outcome Y» с медиатором (например, время ручной координации) и конфаундерами (сложность проекта); без такого механизма симуляция превращается в «numerical theater».",
+  "parts": [
+   {
+    "turn": "t045",
+    "ts": "2026-09-18 10:11",
+    "span": "OBSERVABLE_ONLY",
+    "line": 1909,
+    "window": [
+     1691,
+     1956
+    ],
+    "turns_with_span": [
+     "t045"
+    ],
+    "check": "OBSERVABLE_ONLY"
+   },
+   {
+    "turn": "t074",
+    "ts": "2026-09-18 17:02",
+    "span": "AFFECTS mediator M",
+    "line": 3248,
+    "window": [
+     3191,
+     3470
+    ],
+    "turns_with_span": [
+     "t074"
+    ],
+    "check": "AFFECTS\\s+mediator\\s+M"
+   }
+  ],
+  "check": [
+   "OBSERVABLE_ONLY",
+   "AFFECTS\\s+mediator\\s+M"
+  ],
+  "turns": [
+   "t045",
+   "t061",
+   "t074"
+  ]
+ },
+ {
+  "id": "s_causal_engine_agg0",
+  "type": "aggregation",
+  "term": "Causal Engine",
+  "text": "Какие обязанности возлагаются на Causal Engine в разговоре: как он работает с эффектами политик, что он делает с наблюдениями Evolution Engine и что должен отражать при оценке пилотов?",
+  "reference": "Causal Engine должен искать эффекты за пределами ближайшего downstream-узла (эффекты второго порядка, search beyond immediate downstream node). Он оценивает объяснения (evaluates explanation) для наблюдений, которые даёт Evolution Engine, а не просто сравнивает до и после. При оценке пилотов он должен отражать ограничения (should represent limitations), например что простое сравнение до/после может быть смещено.",
+  "parts": [
+   {
+    "turn": "t045",
+    "ts": "2026-09-18 10:11",
+    "span": "search beyond immediate downstream node",
+    "line": 1727,
+    "window": [
+     1691,
+     1956
+    ],
+    "turns_with_span": [
+     "t045"
+    ],
+    "check": "search\\s+beyond\\s+immediate\\s+downstream\\s+node"
+   },
+   {
+    "turn": "t061",
+    "ts": "2026-09-18 13:25",
+    "span": "evaluates explanation",
+    "line": 3875,
+    "window": [
+     3864,
+     4130
+    ],
+    "turns_with_span": [
+     "t061"
+    ],
+    "check": "evaluates\\s+explanation"
+   },
+   {
+    "turn": "t074",
+    "ts": "2026-09-18 17:02",
+    "span": "should represent limitations",
+    "line": 3401,
+    "window": [
+     3191,
+     3470
+    ],
+    "turns_with_span": [
+     "t074"
+    ],
+    "check": "should\\s+represent\\s+limitations"
+   }
+  ],
+  "check": [
+   "search\\s+beyond\\s+immediate\\s+downstream\\s+node",
+   "evaluates\\s+explanation",
+   "should\\s+represent\\s+limitations"
+  ],
+  "turns": [
+   "t045",
+   "t061",
+   "t074"
+  ]
+ },
+ {
+  "id": "s_causal_engine_evo1",
+  "type": "evolution",
+  "term": "Causal Engine",
+  "text": "Как в разговоре расширяется описание роли Causal Engine: на какой вопрос он отвечает в связке со Strategy Engine, а позже от каких модулей, поставляющих наблюдения, его отделяют и что именно он выдаёт?",
+  "reference": "Сначала Causal Engine описан как модуль, который говорит «what may happen if X changes», то есть оценивает последствия изменения X, а Strategy Engine решает, когда и сколько вкладывать. Позже его чётко отделяют от поставщиков наблюдений: Evolution Engine даёт наблюдения, а «Causal Engine evaluates explanation». В Data Fabric добавлено, что Perception Fabric поставляет наблюдения, а «Causal Engine supplies causal Claims», то есть утверждения вида «X caused Y».",
+  "parts": [
+   {
+    "turn": "t046",
+    "ts": "2026-09-18 10:16",
+    "span": "what may happen if X changes",
+    "line": 2030,
+    "window": [
+     2022,
+     2255
+    ],
+    "turns_with_span": [
+     "t046"
+    ],
+    "check": "what\\s+may\\s+happen\\s+if\\s+X\\s+changes"
+   },
+   {
+    "turn": "t061",
+    "ts": "2026-09-18 13:25",
+    "span": "Causal Engine evaluates explanation.",
+    "line": 3875,
+    "window": [
+     3864,
+     4130
+    ],
+    "turns_with_span": [
+     "t061"
+    ],
+    "check": "Causal\\s+Engine\\s+evaluates\\s+explanation\\."
+   },
+   {
+    "turn": "t065",
+    "ts": "2026-09-18 13:51",
+    "span": "Causal Engine supplies causal Claims.",
+    "line": 4287,
+    "window": [
+     4261,
+     4493
+    ],
+    "turns_with_span": [
+     "t065"
+    ],
+    "check": "Causal\\s+Engine\\s+supplies\\s+causal\\s+Claims\\."
+   }
+  ],
+  "check": [
+   "what\\s+may\\s+happen\\s+if\\s+X\\s+changes",
+   "Causal\\s+Engine\\s+evaluates\\s+explanation\\.",
+   "Causal\\s+Engine\\s+supplies\\s+causal\\s+Claims\\."
+  ],
+  "turns": [
+   "t046",
+   "t061",
+   "t065"
+  ]
+ },
+ {
+  "id": "s_causal_engine_agg1",
+  "type": "aggregation",
+  "term": "Causal Engine",
+  "text": "Какие три роли или функции Causal Engine описаны в разговоре: что он сообщает в паре со Strategy Engine, что делает с наблюдениями Evolution Engine и что он поставляет в Data Fabric по границе с Perception Fabric?",
+  "reference": "Causal Engine говорит, «what may happen if X changes», то есть что может произойти при изменении X. С наблюдениями Evolution Engine он работает так: Causal Engine evaluates explanation, то есть оценивает объяснение. В Data Fabric он поставляет причинные утверждения: Causal Engine supplies causal Claims, а Perception Fabric поставляет только наблюдения.",
+  "parts": [
+   {
+    "turn": "t046",
+    "ts": "2026-09-18 10:16",
+    "span": "what may happen if X changes",
+    "line": 2030,
+    "window": [
+     2022,
+     2255
+    ],
+    "turns_with_span": [
+     "t046"
+    ],
+    "check": "what\\s+may\\s+happen\\s+if\\s+X\\s+changes"
+   },
+   {
+    "turn": "t061",
+    "ts": "2026-09-18 13:25",
+    "span": "Causal Engine evaluates explanation.",
+    "line": 3875,
+    "window": [
+     3864,
+     4130
+    ],
+    "turns_with_span": [
+     "t061"
+    ],
+    "check": "Causal\\s+Engine\\s+evaluates\\s+explanation\\."
+   },
+   {
+    "turn": "t065",
+    "ts": "2026-09-18 13:51",
+    "span": "Causal Engine supplies causal Claims.",
+    "line": 4287,
+    "window": [
+     4261,
+     4493
+    ],
+    "turns_with_span": [
+     "t065"
+    ],
+    "check": "Causal\\s+Engine\\s+supplies\\s+causal\\s+Claims\\."
+   }
+  ],
+  "check": [
+   "what\\s+may\\s+happen\\s+if\\s+X\\s+changes",
+   "Causal\\s+Engine\\s+evaluates\\s+explanation\\.",
+   "Causal\\s+Engine\\s+supplies\\s+causal\\s+Claims\\."
+  ],
+  "turns": [
+   "t046",
+   "t061",
+   "t065"
+  ]
+ },
+ {
+  "id": "s_project_compiler_evo0",
+  "type": "evolution",
+  "term": "Project Compiler",
+  "text": "Как менялось описание «Project Compiler»: какие входы и выходы ему приписывались, куда его результат передаётся в runtime и какой вопрос он решает по сравнению с Causal Planner?",
+  "reference": "Сначала Project Compiler описан как сервис слоя проектов: на входе problem / idea / vacancy / RFP, на выходе Project IR (Problem, Goal, Capabilities, Constraints, Tasks, Artifacts). Затем показана интеграция с runtime: Project IR компилируется в Task Graph и передаётся в Semantic Runtime. Позже он противопоставляется Causal Planner: Project Compiler отвечает на вопрос «what tasks produce outcome?», а Causal Planner определяет, какие переменные реально нужно менять.",
+  "parts": [
+   {
+    "turn": "t028",
+    "ts": "2026-09-18 08:58",
+    "span": "problem / idea / vacancy / RFP",
+    "line": 511,
+    "window": [
+     493,
+     765
+    ],
+    "turns_with_span": [
+     "t028"
+    ],
+    "check": "problem\\s+/\\s+idea\\s+/\\s+vacancy\\s+/\\s+RFP"
+   },
+   {
+    "turn": "t045",
+    "ts": "2026-09-18 10:11",
+    "span": "what tasks produce outcome?",
+    "line": 1959,
+    "window": [
+     1951,
+     2191
+    ],
+    "turns_with_span": [
+     "t045"
+    ],
+    "check": "what\\s+tasks\\s+produce\\s+outcome\\?"
+   }
+  ],
+  "check": [
+   "problem\\s+/\\s+idea\\s+/\\s+vacancy\\s+/\\s+RFP",
+   "what\\s+tasks\\s+produce\\s+outcome\\?"
+  ],
+  "turns": [
+   "t027",
+   "t028",
+   "t045"
+  ]
+ },
+ {
+  "id": "s_project_compiler_agg0",
+  "type": "aggregation",
+  "term": "Project Compiler",
+  "text": "Что известно о Project Compiler: какие типы входных данных он принимает, в какой артефакт и дальше во что компилируется результат при интеграции с runtime, и какой вопрос он задаёт в отличие от Causal Planner?",
+  "reference": "Project Compiler принимает на вход problem / idea / vacancy / RFP и выдаёт Project IR (Problem, Goal, Capabilities, Constraints, Tasks, Artifacts). В runtime Project IR компилируется в Task Graph, который передаётся в Semantic Runtime. Сам Project Compiler отвечает на вопрос «what tasks produce outcome?», тогда как Causal Planner спрашивает, какие переменные действительно нужно менять.",
+  "parts": [
+   {
+    "turn": "t028",
+    "ts": "2026-09-18 08:58",
+    "span": "problem / idea / vacancy / RFP",
+    "line": 511,
+    "window": [
+     493,
+     765
+    ],
+    "turns_with_span": [
+     "t028"
+    ],
+    "check": "problem\\s+/\\s+idea\\s+/\\s+vacancy\\s+/\\s+RFP"
+   },
+   {
+    "turn": "t045",
+    "ts": "2026-09-18 10:11",
+    "span": "what tasks produce outcome?",
+    "line": 1959,
+    "window": [
+     1951,
+     2191
+    ],
+    "turns_with_span": [
+     "t045"
+    ],
+    "check": "what\\s+tasks\\s+produce\\s+outcome\\?"
+   }
+  ],
+  "check": [
+   "problem\\s+/\\s+idea\\s+/\\s+vacancy\\s+/\\s+RFP",
+   "what\\s+tasks\\s+produce\\s+outcome\\?"
+  ],
+  "turns": [
+   "t027",
+   "t028",
+   "t045"
+  ]
+ },
+ {
+  "id": "s_idempotency_evo0",
+  "type": "evolution",
+  "term": "Idempotency",
+  "text": "Как менялось в разговоре понимание идемпотентности: от цели не создавать дубликаты при повторном event до требований к command model и до подхода к внешним эффектам при потере узла?",
+  "reference": "Сначала идемпотентность вводилась как защита от duplicate tasks/emails/purchases через idempotency keys в actions. Затем для command model v0.1 потребовали поле idempotency_key и тест, что один и тот же ключ не создаёт две активные команды одного side effect. В итоге идемпотентность стала частью связки «at-least-once + idempotency + reconciliation»: для внешних эффектов (например, payment API call) при потере узла нужна reconciliation, а не слепой повтор.",
+  "parts": [
+   {
+    "turn": "t027",
+    "ts": "2026-09-18 08:54",
+    "span": "duplicate purchases",
+    "line": 1775,
+    "window": [
+     1765,
+     1989
+    ],
+    "turns_with_span": [
+     "t027"
+    ],
+    "check": "duplicate\\s+purchases"
+   },
+   {
+    "turn": "t052",
+    "ts": "2026-09-18 10:56",
+    "span": "не должен создать две active команды",
+    "line": 3625,
+    "window": [
+     3611,
+     3833
+    ],
+    "turns_with_span": [
+     "t052"
+    ],
+    "check": "не\\s+должен\\s+создать\\s+две\\s+active\\s+команды"
+   }
+  ],
+  "check": [
+   "duplicate\\s+purchases",
+   "не\\s+должен\\s+создать\\s+две\\s+active\\s+команды"
+  ],
+  "turns": [
+   "t027",
+   "t052",
+   "t075"
+  ]
+ },
+ {
+  "id": "s_idempotency_agg0",
+  "type": "aggregation",
+  "term": "Idempotency",
+  "text": "Какие механизмы и принципы названы в разговоре для надёжной обработки повторных событий и внешних эффектов в связи с идемпотентностью: что должны иметь actions, какая таблица пишется вместе с Event и что добавляется к at-least-once для внешних эффектов?",
+  "reference": "Actions должны иметь idempotency keys там, где возможно (в command model v0.1 это поле idempotency_key). Event записывается транзакционно вместе с записью в Outbox table, чтобы при падении publisher'а outbox оставался. Для внешних эффектов вместо exactly-once используют at-least-once + idempotency + reconciliation.",
+  "parts": [
+   {
+    "turn": "t027",
+    "ts": "2026-09-18 08:54",
+    "span": "idempotency keys там, где возможно",
+    "line": 1778,
+    "window": [
+     1765,
+     1989
+    ],
+    "turns_with_span": [
+     "t027"
+    ],
+    "check": "idempotency\\s+keys\\s+там,\\s+где\\s+возможно"
+   },
+   {
+    "turn": "t052",
+    "ts": "2026-09-18 10:56",
+    "span": "Outbox table",
+    "line": 3629,
+    "window": [
+     3611,
+     3833
+    ],
+    "turns_with_span": [
+     "t052"
+    ],
+    "check": "Outbox\\s+table"
+   }
+  ],
+  "check": [
+   "idempotency\\s+keys\\s+там,\\s+где\\s+возможно",
+   "Outbox\\s+table"
+  ],
+  "turns": [
+   "t027",
+   "t052",
+   "t075"
+  ]
+ },
+ {
+  "id": "s_idempotency_evo1",
+  "type": "evolution",
+  "term": "Idempotency",
+  "text": "Как в разговоре менялось описание ключей идемпотентности: от требования к повторяемым Actions, через конкретный состав ключа для match, до того, из чего ключи строятся для входящих событий?",
+  "reference": "Сначала у каждого повторяемого Action должен быть idempotency_key, чтобы retry не создал, например, 5 одинаковых issues. Затем ключи стали конкретными: для match это project_id + resource_id + matcher_version + world_revision. В итоге ключи строятся из source identity, external event ID или content hash, а упор сделан на семантическую идемпотентность: дубль события не должен создавать дублирующее состояние.",
+  "parts": [
+   {
+    "turn": "t041",
+    "ts": "2026-09-18 09:46",
+    "span": "5 одинаковых issues",
+    "line": 1092,
+    "window": [
+     1070,
+     1352
+    ],
+    "turns_with_span": [
+     "t041"
+    ],
+    "check": "5\\s+одинаковых\\s+issues"
+   },
+   {
+    "turn": "t053",
+    "ts": "2026-09-18 12:00",
+    "span": "matcher_version",
+    "line": 3095,
+    "window": [
+     3063,
+     3361
+    ],
+    "turns_with_span": [
+     "t017",
+     "t030",
+     "t031",
+     "t050",
+     "t051",
+     "t052",
+     "t053"
+    ],
+    "check": "matcher_version"
+   },
+   {
+    "turn": "t065",
+    "ts": "2026-09-18 13:51",
+    "span": "content hash",
+    "line": 226,
+    "window": [
+     4876,
+     5120
+    ],
+    "turns_with_span": [
+     "t040",
+     "t051",
+     "t065",
+     "t067",
+     "t076"
+    ],
+    "check": "content\\s+hash"
+   }
+  ],
+  "check": [
+   "5\\s+одинаковых\\s+issues",
+   "matcher_version",
+   "content\\s+hash"
+  ],
+  "turns": [
+   "t041",
+   "t053",
+   "t065"
+  ]
+ },
+ {
+  "id": "s_idempotency_agg1",
+  "type": "aggregation",
+  "term": "Idempotency",
+  "text": "Из каких четырёх полей состоит ключ идемпотентности для этапа Match, и какие три источника данных в общем случае могут использоваться в ключах идемпотентности для входящих событий?",
+  "reference": "Ключ идемпотентности Match состоит из project_id + resource_id + matcher_version + world_revision. В общем случае ключи могут строиться из source identity, external event ID и content hash.",
+  "parts": [
+   {
+    "turn": "t053",
+    "ts": "2026-09-18 12:00",
+    "span": "matcher_version",
+    "line": 3095,
+    "window": [
+     3063,
+     3361
+    ],
+    "turns_with_span": [
+     "t017",
+     "t030",
+     "t031",
+     "t050",
+     "t051",
+     "t052",
+     "t053"
+    ],
+    "check": "matcher_version"
+   },
+   {
+    "turn": "t065",
+    "ts": "2026-09-18 13:51",
+    "span": "external event ID",
+    "line": 4889,
+    "window": [
+     4876,
+     5120
+    ],
+    "turns_with_span": [
+     "t065"
+    ],
+    "check": "external\\s+event\\s+ID"
+   }
+  ],
+  "check": [
+   "matcher_version",
+   "external\\s+event\\s+ID"
+  ],
+  "turns": [
+   "t041",
+   "t053",
+   "t065"
+  ]
+ },
+ {
+  "id": "s_portfolio_intelligence_evo0",
+  "type": "evolution",
+  "term": "Portfolio Intelligence",
+  "text": "Как менялось описание Portfolio Intelligence: какие примеры дублирования и общих ресурсов привели в более поздней версии (с конкретными числами проектов/Missions) и как позднее уточнили его статус в архитектуре — чем Portfolio является и чем не является, — по сравнению с ранним упоминанием, где он был связан с Program Composer?",
+  "reference": "Сначала Portfolio Intelligence упоминался как слой вместе с Program Composer, который смотрит на десятки opportunities и собирает из них программы уровня «Open Knowledge OS». Позже он был развёрнут как Innovation Portfolio Intelligence с конкретными примерами спроса: «17 проектов независимо строят почти одинаковый data connector» приводит к Shared Capability Project. В ещё более поздней версии уточнено, что Portfolio не новый root: «Portfolio ≠ Entity root», а materialized view/контекст над PROJECT, PROGRAM, RESOURCE и др., который должен обнаруживать паттерны, но не принимать решения автоматически.",
+  "parts": [
+   {
+    "turn": "t022",
+    "ts": "2026-09-17 22:37",
+    "span": "Open Knowledge OS",
+    "line": 2078,
+    "window": [
+     2061,
+     2080
+    ],
+    "turns_with_span": [
+     "t022",
+     "t023"
+    ],
+    "check": "Open\\s+Knowledge\\s+OS"
+   },
+   {
+    "turn": "t080",
+    "ts": "2026-09-18 17:42",
+    "span": "17 проектов",
+    "line": 7817,
+    "window": [
+     7791,
+     8005
+    ],
+    "turns_with_span": [
+     "t080"
+    ],
+    "check": "17\\s+проектов"
+   },
+   {
+    "turn": "t081",
+    "ts": "2026-09-18 17:51",
+    "span": "Portfolio ≠ Entity root.",
+    "line": 137,
+    "window": [
+     10,
+     218
+    ],
+    "turns_with_span": [
+     "t081"
+    ],
+    "check": "Portfolio\\s+≠\\s+Entity\\s+root\\."
+   }
+  ],
+  "check": [
+   "Open\\s+Knowledge\\s+OS",
+   "17\\s+проектов",
+   "Portfolio\\s+≠\\s+Entity\\s+root\\."
+  ],
+  "turns": [
+   "t022",
+   "t080",
+   "t081"
+  ]
+ },
+ {
+  "id": "s_portfolio_intelligence_agg0",
+  "type": "aggregation",
+  "term": "Portfolio Intelligence",
+  "text": "Что именно должен определять и обнаруживать Portfolio Intelligence: какие отношения между opportunities он выявляет при сборке программ и какие паттерны (дублирование, пробелы, потребности и т.п.) он ищет в экосистеме Missions?",
+  "reference": "Среди opportunities он определяет, какие из них связаны, какие надо объединить, какие являются prerequisites, какие конкурируют за одни ресурсы и какие вместе образуют большую программу. В экосистеме он должен обнаруживать duplicated work, shared gaps, shared infrastructure needs, common research questions, common suppliers и systemic bottlenecks.",
+  "parts": [
+   {
+    "turn": "t022",
+    "ts": "2026-09-17 22:37",
+    "span": "какие являются prerequisites",
+    "line": 2071,
+    "window": [
+     2061,
+     2080
+    ],
+    "turns_with_span": [
+     "t022"
+    ],
+    "check": "какие\\s+являются\\s+prerequisites"
+   },
+   {
+    "turn": "t080",
+    "ts": "2026-09-18 17:42",
+    "span": "systemic bottlenecks",
+    "line": 7906,
+    "window": [
+     7791,
+     8005
+    ],
+    "turns_with_span": [
+     "t080"
+    ],
+    "check": "systemic\\s+bottlenecks"
+   }
+  ],
+  "check": [
+   "какие\\s+являются\\s+prerequisites",
+   "systemic\\s+bottlenecks"
+  ],
+  "turns": [
+   "t022",
+   "t080",
+   "t081"
+  ]
+ },
+ {
+  "id": "s_adaptive_strategy_evo0",
+  "type": "evolution",
+  "term": "Adaptive Strategy",
+  "text": "Как изменилось понимание Adaptive Strategy от первоначальной трактовки (правила вида «если сигнал — то действие») до отдельного модуля по последовательным решениям? Что добавилось в перечне понятий, которые этот модуль учитывает, и какое различение между Option и Commitment было сделано?",
+  "reference": "Сначала Adaptive Strategy подавалась как политика-правило: «if signpost A → accelerate Program X», условия-пороги и автоматические condition-watch, то есть «machine-readable adaptive strategy» вместо статичного пятилетнего плана. Позже она стала отдельным модулем Sequential Decision Engine, который учитывает option value, reversibility, learning value, path dependence, lock-in, «stage-gated investment» и adaptive policies и строит стратегию как цикл «наблюдать, действовать понемногу, учиться, переоценивать». Там же вводится различение «Option ≠ Commitment»: Option оставляет выбор, а Commitment сокращает набор будущих вариантов.",
+  "parts": [
+   {
+    "turn": "t025",
+    "ts": "2026-09-18 08:47",
+    "span": "machine-readable adaptive strategy",
+    "line": 2131,
+    "window": [
+     2097,
+     2269
+    ],
+    "turns_with_span": [
+     "t025"
+    ],
+    "check": "machine\\-readable\\s+adaptive\\s+strategy"
+   },
+   {
+    "turn": "t045",
+    "ts": "2026-09-18 10:11",
+    "span": "stage-gated investment",
+    "line": 4096,
+    "window": [
+     4071,
+     4118
+    ],
+    "turns_with_span": [
+     "t045",
+     "t046"
+    ],
+    "check": "stage\\-gated\\s+investment"
+   },
+   {
+    "turn": "t046",
+    "ts": "2026-09-18 10:16",
+    "span": "Option ≠ Commitment",
+    "line": 164,
+    "window": [
+     8,
+     195
+    ],
+    "turns_with_span": [
+     "t046",
+     "t079"
+    ],
+    "check": "Option\\s+≠\\s+Commitment"
+   }
+  ],
+  "check": [
+   "machine\\-readable\\s+adaptive\\s+strategy",
+   "stage\\-gated\\s+investment",
+   "Option\\s+≠\\s+Commitment"
+  ],
+  "turns": [
+   "t025",
+   "t045",
+   "t046"
+  ]
+ },
+ {
+  "id": "s_adaptive_strategy_agg0",
+  "type": "aggregation",
+  "term": "Adaptive Strategy",
+  "text": "Из каких шагов состоит адаптивная стратегия (в противопоставлении статическому плану «выбрать A и выполнять 3 года»), и какой цикл действий от наблюдения до наращивания обязательств предлагается для последовательных решений?",
+  "reference": "Адаптивная стратегия — это четыре шага: проверить A и B дешёвыми экспериментами, получить Evidence, закрыть слабые ветки и инвестировать больше в оставшиеся варианты. Цикл последовательных решений: Observe → Act a little → Learn → Re-evaluate → Commit more only when evidence improves.",
+  "parts": [
+   {
+    "turn": "t045",
+    "ts": "2026-09-18 10:11",
+    "span": "Commit more only when evidence improves",
+    "line": 4111,
+    "window": [
+     4071,
+     4118
+    ],
+    "turns_with_span": [
+     "t045"
+    ],
+    "check": "Commit\\s+more\\s+only\\s+when\\s+evidence\\s+improves"
+   },
+   {
+    "turn": "t046",
+    "ts": "2026-09-18 10:16",
+    "span": "закрыть слабые ветки",
+    "line": 81,
+    "window": [
+     8,
+     195
+    ],
+    "turns_with_span": [
+     "t046"
+    ],
+    "check": "закрыть\\s+слабые\\s+ветки"
+   }
+  ],
+  "check": [
+   "Commit\\s+more\\s+only\\s+when\\s+evidence\\s+improves",
+   "закрыть\\s+слабые\\s+ветки"
+  ],
+  "turns": [
+   "t025",
+   "t045",
+   "t046"
+  ]
+ },
+ {
+  "id": "s_kill_criteria_evo0",
+  "type": "evolution",
+  "term": "Kill Criteria",
+  "text": "Как менялась роль Kill Criteria в разговоре: от первоначального описания в генераторе проектов до более поздних уровней (программа и отдельная гипотеза)? Какие итоговые решения, условия остановки и конкретные примеры добавились?",
+  "reference": "Сначала Kill Criteria были просто одним из выходов генератора проектов и Validation Engine (наряду с MVP, командой и бюджетом), а проверка заканчивалась решением GO / MODIFY / KILL. Затем на уровне программы их предложили заранее регистрировать, привели условия остановки пилота (latency > threshold, cost > limit, safety target not met) и привязали пороги к контексту миссии. Ещё позже их сделали требованием к каждой гипотезе («какое свидетельство заставит нас остановиться?») с конкретным примером: при задержке сенсора больше 100 мс нужно отказаться от пути real-time grasp-control (discard real-time grasp-control path). Во всех случаях они защищают от эскалации обязательств (sunk-cost), а в поздней версии к ним добавились Pivot Criteria.",
+  "parts": [
+   {
+    "turn": "t022",
+    "ts": "2026-09-17 22:37",
+    "span": "GO / MODIFY / KILL",
+    "line": 54,
+    "window": [
+     8,
+     176
+    ],
+    "turns_with_span": [
+     "t022"
+    ],
+    "check": "GO\\s+/\\s+MODIFY\\s+/\\s+KILL"
+   },
+   {
+    "turn": "t062",
+    "ts": "2026-09-18 13:30",
+    "span": "safety target not met",
+    "line": 2260,
+    "window": [
+     2244,
+     2495
+    ],
+    "turns_with_span": [
+     "t062"
+    ],
+    "check": "safety\\s+target\\s+not\\s+met"
+   },
+   {
+    "turn": "t070",
+    "ts": "2026-09-18 14:38",
+    "span": "discard real-time grasp-control path",
+    "line": 2701,
+    "window": [
+     2683,
+     2938
+    ],
+    "turns_with_span": [
+     "t070"
+    ],
+    "check": "discard\\s+real\\-time\\s+grasp\\-control\\s+path"
+   }
+  ],
+  "check": [
+   "GO\\s+/\\s+MODIFY\\s+/\\s+KILL",
+   "safety\\s+target\\s+not\\s+met",
+   "discard\\s+real\\-time\\s+grasp\\-control\\s+path"
+  ],
+  "turns": [
+   "t022",
+   "t062",
+   "t070"
+  ]
+ },
+ {
+  "id": "s_kill_criteria_agg0",
+  "type": "aggregation",
+  "term": "Kill Criteria",
+  "text": "Какие конкретные условия остановки приводятся в примерах Kill Criteria (при каких значениях или ситуациях проект или гипотезу нужно прекратить)?",
+  "reference": "В примере для пилота остановка наступает, если latency превышает порог, cost превышает лимит или safety target not met. В примере с гипотезой действует правило: если sensor latency > 100 ms в реалистичных условиях, путь real-time grasp-control отбрасывается.",
+  "parts": [
+   {
+    "turn": "t062",
+    "ts": "2026-09-18 13:30",
+    "span": "safety target not met",
+    "line": 2260,
+    "window": [
+     2244,
+     2495
+    ],
+    "turns_with_span": [
+     "t062"
+    ],
+    "check": "safety\\s+target\\s+not\\s+met"
+   },
+   {
+    "turn": "t070",
+    "ts": "2026-09-18 14:38",
+    "span": "If sensor latency > 100 ms",
+    "line": 2699,
+    "window": [
+     2683,
+     2938
+    ],
+    "turns_with_span": [
+     "t070"
+    ],
+    "check": "If\\s+sensor\\s+latency\\s+>\\s+100\\s+ms"
+   }
+  ],
+  "check": [
+   "safety\\s+target\\s+not\\s+met",
+   "If\\s+sensor\\s+latency\\s+>\\s+100\\s+ms"
+  ],
+  "turns": [
+   "t022",
+   "t062",
+   "t070"
+  ]
+ },
+ {
+  "id": "s_query_planner_evo0",
+  "type": "evolution",
+  "term": "Query Planner",
+  "text": "Как менялось описание Query Planner: чем отличается его роль как этапа общего пайплайна разрешения capability gap от его более поздних специализированных вариантов — в частности, что он строит на выходе в случае Funding Query Planner?",
+  "reference": "Сначала Query Planner описан как этап после Capability Gap, который разбивает один gap на набор подзапросов для разных resolver'ов (talent, github, research, software, partner) с query_type вроде repository_search. Позже появляется Funding Query Planner, который по Project Goal, Capabilities, Domain, Location, Budget и т.д. выдаёт query terms, funding categories, jurisdictions и program types, причём не должен переобучаться под формулировки проекта, а отображать capabilities в funding terminology.",
+  "parts": [
+   {
+    "turn": "t019",
+    "ts": "2026-09-17 22:26",
+    "span": "query_type: repository_search",
+    "line": 153,
+    "window": [
+     70,
+     259
+    ],
+    "turns_with_span": [
+     "t019"
+    ],
+    "check": "query_type:\\s+repository_search"
+   },
+   {
+    "turn": "t056",
+    "ts": "2026-09-18 12:28",
+    "span": "funding categories",
+    "line": 654,
+    "window": [
+     630,
+     865
+    ],
+    "turns_with_span": [
+     "t056"
+    ],
+    "check": "funding\\s+categories"
+   }
+  ],
+  "check": [
+   "query_type:\\s+repository_search",
+   "funding\\s+categories"
+  ],
+  "turns": [
+   "t019",
+   "t055",
+   "t056"
+  ]
+ },
+ {
+  "id": "s_query_planner_agg0",
+  "type": "aggregation",
+  "term": "Query Planner",
+  "text": "Какие виды запросов или выходных элементов формирует Query Planner в трёх вариантах: общий планировщик для gap, исследовательский и грантовый? Перечисли их.",
+  "reference": "Общий Query Planner разбивает gap на подзапросы по направлениям PEOPLE, REPOSITORIES, RESEARCH, COMMERCIAL, PARTNERS и TRAINING. Research Query Planner строит классы запросов: exact terminology, synonyms, mechanism terms, method terms, review terms, benchmark terms и negative-result terms. Funding Query Planner выдаёт query terms, funding categories, jurisdictions и program types.",
+  "parts": [
+   {
+    "turn": "t019",
+    "ts": "2026-09-17 22:26",
+    "span": "COMMERCIAL:",
+    "line": 125,
+    "window": [
+     70,
+     259
+    ],
+    "turns_with_span": [
+     "t019"
+    ],
+    "check": "COMMERCIAL:"
+   },
+   {
+    "turn": "t055",
+    "ts": "2026-09-18 12:12",
+    "span": "negative-result terms",
+    "line": 416,
+    "window": [
+     388,
+     636
+    ],
+    "turns_with_span": [
+     "t055"
+    ],
+    "check": "negative\\-result\\s+terms"
+   },
+   {
+    "turn": "t056",
+    "ts": "2026-09-18 12:28",
+    "span": "program types",
+    "line": 656,
+    "window": [
+     630,
+     865
+    ],
+    "turns_with_span": [
+     "t056"
+    ],
+    "check": "program\\s+types"
+   }
+  ],
+  "check": [
+   "COMMERCIAL:",
+   "negative\\-result\\s+terms",
+   "program\\s+types"
+  ],
+  "turns": [
+   "t019",
+   "t055",
+   "t056"
+  ]
+ },
+ {
+  "id": "s_ecosystem_learning_evo0",
+  "type": "evolution",
+  "term": "Ecosystem Learning",
+  "text": "Как менялось в разговоре описание Ecosystem Learning: из чего складывался модуль в первый раз, какие пять типов Capability предлагалось различать при его развитии и какой путь диффузии обучения («Learning Diffusion Path») был задан позже?",
+  "reference": "Сначала Ecosystem Learning Engine был задуман как модуль, объединяющий Capability History, Project Outcomes, Knowledge/Software Capital, Dependency Reduction, Failures, Reuse и Learning, с переходом от «мы выполнили проекты» к доказуемо накопленным способностям экосистемы. Затем он был уточнён как Capability Capital с различением PERSON-BOUND, TEAM-BOUND, RESOURCE-BOUND, ORGANIZATIONAL и INSTITUTIONALIZED capability и путём от individual expertise к institutional capability. В позднем обсуждении Ecosystem Learning определён как переиспользование знания из одного узла в других, с путём Experience → Pattern → Package → Transfer → Verification → New Providers и описанием сбоя (знание не discoverable, не packaged, не transferable).",
+  "parts": [
+   {
+    "turn": "t060",
+    "ts": "2026-09-18 13:05",
+    "span": "Dependency Reduction",
+    "line": 7658,
+    "window": [
+     7638,
+     7685
+    ],
+    "turns_with_span": [
+     "t060",
+     "t061"
+    ],
+    "check": "Dependency\\s+Reduction"
+   },
+   {
+    "turn": "t071",
+    "ts": "2026-09-18 14:51",
+    "span": "INSTITUTIONALIZED CAPABILITY",
+    "line": 5240,
+    "window": [
+     5150,
+     5294
+    ],
+    "turns_with_span": [
+     "t071",
+     "t072"
+    ],
+    "check": "INSTITUTIONALIZED\\s+CAPABILITY"
+   },
+   {
+    "turn": "t073",
+    "ts": "2026-09-18 15:30",
+    "span": "Experience → Pattern → Package",
+    "line": null,
+    "window": [
+     4570,
+     4821
+    ],
+    "turns_with_span": [
+     "t072",
+     "t073"
+    ],
+    "check": "Experience\\s+→\\s+Pattern\\s+→\\s+Package"
+   }
+  ],
+  "check": [
+   "Dependency\\s+Reduction",
+   "INSTITUTIONALIZED\\s+CAPABILITY",
+   "Experience\\s+→\\s+Pattern\\s+→\\s+Package"
+  ],
+  "turns": [
+   "t060",
+   "t071",
+   "t073"
+  ]
+ },
+ {
+  "id": "s_ecosystem_learning_agg0",
+  "type": "aggregation",
+  "term": "Ecosystem Learning",
+  "text": "Какие блоки объединяет модуль Ecosystem Learning / Capability Capital в разных формулировках (какие входы он собирает) и по каким шагам проходит Learning Diffusion Path? Перечисли блоки и шаги.",
+  "reference": "Первая версия модуля объединяет Capability History, Project Outcomes, Knowledge Capital, Software Capital, Human/Organizational Capability, Infrastructure Capital, Dependency Reduction, Failures, Reuse и Learning. Более поздняя версия берёт Capability Registry, Memory, Programs, Economy, Verification, Talent, Infrastructure и Standards. Путь диффузии обучения: Experience → Pattern → Package → Transfer → Verification → New Providers.",
+  "parts": [
+   {
+    "turn": "t060",
+    "ts": "2026-09-18 13:05",
+    "span": "Software Capital",
+    "line": 7652,
+    "window": [
+     7638,
+     7685
+    ],
+    "turns_with_span": [
+     "t060",
+     "t061"
+    ],
+    "check": "Software\\s+Capital"
+   },
+   {
+    "turn": "t073",
+    "ts": "2026-09-18 15:30",
+    "span": "New Providers",
+    "line": 775,
+    "window": [
+     4570,
+     4821
+    ],
+    "turns_with_span": [
+     "t072",
+     "t073"
+    ],
+    "check": "New\\s+Providers"
+   }
+  ],
+  "check": [
+   "Software\\s+Capital",
+   "New\\s+Providers"
+  ],
+  "turns": [
+   "t060",
+   "t071",
+   "t073"
+  ]
+ },
+ {
+  "id": "s_ecosystem_learning_evo1",
+  "type": "evolution",
+  "term": "Ecosystem Learning",
+  "text": "Как в обсуждении Ecosystem Learning менялось описание того, как измерять накопленную способность экосистемы: что предлагалось сначала после каждого значимого проекта, и какая классификация устойчивости способностей была добавлена позже?",
+  "reference": "Сначала Capability Capital вводился как накопленная способность решать классы задач (Asset ≠ Capability Capital), и после каждого значимого Project предлагалось проводить Capability Delta Analysis, чтобы увидеть прирост или потерю способности. Позже добавили оценку устойчивости способности: сначала пять типов (person-, team-, resource-bound, organizational, institutional) и путь от individual expertise к institutional capability, затем формальные Capability Retention Classes: PERSON_BOUND, TEAM_BOUND, RESOURCE_BOUND, ORGANIZATIONAL, INSTITUTIONALIZED.",
+  "parts": [
+   {
+    "turn": "t061",
+    "ts": "2026-09-18 13:25",
+    "span": "Capability Delta Analysis",
+    "line": 178,
+    "window": [
+     8,
+     192
+    ],
+    "turns_with_span": [
+     "t061"
+    ],
+    "check": "Capability\\s+Delta\\s+Analysis"
+   },
+   {
+    "turn": "t071",
+    "ts": "2026-09-18 14:51",
+    "span": "institutional capability",
+    "line": 5256,
+    "window": [
+     5150,
+     5294
+    ],
+    "turns_with_span": [
+     "t071",
+     "t072",
+     "t074"
+    ],
+    "check": "institutional\\s+capability"
+   },
+   {
+    "turn": "t072",
+    "ts": "2026-09-18 15:12",
+    "span": "PERSON_BOUND",
+    "line": 141,
+    "window": [
+     10,
+     214
+    ],
+    "turns_with_span": [
+     "t072"
+    ],
+    "check": "PERSON_BOUND"
+   }
+  ],
+  "check": [
+   "Capability\\s+Delta\\s+Analysis",
+   "institutional\\s+capability",
+   "PERSON_BOUND"
+  ],
+  "turns": [
+   "t061",
+   "t071",
+   "t072"
+  ]
+ },
+ {
+  "id": "s_ecosystem_learning_agg1",
+  "type": "aggregation",
+  "term": "Ecosystem Learning",
+  "text": "В слое Ecosystem Learning / Capability Capital перечислены: (а) компоненты проверяемой комбинации, из которой возникает Capability Capital, (б) четыре ключевых слова его определения, (в) стадии пути от индивидуальной экспертизы к институциональной способности. Назови все три списка.",
+  "reference": "(а) Resources, Knowledge, Procedures, People/Agents, Infrastructure и Evidence. (б) available, evidenced, reproducible, retained. (в) Путь идёт так: individual expertise → documented procedure → tested package → multiple providers → institutional capability.",
+  "parts": [
+   {
+    "turn": "t061",
+    "ts": "2026-09-18 13:25",
+    "span": "People/Agents",
+    "line": 139,
+    "window": [
+     8,
+     192
+    ],
+    "turns_with_span": [
+     "t020",
+     "t049",
+     "t061",
+     "t080"
+    ],
+    "check": "People/Agents"
+   },
+   {
+    "turn": "t071",
+    "ts": "2026-09-18 14:51",
+    "span": "multiple providers",
+    "line": 5254,
+    "window": [
+     5150,
+     5294
+    ],
+    "turns_with_span": [
+     "t032",
+     "t040",
+     "t071",
+     "t072",
+     "t073",
+     "t079"
+    ],
+    "check": "multiple\\s+providers"
+   }
+  ],
+  "check": [
+   "People/Agents",
+   "multiple\\s+providers"
+  ],
+  "turns": [
+   "t061",
+   "t071",
+   "t072"
+  ]
+ },
+ {
+  "id": "s_commitment_evo0",
+  "type": "evolution",
+  "term": "Commitment",
+  "text": "Как в разговоре менялось понимание Commitment: что именно создаёт обязательство и во что оно оформляется в рыночном конвейере, чем это уточняется для вычислительных ресурсов и как оно превращается в постепенное, привязанное к доказательствам?",
+  "reference": "Сначала Commitment — последний шаг конвейера: после human / organization / policy approval создаётся Binding со state: CONFIRMED. Затем уточняется, что рекламы доступности недостаточно: Reservation/contract creates commitment (состояния Compute Offer: AVAILABLE, RESERVED, ALLOCATED, UNAVAILABLE). Позже это Progressive Commitment Portfolio: 100 гипотез → 20 desk research → 8 экспериментов → 3 пилота → 1–2 программы, где капитал растёт вместе с доказательствами, например €500 experiment перед €50k pilot.",
+  "parts": [
+   {
+    "turn": "t036",
+    "ts": "2026-09-18 09:25",
+    "span": "human / organization / policy approval",
+    "line": 547,
+    "window": [
+     475,
+     744
+    ],
+    "turns_with_span": [
+     "t036"
+    ],
+    "check": "human\\s+/\\s+organization\\s+/\\s+policy\\s+approval"
+   },
+   {
+    "turn": "t066",
+    "ts": "2026-09-18 13:57",
+    "span": "Reservation/contract creates commitment.",
+    "line": 4809,
+    "window": [
+     4802,
+     5019
+    ],
+    "turns_with_span": [
+     "t066"
+    ],
+    "check": "Reservation/contract\\s+creates\\s+commitment\\."
+   },
+   {
+    "turn": "t081",
+    "ts": "2026-09-18 17:51",
+    "span": "€500 experiment",
+    "line": 4629,
+    "window": [
+     4579,
+     4835
+    ],
+    "turns_with_span": [
+     "t081"
+    ],
+    "check": "€500\\s+experiment"
+   }
+  ],
+  "check": [
+   "human\\s+/\\s+organization\\s+/\\s+policy\\s+approval",
+   "Reservation/contract\\s+creates\\s+commitment\\.",
+   "€500\\s+experiment"
+  ],
+  "turns": [
+   "t036",
+   "t066",
+   "t081"
+  ]
+ },
+ {
+  "id": "s_commitment_agg0",
+  "type": "aggregation",
+  "term": "Commitment",
+  "text": "Какие акты или события, согласно обсуждению, порождают Commitment (в отличие от простого объявления доступности)? Перечисли все названные варианты.",
+  "reference": "Commitment создаётся после одобрения — human / organization / policy approval (после чего создаётся Binding), а также через резервирование или контракт: Reservation/contract creates commitment. Простое объявление доступности (availability advertisement) commitment не создаёт.",
+  "parts": [
+   {
+    "turn": "t036",
+    "ts": "2026-09-18 09:25",
+    "span": "human / organization / policy approval",
+    "line": 547,
+    "window": [
+     475,
+     744
+    ],
+    "turns_with_span": [
+     "t036"
+    ],
+    "check": "human\\s+/\\s+organization\\s+/\\s+policy\\s+approval"
+   },
+   {
+    "turn": "t066",
+    "ts": "2026-09-18 13:57",
+    "span": "Reservation/contract creates commitment",
+    "line": 4809,
+    "window": [
+     4802,
+     5019
+    ],
+    "turns_with_span": [
+     "t066"
+    ],
+    "check": "Reservation/contract\\s+creates\\s+commitment"
+   }
+  ],
+  "check": [
+   "human\\s+/\\s+organization\\s+/\\s+policy\\s+approval",
+   "Reservation/contract\\s+creates\\s+commitment"
+  ],
+  "turns": [
+   "t036",
+   "t066",
+   "t081"
+  ]
+ },
+ {
+  "id": "s_commitment_agg1",
+  "type": "aggregation",
+  "term": "Commitment",
+  "text": "Какие поля включает пример Semantic Agreement как машиночитаемого обязательства между узлами федерации и какие четыре типа обязательств отслеживает Commitment Graph?",
+  "reference": "Semantic Agreement содержит поля provider, consumer, capability, quantity, deadline и verification (например, test_report_required). Commitment Graph отслеживает contracts, orders, reservations и approved budgets.",
+  "parts": [
+   {
+    "turn": "t039",
+    "ts": "2026-09-18 09:34",
+    "span": "test_report_required",
+    "line": 4325,
+    "window": [
+     4277,
+     4484
+    ],
+    "turns_with_span": [
+     "t039"
+    ],
+    "check": "test_report_required"
+   },
+   {
+    "turn": "t080",
+    "ts": "2026-09-18 17:42",
+    "span": "approved budgets",
+    "line": 3176,
+    "window": [
+     3098,
+     3349
+    ],
+    "turns_with_span": [
+     "t080"
+    ],
+    "check": "approved\\s+budgets"
+   }
+  ],
+  "check": [
+   "test_report_required",
+   "approved\\s+budgets"
+  ],
+  "turns": [
+   "t039",
+   "t069",
+   "t080"
+  ]
+ },
+ {
+  "id": "s_scheduler_evo0",
+  "type": "evolution",
+  "term": "Scheduler",
+  "text": "Как менялось описание Scheduler: что он возвращает через свой API в ранней версии и как позже уточняется, что именно он выбирает и чьим правилам подчиняется фактическое распределение ресурсов?",
+  "reference": "Сначала Scheduler описан как компонент микроядра, чей GET /scheduler/next возвращает задачу, candidate executors и необходимые approvals. Позже добавляется инвариант «Scheduler ≠ Authority»: он выбирает лишь eligible execution option, а разрешение остаётся за governance. Ещё позже Portfolio Scheduler только предлагает аллокации, а фактическое распределение следует governance / contracts / owner rules.",
+  "parts": [
+   {
+    "turn": "t027",
+    "ts": "2026-09-18 08:54",
+    "span": "candidate executors",
+    "line": 266,
+    "window": [
+     2013,
+     2257
+    ],
+    "turns_with_span": [
+     "t027"
+    ],
+    "check": "candidate\\s+executors"
+   },
+   {
+    "turn": "t066",
+    "ts": "2026-09-18 13:57",
+    "span": "eligible execution option",
+    "line": 5198,
+    "window": [
+     5192,
+     5402
+    ],
+    "turns_with_span": [
+     "t066"
+    ],
+    "check": "eligible\\s+execution\\s+option"
+   },
+   {
+    "turn": "t081",
+    "ts": "2026-09-18 17:51",
+    "span": "governance / contracts / owner rules",
+    "line": 1238,
+    "window": [
+     1220,
+     1486
+    ],
+    "turns_with_span": [
+     "t081"
+    ],
+    "check": "governance\\s+/\\s+contracts\\s+/\\s+owner\\s+rules"
+   }
+  ],
+  "check": [
+   "candidate\\s+executors",
+   "eligible\\s+execution\\s+option",
+   "governance\\s+/\\s+contracts\\s+/\\s+owner\\s+rules"
+  ],
+  "turns": [
+   "t027",
+   "t066",
+   "t081"
+  ]
+ },
+ {
+  "id": "s_scheduler_agg0",
+  "type": "aggregation",
+  "term": "Scheduler",
+  "text": "Что именно выдаёт, выбирает или предлагает Scheduler в трёх описанных ролях: в ответе GET /scheduler/next, в распределённом планировании (что он выбирает) и в Portfolio Scheduler (что он может предложить)?",
+  "reference": "GET /scheduler/next может возвращать task, candidate executors и required approvals. Распределённый Scheduler выбирает eligible execution option, а решение о допустимости действия остаётся за governance. Portfolio Scheduler может предлагать allocations, но реальное распределение определяют governance, контракты и правила владельца.",
+  "parts": [
+   {
+    "turn": "t027",
+    "ts": "2026-09-18 08:54",
+    "span": "candidate executors",
+    "line": 266,
+    "window": [
+     2013,
+     2257
+    ],
+    "turns_with_span": [
+     "t027"
+    ],
+    "check": "candidate\\s+executors"
+   },
+   {
+    "turn": "t066",
+    "ts": "2026-09-18 13:57",
+    "span": "eligible execution option",
+    "line": 5198,
+    "window": [
+     5192,
+     5402
+    ],
+    "turns_with_span": [
+     "t066"
+    ],
+    "check": "eligible\\s+execution\\s+option"
+   },
+   {
+    "turn": "t081",
+    "ts": "2026-09-18 17:51",
+    "span": "Portfolio Scheduler can propose:",
+    "line": 1227,
+    "window": [
+     1220,
+     1486
+    ],
+    "turns_with_span": [
+     "t081"
+    ],
+    "check": "Portfolio\\s+Scheduler\\s+can\\s+propose:"
+   }
+  ],
+  "check": [
+   "candidate\\s+executors",
+   "eligible\\s+execution\\s+option",
+   "Portfolio\\s+Scheduler\\s+can\\s+propose:"
+  ],
+  "turns": [
+   "t027",
+   "t066",
+   "t081"
+  ]
+ },
+ {
+  "id": "s_scheduler_evo1",
+  "type": "evolution",
+  "term": "Scheduler",
+  "text": "Как менялось описание приоритетов и полномочий Scheduler: какие факторы приоритета названы сначала, откуда приоритет берётся позже и за что Scheduler признан авторитетным в итоге?",
+  "reference": "Сначала приоритет Scheduler учитывал critical path, deadline, resource availability и project priority. Позже уточняется, что приоритет не может быть произвольным выводом агента: он идёт от Mission policy, Gate urgency, Safety и Commitments, а Runtime Scheduler — нижний слой иерархии. В последнем фрагменте Scheduler авторитетен только для availability, а emergency_lock определяет device_controller, поэтому effective availability выводится из обоих источников.",
+  "parts": [
+   {
+    "turn": "t041",
+    "ts": "2026-09-18 09:46",
+    "span": "project priority",
+    "line": 1153,
+    "window": [
+     1118,
+     1404
+    ],
+    "turns_with_span": [
+     "t020",
+     "t023",
+     "t027",
+     "t041"
+    ],
+    "check": "project\\s+priority"
+   },
+   {
+    "turn": "t071",
+    "ts": "2026-09-18 14:51",
+    "span": "Gate urgency",
+    "line": 1416,
+    "window": [
+     1373,
+     1622
+    ],
+    "turns_with_span": [
+     "t071"
+    ],
+    "check": "Gate\\s+urgency"
+   },
+   {
+    "turn": "t076",
+    "ts": "2026-09-18 17:16",
+    "span": "authority: scheduler",
+    "line": 2179,
+    "window": [
+     2058,
+     2314
+    ],
+    "turns_with_span": [
+     "t076"
+    ],
+    "check": "authority:\\s+scheduler"
+   }
+  ],
+  "check": [
+   "project\\s+priority",
+   "Gate\\s+urgency",
+   "authority:\\s+scheduler"
+  ],
+  "turns": [
+   "t041",
+   "t071",
+   "t076"
+  ]
+ },
+ {
+  "id": "s_scheduler_agg1",
+  "type": "aggregation",
+  "term": "Scheduler",
+  "text": "Какие ограничения и границы Scheduler описаны в разговоре: какие лимиты AI-ресурсов он учитывает, какое изменение расписания считается тактическим и без эскалации, и для какого предиката Scheduler признан авторитетным источником?",
+  "reference": "Для AI-ресурсов Scheduler учитывает token budget, concurrency limit и rate limit. Тактической, заранее разрешаемой адаптацией считается «move schedule within slack», то есть сдвиг расписания в пределах запаса. Авторитетным источником Scheduler признан для предиката availability («authority: scheduler»), а emergency_lock относится к device_controller.",
+  "parts": [
+   {
+    "turn": "t041",
+    "ts": "2026-09-18 09:46",
+    "span": "token budget",
+    "line": 1195,
+    "window": [
+     1118,
+     1404
+    ],
+    "turns_with_span": [
+     "t027",
+     "t041",
+     "t047"
+    ],
+    "check": "token\\s+budget"
+   },
+   {
+    "turn": "t071",
+    "ts": "2026-09-18 14:51",
+    "span": "move schedule within slack",
+    "line": 1541,
+    "window": [
+     1373,
+     1622
+    ],
+    "turns_with_span": [
+     "t071"
+    ],
+    "check": "move\\s+schedule\\s+within\\s+slack"
+   },
+   {
+    "turn": "t076",
+    "ts": "2026-09-18 17:16",
+    "span": "authority: scheduler",
+    "line": 2179,
+    "window": [
+     2058,
+     2314
+    ],
+    "turns_with_span": [
+     "t076"
+    ],
+    "check": "authority:\\s+scheduler"
+   }
+  ],
+  "check": [
+   "token\\s+budget",
+   "move\\s+schedule\\s+within\\s+slack",
+   "authority:\\s+scheduler"
+  ],
+  "turns": [
+   "t041",
+   "t071",
+   "t076"
+  ]
+ },
+ {
+  "id": "s_discussion_evo0",
+  "type": "evolution",
+  "term": "Discussion",
+  "text": "Как в разговоре меняется трактовка «Discussion» (обсуждения): от того, во что приватное обсуждение можно преобразовать и что для этого требуется, до того, как обсуждение хранится и к чему может быть прикреплено в форуме?",
+  "reference": "Сначала приватное обсуждение рассматривалось как источник для преобразования в anonymized/generalized knowledge artifact через действие DISTILL_KNOWLEDGE (удаление персональных данных, provenance, human review) с публикацией только после human_approval. Позже обсуждение трактуется как Forum Thread as View: сообщения остаются Artifacts/Claims/Events, форум — это проекция, тред можно прикрепить к Concept, Claim, Artifact или Project, а ИИ извлекает Claims, Counterclaims, Evidence, Questions как производную интерпретацию, которую можно форкнуть.",
+  "parts": [
+   {
+    "turn": "t026",
+    "ts": "2026-09-18 08:51",
+    "span": "DISTILL_KNOWLEDGE",
+    "line": 2421,
+    "window": [
+     2393,
+     2578
+    ],
+    "turns_with_span": [
+     "t026"
+    ],
+    "check": "DISTILL_KNOWLEDGE"
+   },
+   {
+    "turn": "t076",
+    "ts": "2026-09-18 17:16",
+    "span": "Forum Thread as View",
+    "line": 6146,
+    "window": [
+     6145,
+     6412
+    ],
+    "turns_with_span": [
+     "t076"
+    ],
+    "check": "Forum\\s+Thread\\s+as\\s+View"
+   }
+  ],
+  "check": [
+   "DISTILL_KNOWLEDGE",
+   "Forum\\s+Thread\\s+as\\s+View"
+  ],
+  "turns": [
+   "t026",
+   "t062",
+   "t076"
+  ]
+ },
+ {
+  "id": "s_discussion_agg0",
+  "type": "aggregation",
+  "term": "Discussion",
+  "text": "Какие варианты превращения Discussion в более структурированные или переиспользуемые сущности описаны в разговоре? Назови, во что преобразуется приватное обсуждение, через какую цепочку стратегическое обсуждение продвигается к решению и что AI извлекает из тредов обсуждения.",
+  "reference": "Приватное обсуждение может быть преобразовано в anonymized/generalized knowledge artifact (публичную запись без личных данных, через DISTILL_KNOWLEDGE). Стратегическое обсуждение продвигается по цепочке Discussion → Portfolio Proposal → Review → Decision. Из тредов AI извлекает Claims, Counterclaims, Evidence и Questions.",
+  "parts": [
+   {
+    "turn": "t026",
+    "ts": "2026-09-18 08:51",
+    "span": "anonymized/generalized knowledge artifact",
+    "line": 2399,
+    "window": [
+     2393,
+     2578
+    ],
+    "turns_with_span": [
+     "t026"
+    ],
+    "check": "anonymized/generalized\\s+knowledge\\s+artifact"
+   },
+   {
+    "turn": "t062",
+    "ts": "2026-09-18 13:30",
+    "span": "Portfolio Proposal",
+    "line": 3733,
+    "window": [
+     4979,
+     5221
+    ],
+    "turns_with_span": [
+     "t062"
+    ],
+    "check": "Portfolio\\s+Proposal"
+   },
+   {
+    "turn": "t076",
+    "ts": "2026-09-18 17:16",
+    "span": "Counterclaims",
+    "line": 6183,
+    "window": [
+     6145,
+     6412
+    ],
+    "turns_with_span": [
+     "t069",
+     "t074",
+     "t076"
+    ],
+    "check": "Counterclaims"
+   }
+  ],
+  "check": [
+   "anonymized/generalized\\s+knowledge\\s+artifact",
+   "Portfolio\\s+Proposal",
+   "Counterclaims"
+  ],
+  "turns": [
+   "t026",
+   "t062",
+   "t076"
+  ]
+ },
+ {
+  "id": "s_discussion_evo1",
+  "type": "evolution",
+  "term": "Discussion",
+  "text": "Как в разговоре менялась роль «Discussion»: какое место и какой режим доступа она имела в governance (в цепочке процесса и как область знаний), а во что превратилась позже — как ответ в протоколе и как привязка в Forum 2.0?",
+  "reference": "Сначала Discussion была этапом governance-процесса между Proposal и Review, а «discussion area» описывалась как пространство с open contribution (в отличие от строгого review для официальной страницы стандарта). Затем в M2M-протоколе появился ответ NEEDS_DISCUSSION на PARTNER_QUERY, а Discussion UI стал лишь отображением семантических объектов. В итоге в Forum 2.0 обсуждения привязываются к реальным семантическим объектам: например, обсуждение fiber tactile sensing связывается с Capability Concept, Research Claims и Experiments.",
+  "parts": [
+   {
+    "turn": "t042",
+    "ts": "2026-09-18 09:54",
+    "span": "open contribution",
+    "line": 2456,
+    "window": [
+     2284,
+     2567
+    ],
+    "turns_with_span": [
+     "t042"
+    ],
+    "check": "open\\s+contribution"
+   },
+   {
+    "turn": "t067",
+    "ts": "2026-09-18 14:04",
+    "span": "NEEDS_DISCUSSION",
+    "line": 7532,
+    "window": [
+     7397,
+     7627
+    ],
+    "turns_with_span": [
+     "t067"
+    ],
+    "check": "NEEDS_DISCUSSION"
+   },
+   {
+    "turn": "t073",
+    "ts": "2026-09-18 15:30",
+    "span": "fiber tactile sensing",
+    "line": 4685,
+    "window": [
+     4665,
+     4923
+    ],
+    "turns_with_span": [
+     "t073"
+    ],
+    "check": "fiber\\s+tactile\\s+sensing"
+   }
+  ],
+  "check": [
+   "open\\s+contribution",
+   "NEEDS_DISCUSSION",
+   "fiber\\s+tactile\\s+sensing"
+  ],
+  "turns": [
+   "t042",
+   "t067",
+   "t073"
+  ]
+ },
+ {
+  "id": "s_discussion_agg1",
+  "type": "aggregation",
+  "term": "Discussion",
+  "text": "Перечисли, какие роли и проявления «Discussion» описаны в разговоре: в каком режиме работает область discussion в governance пространств знаний, какое значение ответа на PARTNER_QUERY отсылает к обсуждению и с какими семантическими объектами в Forum 2.0 связывается обсуждение про fiber tactile sensing?",
+  "reference": "Область discussion в governance работает как пространство с open contribution (в отличие от строгого review для официальной страницы стандарта). Кандидат-организация может ответить на PARTNER_QUERY значением NEEDS_DISCUSSION. В Forum 2.0 обсуждения привязываются к семантическим объектам: например, обсуждение fiber tactile sensing ссылается на Capability Concept, Research Claims и Experiments.",
+  "parts": [
+   {
+    "turn": "t042",
+    "ts": "2026-09-18 09:54",
+    "span": "open contribution",
+    "line": 2456,
+    "window": [
+     2284,
+     2567
+    ],
+    "turns_with_span": [
+     "t042"
+    ],
+    "check": "open\\s+contribution"
+   },
+   {
+    "turn": "t067",
+    "ts": "2026-09-18 14:04",
+    "span": "NEEDS_DISCUSSION",
+    "line": 7532,
+    "window": [
+     7397,
+     7627
+    ],
+    "turns_with_span": [
+     "t067"
+    ],
+    "check": "NEEDS_DISCUSSION"
+   }
+  ],
+  "check": [
+   "open\\s+contribution",
+   "NEEDS_DISCUSSION"
+  ],
+  "turns": [
+   "t042",
+   "t067",
+   "t073"
+  ]
+ },
+ {
+  "id": "s_forum_agg0",
+  "type": "aggregation",
+  "term": "Forum",
+  "text": "Какие функции выполняет ИИ в Forum 2.0 по отношению к обсуждениям: что делает AI Moderator и какие структурные сущности ИИ извлекает из сообщений?",
+  "reference": "AI Moderator может кластеризовать дублирующиеся пункты, выявлять неотвеченные вопросы (identify unanswered questions) и связывать доказательства, но не должен молча схлопывать разногласия. Кроме того, ИИ может извлекать (AI can extract) из сообщений Claims, Counterclaims, Evidence и Questions, при этом исходный человеческий текст сохраняется.",
+  "parts": [
+   {
+    "turn": "t049",
+    "ts": "2026-09-18 10:33",
+    "span": "identify unanswered questions",
+    "line": 1206,
+    "window": [
+     1163,
+     1451
+    ],
+    "turns_with_span": [
+     "t049"
+    ],
+    "check": "identify\\s+unanswered\\s+questions"
+   },
+   {
+    "turn": "t076",
+    "ts": "2026-09-18 17:16",
+    "span": "AI can extract:",
+    "line": 6179,
+    "window": [
+     6065,
+     6322
+    ],
+    "turns_with_span": [
+     "t076"
+    ],
+    "check": "AI\\s+can\\s+extract:"
+   }
+  ],
+  "check": [
+   "identify\\s+unanswered\\s+questions",
+   "AI\\s+can\\s+extract:"
+  ],
+  "turns": [
+   "t049",
+   "t059",
+   "t076"
+  ]
+ },
+ {
+  "id": "s_forum_evo1",
+  "type": "evolution",
+  "term": "Forum",
+  "text": "Как менялось описание Forum 2.0: какие типы вкладов (объектов) участники могли публиковать в нём на раннем этапе и как это было расширено позже на уровне протокола?",
+  "reference": "Сначала в Discussion / Forum 2.0 исследователи и пользователи могли добавлять Question, Counterclaim, Evidence и Comment, причём комментарии не становились фактами автоматически, а проходили конвейер продвижения до Canonical Knowledge. Позже, на уровне протокола, вклады агентов и людей публикуются как Claim, Question, Evidence, Counterclaim (вместо Comment — Claim), и семантические объекты путешествуют между федеративными сообществами независимо от платформы форума, что открывает возможность «federated AI/scientific forum».",
+  "parts": [
+   {
+    "turn": "t055",
+    "ts": "2026-09-18 12:12",
+    "span": "Question Counterclaim Evidence Comment",
+    "line": null,
+    "window": [
+     2430,
+     2672
+    ],
+    "turns_with_span": [
+     "t055"
+    ],
+    "check": "Question\\s+Counterclaim\\s+Evidence\\s+Comment"
+   },
+   {
+    "turn": "t067",
+    "ts": "2026-09-18 14:04",
+    "span": "federated AI/scientific forum",
+    "line": 7411,
+    "window": [
+     7380,
+     7614
+    ],
+    "turns_with_span": [
+     "t067"
+    ],
+    "check": "federated\\s+AI/scientific\\s+forum"
+   }
+  ],
+  "check": [
+   "Question\\s+Counterclaim\\s+Evidence\\s+Comment",
+   "federated\\s+AI/scientific\\s+forum"
+  ],
+  "turns": [
+   "t055",
+   "t060",
+   "t067"
+  ]
+ }
+]

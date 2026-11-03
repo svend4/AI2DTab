@@ -1,0 +1,105 @@
+[
+ {
+  "id": "e1",
+  "type": "edit",
+  "text": "In the server code that starts the Python engine as a child process, change the working directory passed to the child from /workspace/engine to /workspace/engine2. Do not change any other path. Reply 'done' when finished.",
+  "files": {
+   "src/lib/pm-api.ts": {
+    "contains": [
+     "cwd: \"/workspace/engine2\"",
+     "const PM = \"/workspace/engine/pm\\.py\"",
+     "startsWith\\(\"/workspace/engine/\"\\)"
+    ],
+    "max_changed": 1
+   }
+  }
+ },
+ {
+  "id": "e2",
+  "type": "edit",
+  "text": "Rename the function getRouter to buildRouter in the TypeScript files under src/ (the declaration and every reference). Do not touch documentation. Reply 'done' when finished.",
+  "files": {
+   "src/router.tsx": {
+    "contains": [
+     "export function buildRouter\\("
+    ],
+    "absent": [
+     "getRouter"
+    ],
+    "max_changed": 1
+   },
+   "src/routeTree.gen.ts": {
+    "contains": [
+     "import type \\{ buildRouter \\}",
+     "typeof buildRouter"
+    ],
+    "absent": [
+     "getRouter"
+    ],
+    "max_changed": 2
+   }
+  }
+ },
+ {
+  "id": "e3",
+  "type": "edit",
+  "text": "In engine/LANG.md, in the block of operations examples, change the line `SET NEQ ∩ C` to `SET NEQ ∩ B`. Leave every other line as it is. Reply 'done' when finished.",
+  "files": {
+   "engine/LANG.md": {
+    "contains": [
+     "^    SET NEQ ∩ B$",
+     "^    ACCEPT NEQ ∩ C$",
+     "=NEQ∩C"
+    ],
+    "absent": [
+     "^    SET NEQ ∩ C$"
+    ],
+    "max_changed": 1
+   }
+  }
+ },
+ {
+  "id": "e4",
+  "type": "edit",
+  "text": "In engine/pm.py make the init command print its confirmation in English: replace the text 'база {DB.name}: {n} объектов' with 'DB {DB.name}: {n} objects'. Reply 'done' when finished.",
+  "files": {
+   "engine/pm.py": {
+    "contains": [
+     "print\\(f\"DB \\{DB\\.name\\}: \\{n\\} objects\"\\)"
+    ],
+    "absent": [
+     "объектов\\\"\\)"
+    ],
+    "max_changed": 1
+   }
+  }
+ },
+ {
+  "id": "e5",
+  "type": "edit",
+  "text": "Add a new first line `// shared helpers` at the very top of src/lib/utils.ts. Reply 'done' when finished.",
+  "files": {
+   "src/lib/utils.ts": {
+    "first_line": "// shared helpers",
+    "max_changed": 1
+   }
+  }
+ },
+ {
+  "id": "e6",
+  "type": "edit",
+  "text": "The full-screen page shown when a route crashes has a heading 'Something went wrong'. Change that heading to 'Oops'. Do not change the fallback message constant. Reply 'done' when finished.",
+  "files": {
+   "src/lib/error-component.tsx": {
+    "contains": [
+     ">Oops</h1>",
+     "FALLBACK_MESSAGE = \"An unexpected error occurred\\. Try reloading the page\\.\""
+    ],
+    "absent": [
+     "Something went wrong"
+    ],
+    "max_changed": 1
+   }
+  }
+ }
+]

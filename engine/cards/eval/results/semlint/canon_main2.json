@@ -1,0 +1,121 @@
+{
+ "arm": "main",
+ "baseline": {
+  "mode": "canon",
+  "term": "canon + ledger",
+  "info": {
+   "statements": 12
+  },
+  "findings": [],
+  "rejected": {},
+  "proposed": 0,
+  "asked": true,
+  "failed": false,
+  "prompt_chars": 2303
+ },
+ "planted": {
+  "mode": "canon",
+  "term": "canon + ledger",
+  "info": {
+   "statements": 17
+  },
+  "findings": [
+   {
+    "kind": "revision",
+    "summary": "Дата выплаты изменилась: сначала 01.01.2027, затем после письма Минтруда — 01.03.2027.",
+    "a": {
+     "id": "D001",
+     "quote": "датой выплаты считать 01.01.2027"
+    },
+    "b": {
+     "id": "D001B",
+     "quote": "датой выплаты считать 01.03.2027"
+    },
+    "suggest": "python3 pm.py exec SUPERSEDE D001 BY D001B <reason>   # if D001B is indeed the current one"
+   },
+   {
+    "kind": "revision",
+    "summary": "Старая линия Минтруда называет начало выплаты 01.01.2027, а в журнале по письму Минтруда дата — 01.03.2027.",
+    "a": {
+     "id": "F002",
+     "quote": "выплата max 3 мес с 01.01.2027"
+    },
+    "b": {
+     "id": "ledger:payout date",
+     "quote": "payout date = 01.03.2027"
+    },
+    "suggest": "decide which one holds; then bring the other in line (fact_set in the ledger, or SUPERSEDE in the desk)"
+   },
+   {
+    "kind": "revision",
+    "summary": "Прежнее решение говорило, что ИИ не заменяет карьерные центры (гибрид), новое утверждает, что заменяет.",
+    "a": {
+     "id": "D002",
+     "quote": "ИИ не заменяет карьерные центры - гибрид"
+    },
+    "b": {
+     "id": "D-AI",
+     "quote": "ИИ заменяет карьерные центры"
+    },
+    "suggest": "python3 pm.py exec SUPERSEDE D002 BY D-AI <reason>   # if D-AI is indeed the current one"
+   },
+   {
+    "kind": "conflict",
+    "summary": "По F004 вакансий (840,6 тыс) меньше, чем резюме (1,022 млн), а F-HIRING утверждает, что вакансий больше.",
+    "a": {
+     "id": "F004",
+     "quote": "840,6 тыс вакансий / 1,022 млн резюме в 2026"
+    },
+    "b": {
+     "id": "F-HIRING",
+     "quote": "вакансий на портале больше, чем резюме"
+    },
+    "suggest": "python3 pm.py exec WIRE F004 F-HIRING contradicts   # then decide which one stays (SUPERSEDE)"
+   }
+  ],
+  "rejected": {},
+  "proposed": 4,
+  "asked": true,
+  "failed": false,
+  "prompt_chars": 2635
+ },
+ "expected": [
+  {
+   "a": "D001",
+   "b": "D001B",
+   "found": true
+  },
+  {
+   "a": "D002",
+   "b": "D-AI",
+   "found": true
+  },
+  {
+   "a": "D001",
+   "b": "ledger:payout date",
+   "found": false
+  },
+  {
+   "a": "F004",
+   "b": "F-HIRING",
+   "found": true
+  }
+ ],
+ "extra": [
+  {
+   "a": "F002",
+   "b": "ledger:payout date",
+   "kind": "revision",
+   "summary": "Старая линия Минтруда называет начало выплаты 01.01.2027, а в журнале по письму Минтруда дата — 01.03.2027."
+  }
+ ],
+ "distractor_flagged": [],
+ "usage": {
+  "calls": 2,
+  "usd_reported": 0.015464799999999999,
+  "input_tokens": 4,
+  "cache_creation_input_tokens": 0,
+  "cache_read_input_tokens": 3234,
+  "output_tokens": 1481
+ }
+}

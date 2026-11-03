@@ -1,0 +1,11 @@
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {"type": "command", "command": "python3 engine/cards/cards.py --db engine/cards/cards.sqlite handoff"}
+        ]
+      }
+    ]
+  }
+}

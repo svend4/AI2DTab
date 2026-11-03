@@ -1,19 +1,21 @@
 import { useState, type FormEvent } from "react";
-import { acceptBoth, bridge, fetchBoth, refreshBook, runBoth, takeBoth } from "@/lib/desk-bridge";
+import { acceptBoth, bridge, fetchBoth, runBoth, takeBoth, writeBulk, writeDesk } from "@/lib/desk-bridge";
 import { downloadText } from "@/lib/machine";
+import { setExprOf } from "@/lib/desk-bulk";
 import { useDesk } from "@/lib/desk-store";
+import { deniedMessage } from "@/lib/desk-access";
+import { verbKind } from "@/lib/pm-request";
+import { useDeskAccess } from "@/lib/use-desk-access";
 
 function tail(out: { ok: boolean; stdout: string; stderr: string }) {
   const t = (out.stdout || out.stderr).trim().split("\n").slice(0, 2).join(" · ");
   return t || (out.ok ? "db ok" : "db fail");
 }
 
-const WRITE =
-  /^(PLANT|CUT|ACCEPT|FILL|TAKE|SWEEP|PURGE|SETTLE|GAP|WIRE|REPAIR|FETCH|RUN)\b/i;
-
 export function CommandBar() {
   const [line, setLine] = useState("");
   const [echo, setEcho] = useState("");
+  const access = useDeskAccess();
 
   async function run(e: FormEvent) {
     e.preventDefault();
@@ -32,6 +34,11 @@ export function CommandBar() {
     const [cmd, ...rest] = t.split(/\s+/);
     const C = (cmd || "").toUpperCase();
     const arg = rest.join(" ");
+    const denied = deniedMessage(verbKind(C), access);
+    if (denied) {
+      setEcho(denied);
+      return;
+    }
     setLine("");
 
     if (C === "LOOK") {
@@ -39,39 +46,40 @@ export function CommandBar() {
     }
     if (C === "DUMP") {
       const out = await bridge("DUMP");
-      downloadText("book.tsv", out.stdout, "text/tab-separated-values");
+      if (out.cut) {
+        setEcho(
+          `Выгрузка обрезана: обрезано ${out.cut.dropped} из ${out.cut.total} байт. Файл не сохранён.`,
+        );
+        return;
+      }
+      if (out.ok) downloadText("book.tsv", out.stdout, "text/tab-separated-values");
       setEcho(tail(out));
       return;
     }
-    if (C === "ACCEPT" && arg && !/[∩∪\\|&]/.test(arg) && !/^(NEQ|RAW|CANON|SESSION|A|B|C|D|OBS|JUNK)$/i.test(arg)) {
+    if (C === "ACCEPT" && arg && !setExprOf(t)) {
       setEcho(tail(await acceptBoth(arg)));
-      await refreshBook();
       return;
     }
-    if (C === "TAKE" && arg && !/[∩∪\\|&]/.test(arg) && !/^(NEQ|RAW|CANON|SESSION|A|B|C|D|OBS|JUNK)$/i.test(arg)) {
+    if (C === "TAKE" && arg && !setExprOf(t)) {
       setEcho(tail(await takeBoth(arg)));
-      await refreshBook();
       return;
     }
     if (C === "RUN") {
       setEcho(tail(await runBoth(arg)));
-      await refreshBook();
       return;
     }
     if (C === "FETCH") {
       setEcho(tail(await fetchBoth()));
-      await refreshBook();
       return;
     }
     if (C === "PLANT" || C === "CUT") {
       const tape = arg || useDesk.getState().tape;
-      setEcho(tail(await bridge("PLANT", tape ? { tape } : undefined)));
-      await refreshBook();
+      setEcho(tail(await writeDesk("PLANT", tape ? { tape } : undefined)));
       return;
     }
-    const out = await bridge(t);
+    const kind = verbKind(C);
+    const out = kind === "write" || kind === "bulk" ? await writeBulk(t) : await bridge(t);
     setEcho(tail(out));
-    if (WRITE.test(C)) await refreshBook();
   }
 
   return (

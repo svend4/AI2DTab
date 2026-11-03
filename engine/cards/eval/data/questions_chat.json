@@ -1,0 +1,419 @@
+[
+ {
+  "id": "c_t075_7484_sem",
+  "type": "semantic",
+  "text": "Как система должна продолжить работу, когда портативный узел пропадает во время обработки пакета, если задача не имеет побочных эффектов?",
+  "answer": "rerun on x86 node",
+  "card": "t075",
+  "group": "g10",
+  "occurrences": 1,
+  "check": [
+   "rerun|retry|перезапуск|повтор"
+  ],
+  "session": 0
+ },
+ {
+  "id": "c_t036_2349_sem",
+  "type": "semantic",
+  "text": "В примере, где сравнивается производительность человека в одиночку и в паре с ИИ, какая недельная выработка отчётов приводится для связки при условии проверки?",
+  "answer": "25 reports/week",
+  "card": "t036",
+  "group": "g5",
+  "occurrences": 1,
+  "check": [
+   "25\\s*(reports|отч)"
+  ],
+  "session": 0
+ },
+ {
+  "id": "c_t002_108_lex",
+  "type": "lexical",
+  "text": "Какое значение technical fit система выставляет для Repo A в примере анализа GitHub-репозитория?",
+  "answer": "technical fit: 0.91",
+  "card": "t002",
+  "group": "g1",
+  "occurrences": 1,
+  "check": [
+   "0[.,]91"
+  ],
+  "session": 0
+ },
+ {
+  "id": "c_t015_467_lex",
+  "type": "lexical",
+  "text": "Какое условие verification типа automated_test приведено в примере для DONE_IF задачи?",
+  "answer": "20/20 benchmark cases pass",
+  "card": "t015",
+  "group": "g3",
+  "occurrences": 1,
+  "check": [
+   "20\\s*/\\s*20"
+  ],
+  "session": 0
+ },
+ {
+  "id": "c_t054_3686_sem",
+  "type": "semantic",
+  "text": "Какую стратегию обновления данных о репозиториях выбрали для самой первой версии, пока вебхуки не подключены?",
+  "answer": "on-demand + periodic refresh",
+  "card": "t054",
+  "group": "g8",
+  "occurrences": 1,
+  "check": [
+   "periodic|периодическ"
+  ],
+  "session": 0
+ },
+ {
+  "id": "c_t009_866_sem",
+  "type": "semantic",
+  "text": "Какого недостающего специалиста система определяет для гипотетической команды проекта агентной AI-платформы и предлагает искать следующим?",
+  "answer": "AI / application security specialist",
+  "card": "t009",
+  "group": "g2",
+  "occurrences": 1,
+  "check": [
+   "(application|AI)\\s*(/\\s*\\w+\\s*)?security"
+  ],
+  "session": 0
+ },
+ {
+  "id": "c_t042_267_lex",
+  "type": "lexical",
+  "text": "Какое значение в списке Goal Source обозначает цель, предложенную в виде гипотезы ИИ, рядом с HUMAN, ORGANIZATION, POLICY, PROJECT и EVENT?",
+  "answer": "AI_HYPOTHESIS",
+  "card": "t042",
+  "group": "g6",
+  "occurrences": 1,
+  "check": [
+   "AI_HYPOTHESIS"
+  ],
+  "session": 0
+ },
+ {
+  "id": "c_t057_609_lex",
+  "type": "lexical",
+  "text": "Какой пример концепта Material Type приведён в разделе 8292?",
+  "answer": "Aluminum 7075",
+  "card": "t057",
+  "group": "g8",
+  "occurrences": 1,
+  "check": [
+   "7075"
+  ],
+  "session": 0
+ },
+ {
+  "id": "c_t056_2368_sem",
+  "type": "semantic",
+  "text": "В примере финансирования проекта с разбивкой на полученное, поданное, условное и непокрытое — какая сумма была указана как полная потребность проекта?",
+  "answer": "Total need: 1.2M",
+  "card": "t056",
+  "group": "g8",
+  "occurrences": 1,
+  "check": [
+   "1[.,]2\\s*(M|млн|million)"
+  ],
+  "session": 1
+ },
+ {
+  "id": "c_t012_131_sem",
+  "type": "semantic",
+  "text": "Через какой срок, по примеру из обсуждения, устаревает наполовину информация о том, что кандидат сейчас свободен для работы?",
+  "answer": "half-life: 30 days",
+  "card": "t012",
+  "group": "g3",
+  "occurrences": 1,
+  "check": [
+   "30\\s*(days|дн|сут)"
+  ],
+  "session": 1
+ },
+ {
+  "id": "c_t018_1301_lex",
+  "type": "lexical",
+  "text": "Какой id указан в YAML-объекте scenario с budget_multiplier 0.7?",
+  "answer": "scenario_budget_minus_30",
+  "card": "t018",
+  "group": "g3",
+  "occurrences": 1,
+  "check": [
+   "scenario_budget_minus_30"
+  ],
+  "session": 1
+ },
+ {
+  "id": "c_t004_229_lex",
+  "type": "lexical",
+  "text": "Сколько специалистов, по данным Upwork, доступно на платформе после интеграции marketplace с ChatGPT, наряду с 130 категориями и 10 000 навыками?",
+  "answer": "18 млн специалистов",
+  "card": "t004",
+  "group": "g2",
+  "occurrences": 1,
+  "check": [
+   "18\\s*(млн|million|m\\b)"
+  ],
+  "session": 1
+ },
+ {
+  "id": "c_t040_498_sem",
+  "type": "semantic",
+  "text": "Что система должна зафиксировать, когда два пакета требуют несовместимые версии одной и той же зависимости, вместо того чтобы автоматически всё обновлять?",
+  "answer": "DEPENDENCY_CONFLICT",
+  "card": "t040",
+  "group": "g6",
+  "occurrences": 1,
+  "check": [
+   "DEPENDENCY_CONFLICT"
+  ],
+  "session": 1
+ },
+ {
+  "id": "c_t081_4879_sem",
+  "type": "semantic",
+  "text": "Какой числовой пример привели, чтобы показать опасность зависимости почти всех программ от единственного источника денег?",
+  "answer": "80% portfolio",
+  "card": "t081",
+  "group": "g10",
+  "occurrences": 1,
+  "check": [
+   "80\\s*%"
+  ],
+  "session": 1
+ },
+ {
+  "id": "c_t049_1482_lex",
+  "type": "lexical",
+  "text": "Какой пример выбора даты показан для Historical Mode, когда пользователь выбирает состояние мира на определённый момент?",
+  "answer": "World as of 2026-06-01",
+  "card": "t049",
+  "group": "g7",
+  "occurrences": 1,
+  "check": [
+   "2026-06-01"
+  ],
+  "session": 1
+ },
+ {
+  "id": "c_t059_4015_lex",
+  "type": "lexical",
+  "text": "Какая роль в списке Knowledge Governance (возможные роли) стоит последней, после MODERATOR?",
+  "answer": "RELEASE_MANAGER",
+  "card": "t059",
+  "group": "g9",
+  "occurrences": 1,
+  "check": [
+   "RELEASE_MANAGER"
+  ],
+  "session": 1
+ },
+ {
+  "id": "c_t054_3686_lex",
+  "type": "lexical",
+  "text": "Что использовать в v0.1 для частоты обновления данных GitHub Observatory: on-demand и что ещё?",
+  "answer": "on-demand + periodic refresh",
+  "card": "t054",
+  "group": "g8",
+  "occurrences": 1,
+  "check": [
+   "periodic|периодическ"
+  ],
+  "session": 2
+ },
+ {
+  "id": "c_t009_866_lex",
+  "type": "lexical",
+  "text": "Какой RESOURCE GAP автоматически создаётся Team Builder для проекта Production Agentic AI Platform, где Security помечен как PARTIAL?",
+  "answer": "AI / application security specialist",
+  "card": "t009",
+  "group": "g2",
+  "occurrences": 1,
+  "check": [
+   "(application|AI)\\s*(/\\s*\\w+\\s*)?security"
+  ],
+  "session": 2
+ },
+ {
+  "id": "c_t036_2349_lex",
+  "type": "lexical",
+  "text": "Какой результат в примере с Human + AI указан для отчётов в неделю, если он подтверждён (verified), в отличие от 10 reports/week у человека одного?",
+  "answer": "25 reports/week",
+  "card": "t036",
+  "group": "g5",
+  "occurrences": 1,
+  "check": [
+   "25\\s*(reports|отч)"
+  ],
+  "session": 2
+ },
+ {
+  "id": "c_t002_108_sem",
+  "type": "semantic",
+  "text": "В примере оценки найденного open-source репозитория для сенсорной кожи робота, какая числовая оценка указана за соответствие технологическим требованиям?",
+  "answer": "technical fit: 0.91",
+  "card": "t002",
+  "group": "g1",
+  "occurrences": 1,
+  "check": [
+   "0[.,]91"
+  ],
+  "session": 2
+ },
+ {
+  "id": "c_t015_467_sem",
+  "type": "semantic",
+  "text": "Какой пример критерия завершённости задачи с автоматической проверкой был дан для оценки того, что работа выполнена?",
+  "answer": "20/20 benchmark cases pass",
+  "card": "t015",
+  "group": "g3",
+  "occurrences": 1,
+  "check": [
+   "20\\s*/\\s*20"
+  ],
+  "session": 2,
+  "invalid": "неоднозначен: в чате есть второй пример автоматической проверки (benchmark_pass_rate >= 0.95)"
+ },
+ {
+  "id": "c_t057_609_sem",
+  "type": "semantic",
+  "text": "Какой конкретный сплав был назван примером типа материала, в отличие от конкретной партии?",
+  "answer": "Aluminum 7075",
+  "card": "t057",
+  "group": "g8",
+  "occurrences": 1,
+  "check": [
+   "7075"
+  ],
+  "session": 2
+ },
+ {
+  "id": "c_t042_267_sem",
+  "type": "semantic",
+  "text": "Каким идентификатором помечается происхождение цели, если её выдвинула сама система искусственного интеллекта, а не человек или организация?",
+  "answer": "AI_HYPOTHESIS",
+  "card": "t042",
+  "group": "g6",
+  "occurrences": 1,
+  "check": [
+   "AI_HYPOTHESIS"
+  ],
+  "session": 2
+ },
+ {
+  "id": "c_t075_7484_lex",
+  "type": "lexical",
+  "text": "Что должно произойти с чистым вычислением, если ноутбук отключается посреди батча (Demonstrator 5)?",
+  "answer": "rerun on x86 node",
+  "card": "t075",
+  "group": "g10",
+  "occurrences": 1,
+  "check": [
+   "rerun|retry|перезапуск|повтор"
+  ],
+  "session": 2
+ },
+ {
+  "id": "c_t049_1482_sem",
+  "type": "semantic",
+  "text": "Какую конкретную дату в качестве примера приводили для режима просмотра интерфейса в прошлом, чтобы увидеть прежнее состояние системы?",
+  "answer": "World as of 2026-06-01",
+  "card": "t049",
+  "group": "g7",
+  "occurrences": 1,
+  "check": [
+   "2026-06-01"
+  ],
+  "session": 3
+ },
+ {
+  "id": "c_t056_2368_lex",
+  "type": "lexical",
+  "text": "Какая общая потребность (Total need) указана в примере проектного funding view, где Secured 300k, Applied 500k, Conditional 200k и Uncovered 400k?",
+  "answer": "Total need: 1.2M",
+  "card": "t056",
+  "group": "g8",
+  "occurrences": 1,
+  "check": [
+   "1[.,]2\\s*(M|млн|million)"
+  ],
+  "session": 3
+ },
+ {
+  "id": "c_t018_1301_sem",
+  "type": "semantic",
+  "text": "Как назван идентификатор сценария, моделирующего урезание бюджета на треть в симуляции проекта?",
+  "answer": "scenario_budget_minus_30",
+  "card": "t018",
+  "group": "g3",
+  "occurrences": 1,
+  "check": [
+   "scenario_budget_minus_30"
+  ],
+  "session": 3
+ },
+ {
+  "id": "c_t004_229_sem",
+  "type": "semantic",
+  "text": "Какую цифру по размеру базы фрилансеров приводила крупная биржа удалённой работы, когда заказчики получили возможность описывать задачу в чат-ассистенте обычным языком?",
+  "answer": "18 млн специалистов",
+  "card": "t004",
+  "group": "g2",
+  "occurrences": 1,
+  "check": [
+   "18\\s*(млн|million|m\\b)"
+  ],
+  "session": 3
+ },
+ {
+  "id": "c_t012_131_lex",
+  "type": "lexical",
+  "text": "Какой half-life указан для параметра availability в примерах decay_rate?",
+  "answer": "half-life: 30 days",
+  "card": "t012",
+  "group": "g3",
+  "occurrences": 1,
+  "check": [
+   "30\\s*(days|дн|сут)"
+  ],
+  "session": 3
+ },
+ {
+  "id": "c_t040_498_lex",
+  "type": "lexical",
+  "text": "Какой тип записи нужно создать, если Package A требует ontology v1, а Package B несовместимую ontology v2, вместо молчаливого обновления всего?",
+  "answer": "DEPENDENCY_CONFLICT",
+  "card": "t040",
+  "group": "g6",
+  "occurrences": 1,
+  "check": [
+   "DEPENDENCY_CONFLICT"
+  ],
+  "session": 3
+ },
+ {
+  "id": "c_t081_4879_lex",
+  "type": "lexical",
+  "text": "Какой пример приведён для риска концентрации финансирования: какая доля портфеля зависит от одной схемы финансирования?",
+  "answer": "80% portfolio",
+  "card": "t081",
+  "group": "g10",
+  "occurrences": 1,
+  "check": [
+   "80\\s*%"
+  ],
+  "session": 3
+ },
+ {
+  "id": "c_t059_4015_sem",
+  "type": "semantic",
+  "text": "В системе управления знаниями перечислялись роли участников; как называлась роль, идущая последней в этом перечне и связанная с выпуском версий?",
+  "answer": "RELEASE_MANAGER",
+  "card": "t059",
+  "group": "g9",
+  "occurrences": 1,
+  "check": [
+   "RELEASE_MANAGER"
+  ],
+  "session": 3
+ }
+]

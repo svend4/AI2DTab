@@ -1,0 +1,240 @@
+{
+ "Open Knowledge#3": {
+  "label": "weak",
+  "reason": "The later place says 'Some documents' have PUBLIC/PRIVATE/CONFIDENTIAL with separate permissions, which is a scoped, partial list about document governance rather than a redefinition of the full Resource/Artifact access-level set, so the two are compatible."
+ },
+ "Open Knowledge#1": {
+  "label": "borderline",
+  "reason": "t039 gives a three-state pipeline (PRIVATE→SHARED→PUBLIC) with sanitize and review, while t042 lists four steps (sanitize, review, approve, publish) without SHARED, so the descriptions differ, but the later one may be a more detailed policy of the same flow and the SHARED state may be implicit, so it isn't clearly a conflict."
+ },
+ "Idempotency#1": {
+  "label": "weak",
+  "reason": "The schema line is a conditional constraint (\"если semantics требуют\", only when the key is non-null), and a full UNIQUE would also satisfy the test's weaker requirement of no two active commands per key, so the statements are compatible."
+ },
+ "Open Knowledge#2": {
+  "label": "borderline",
+  "reason": "Both headings describe a lifecycle of open knowledge with different stage sets (Discover…Publish/Reuse/Fork vs READ…ACT/OBSERVE/UPDATE) and nothing shown reconciles them, but the first is a development/publishing workflow and the second an agent-style full loop, so they may be intended as different levels."
+ },
+ "Team Builder#2": {
+  "label": "borderline",
+  "reason": "Earlier output is 'best combination of people' and later it searches for a 'minimal set of resource-hours' (FTE, AI agents), which is a shift in framing, but the later text reads as a refinement/generalization of the same Team Builder rather than an explicit reversal, and 'explicit change' is not clearly stated in the quoted lines."
+ },
+ "Team Builder#3": {
+  "label": "borderline",
+  "reason": "The earlier pipeline shows Gap Detector as a separate stage after Team Builder, while the later text has Team Builder itself see coverage and automatically create a gap (RESOURCE GAP); this could be an intended simplification or a detail of the same stage, but the text does not reconcile who creates gaps."
+ },
+ "Team Builder#4": {
+  "label": "wrong",
+  "reason": "The quoted later line only introduces the Project IR v0.1 spec and never mentions Team Builder or a v0.3 development plan, so the claimed conflict isn't in the text shown (and matcher versions and project-plan versions could be separate numbering anyway)."
+ },
+ "Team Builder#1": {
+  "label": "borderline",
+  "reason": "The two roadmaps number Team Builder differently (Phase 4 before GitHub Resolver vs Phase 6 after a Phase 5 Evidence stage), but the shown text doesn't display Phase 5 or say it is GitHub enrichment, and the later list may be an intentionally revised roadmap."
+ },
+ "Promotion#1": {
+  "label": "borderline",
+  "reason": "Both define maturity/promotion stage lists, but the later one is explicitly titled 'Sandbox Promotion' and may be a separate pipeline (sandbox experiments to core) versus general component maturity, so whether they conflict depends on scope reading."
+ },
+ "Promotion#2": {
+  "label": "borderline",
+  "reason": "The two pipelines differ in stages (the later adds Observation and Hypothesis, and starts from Observation rather than Episode), and nothing in the text reconciles them; but the later one may be a refined or extended version of the earlier sketch, so whether it is a conflict depends on how they are read."
+ },
+ "Procedural Graph#1": {
+  "label": "weak",
+  "reason": "t014 says business tasks can be compiled into n8n/Make as a workflow backend, and t041 says n8n is a backend representation compiled from the Procedural Graph (source of truth), so these are consistent and t041 just adds detail about the source of truth."
+ },
+ "Procedural Graph#2": {
+  "label": "weak",
+  "reason": "t013 only says the task graph 'resembles' Procedural Graphs (an analogy about explicit structure of actions and dependencies), which is compatible with t027 later separating them as different layers, so it's not an identity claim."
+ },
+ "Promotion#3": {
+  "label": "borderline",
+  "reason": "Project Memory is described as holding only confirmed items (decisions, artifacts, claims, task outcomes), while the promotion policy gives unverified LLM inference the status 'project hypothesis'; this may be a tagged, non-confirmed project-scope status or a separate layer, and the shown text does not say which."
+ },
+ "Promotion#4": {
+  "label": "borderline",
+  "reason": "Both flows run Candidate Claim → Evidence and then differ: t049 ends at Validation, while t059 uses Review and ends at Canonical Claim, but t049 is only a loosely framed 'useful workflow' and the later flow may just be a refined version of it, so it is unclear whether this is a real conflict."
+ },
+ "Signpost#1": {
+  "label": "borderline",
+  "reason": "t025 shows conditional rules (if signpost A → accelerate Program X) that read as automatic strategy adjustment, while t043 says signpost triggers only review and 'not automatically change' strategy, but the t025 rules may be the outcome of a review or a policy-level description, so the conflict depends on reading."
+ },
+ "Signpost#3": {
+  "label": "borderline",
+  "reason": "The Signpost schemas differ substantially (scenario/metric/trigger vs. mission_id/description/observation_rule/related_assumption_ids/review_action), but t025 is an early conceptual sketch in a scenario-planning context and t063 a later detailed data model, so the later one may be an intended elaboration, though the text never says which is current.",
+  "confidence": "medium"
+ },
+ "Signpost#4": {
+  "label": "weak",
+  "reason": "World State 'watches for signals' in hiring/funding/repo activity/research is a data-level observation, while Signpost Monitor is a role in the Foresight Engine's agent list; these are plausibly different layers (raw signal collection vs. a role monitoring signposts), and the shown text doesn't assign conflicting ownership."
+ },
+ "Signpost#2": {
+  "label": "weak",
+  "reason": "The later phrase \"instead of execution\" reads as a deliberate contrast: the 'IF ... THEN start pilot' rule is the naive automatic form, and the signpost is meant to trigger a Strategy Review instead, so the two places are consistent rather than conflicting."
+ },
+ "Acceptance Test#1": {
+  "label": "weak",
+  "reason": "Both headings claim proof at different stages: t029's five acceptance tests prove the core (before adding Opportunity Engine etc.), while t050's ten MVP steps prove the architecture 'in miniature', so these are different scopes (core vs. wider MVP) and the later set plausibly extends the earlier one rather than replacing it."
+ },
+ "Acceptance Test#2": {
+  "label": "borderline",
+  "reason": "Ten MVP steps proving the architecture and six release-gate tests for v0.1 are different sets, and the shown text does not say how they relate or which one defines success, but they may be intended as separate stages (MVP proof vs release gate) rather than a conflict."
+ },
+ "Research Observatory#1": {
+  "label": "borderline",
+  "reason": "The two status sets (PROPOSED/SUPPORTED/CONTESTED/REPLICATED/REJECTED vs. REFUTED/QUALIFIED/SOURCE_RETRACTED) are different and unreconciled, but the later one is framed as outcomes specific to retraction ('may become ... depending context'), so it may be an intended extension of the application-level status rather than a replacement."
+ },
+ "Kill Criteria#1": {
+  "label": "borderline",
+  "reason": "t021 says that when kill criteria fire the opportunity goes to REJECTED, while t046 shows a dashboard view of projects that crossed kill criteria but are not yet reviewed, implying a review step; this may be intended (different levels, a UI queue vs. the state rule), but the text shown does not reconcile whether rejection is automatic."
+ },
+ "Acceptance Test#3": {
+  "label": "weak",
+  "reason": "The two statements are compatible: t029 says Opportunity Engine comes after the five core tests, while t050 has a separate acceptance test for 'Repeated Gap → Opportunity Hypothesis' as one of six, and a hypothesis test is not the same as building the full engine."
+ },
+ "Kill Criteria#2": {
+  "label": "borderline",
+  "reason": "t022 says kill criteria must be defined before validation (idea-level, called very important), while t062 says 'Program Kill Criteria' are pre-registered 'when useful'; the difference in strictness is real, but they may concern different levels (idea validation vs. program/pilot) and 'when useful' could be a terse note rather than a deliberate relaxation."
+ },
+ "Kill Criteria#3": {
+  "label": "weak",
+  "reason": "Both are 'kill' conditions for different objects (whether a program should exist vs. when to stop a pilot), and the shown text does not make them conflict, so this is a different-scope use of a general idea rather than a contradiction."
+ },
+ "Architecture Freeze#1": {
+  "label": "weak",
+  "reason": "The later text says the earlier freeze 'can become' a machine-checkable manifest, which is an explicit evolution/extension of the markdown freeze rather than a contradiction, and the contents (types, predicates, invariants) are consistent with the earlier list."
+ },
+ "Causal Engine#1": {
+  "label": "borderline",
+  "reason": "The two ladders differ in steps (Causal Evidence appears only in the first, Observation and Policy/Package only in the second), but they have different names (learning maturity vs. Knowledge Promotion levels) and may serve different purposes; only the first is said to align with Causal Engine, so the finding overstates the conflict."
+ },
+ "Team Hypothesis#1": {
+  "label": "borderline",
+  "reason": "The same class TeamHypothesis is defined twice with different fields (member_ids vs resource_ids, missing vs uncovered capabilities, unknowns vs constraint_unknowns, added status) without text marking which is current, but the later version reads like a deliberate evolution to a generalized resource model, so whether it's a conflict depends on how the design's iteration is read."
+ },
+ "Team Hypothesis#2": {
+  "label": "borderline",
+  "reason": "Early YAML example shows `status: investigate` while the later dataclass has default `\"HYPOTHESIS\"`, a real difference in the status value for Team Hypothesis, but the early one may be an illustrative sketch and the later a refined spec, so whether it's a conflict depends on reading."
+ },
+ "Team Hypothesis#3": {
+  "label": "borderline",
+  "reason": "Both places describe a non-binding result of visual candidate selection (not real hiring), but one names it 'Team Proposal' and the other 'Team Hypothesis', and nothing shown says whether these are one entity or two, though they may belong to different contexts (UI drag scenario vs. v0.1 Team Builder)."
+ },
+ "Entity Resolution#1": {
+  "label": "borderline",
+  "reason": "The two state sets differ (REJECTED vs UNRESOLVED as the third state), but the later one is headed 'Hiring post → Project' context for organizations, so it may be a deliberately different scope, and the text shown doesn't say explicitly whether it replaces or complements the earlier set."
+ },
+ "Entity Resolution#2": {
+  "label": "borderline",
+  "reason": "Both lists name the Entity Resolution result/states with different value sets (CONFIRMED/POSSIBLE/REJECTED vs EXACT/CONFIRMED/CANDIDATE/AMBIGUOUS/UNRESOLVED) and the text does not reconcile them, but t065 calls them 'states' (possibly a finer-grained or different-level scale) versus t054's 'Result', so whether it's a conflict depends on how the levels are read."
+ },
+ "Entity Resolution#4": {
+  "label": "borderline",
+  "reason": "The two pipelines place Entity Resolution at different positions (after vs. before Semantic Extraction), which is a real ordering difference, but they are separate diagrams (t064 also has different stages like Observation and Verification) and may represent a revised or differently-scoped design rather than a direct contradiction."
+ },
+ "Entity Resolution#3": {
+  "label": "borderline",
+  "reason": "The two lists really are different vocabularies (EXACT/CONFIRMED/CANDIDATE/AMBIGUOUS/UNRESOLVED vs SAME_CONFIRMED/SAME_PROBABLE/POSSIBLE/DIFFERENT/UNKNOWN), and the shown text does not link them, but they may be intended as the resolution state of an entity versus the outcome of a pairwise identity comparison."
+ },
+ "Capability Contract#2": {
+  "label": "borderline",
+  "reason": "t075 says 'Capability Contract changes' (a heading, with QoS degraded-profile negotiation), while t079 says the contract 'remains stable' with providers evolving behind it; these are plausibly different aspects (contract evolution/negotiation vs. stability against provider changes), but the text does not explicitly reconcile them."
+ },
+ "Capability Contract#1": {
+  "label": "borderline",
+  "reason": "The field lists do differ (t043 has Constraints and Verification, t067 has preconditions and quality constraints), but the finding wrongly says t067 drops Side Effects, which it also lists, and the lists may be intended as different views of one contract."
+ },
+ "Capability Contract#4": {
+  "label": "weak",
+  "reason": "The t057 fields (operator capability ids, calibration, safety requirements, location) and the t067 fields (effects, risk_class) are different aspects of the contract, likely two views or an extension, and nothing shows they compete or that one replaces the other; the finding's claim of 'three sets' with materials/dimensions is also not supported by the quoted lines."
+ },
+ "Query Planner#1": {
+  "label": "borderline",
+  "reason": "t019 lists separate stages (Hard Constraint Filtering, Compatibility Evaluation, Cost/Time/Risk Analysis) while t032 shows a shorter pipeline with a single 'Constraint Evaluation', which could be a condensed summary or a revised design, and the shown text does not say which."
+ },
+ "Capability Contract#3": {
+  "label": "borderline",
+  "reason": "The earlier list of Capability Contract fields (Inputs, Outputs, Constraints, Side Effects, Verification) does not include Data Rights, and the later line says they are part of the contract; this could be an intended extension or a gap in the field list, and the shown text does not settle which."
+ },
+ "Query Planner#2": {
+  "label": "wrong",
+  "reason": "The t054 quote is the `CapabilityPackage` model (capability_id, resource_ids, required_actions, ...), not a `GitHubSearchPlan` or any Query Planner output, so the quotes do not describe the same thing the finding compares."
+ },
+ "Query Planner#3": {
+  "label": "weak",
+  "reason": "The two statements concern different input types (ordinary search queries vs. counterfactual 'what-if' queries), so the Query Planner producing a hybrid query in one case and a Scenario Patch in the other reads as complementary roles, and t019's description isn't shown to contradict them."
+ },
+ "Foresight#1": {
+  "label": "wrong",
+  "reason": "The t062 quote is just one item in a list of criteria (Mission relevance, Cost, Risk, Timing, Evidence), not a stage chain placing Relevance after Trend Hypotheses, so there is no ordering to compare with t063."
+ },
+ "Handoff#1": {
+  "label": "wrong",
+  "reason": "The cited t027 line is the 'Resource PROVIDES required capability' matching relation in the executor-resolver section, not a Handoff field list, so it does not show a conflicting Handoff field set with t047."
+ },
+ "Foresight#2": {
+  "label": "borderline",
+  "reason": "t062 maps FUTURE wholesale to Strategic Foresight while t063 splits it into PLANNED FUTURE (Strategy/Portfolio) and a new POSSIBLE FUTURES layer, which looks like a refinement ('Теперь добавляется ещё один слой') but silently reassigns planned future away from Foresight, so whether it is a conflict depends on how the incremental design is read."
+ },
+ "Commitment#1": {
+  "label": "weak",
+  "reason": "The earlier line is a general contrast of Option vs Commitment, while the later one introduces a graded scale of commitment levels (WATCH to SCALE), which naturally refines the concept so low levels commit little and high levels commit more, so there is no real contradiction."
+ },
+ "Strategy Engine#1": {
+  "label": "wrong",
+  "reason": "The earlier line only says Governance chooses the analytical lens from Mission/Context, and nothing shown says Strategy Engine merely offers alternatives and cannot decide, so it does not conflict with the later terse 'Strategy Engine decides'."
+ },
+ "Commitment#2": {
+  "label": "borderline",
+  "reason": "Two five-step scales for escalating commitment exist in different parts (t062 vs t071) with differing stages (WATCH/COMMIT vs Prototype/Deploy) and no text linking them, but they may serve different contexts (investment commitment vs delivery progression), so whether it's a conflict depends on scope."
+ },
+ "Commitment#3": {
+  "label": "borderline",
+  "reason": "Both places describe Progressive Commitment with different stage sets (budget-based Stage 0–3 with €200→€2k→€20k vs. Hypothesis→Desk Research→Small Experiment→Pilot→Program), and nothing in the shown text says which is current, but they could be read as complementary framings (budget gates vs. activity stages) of the same staged approach rather than a conflict."
+ },
+ "Commitment#4": {
+  "label": "weak",
+  "reason": "The earlier text says the lock 'may record' commitment state after parties agree, and the later snippet shows one partner with pending commitment, plus a note that readiness is blocked unless the call permits later completion; this is compatible, since 'commitment state' can include pending."
+ },
+ "Technopedia#1": {
+  "label": "weak",
+  "reason": "t059 only says Technopedia can host community spaces, while t076 says it can live 'primarily' in the open layer and assigns Virtual Technopark operations (not Technopedia itself) to the restricted layer, so 'primarily' and the different subjects keep the statements compatible."
+ },
+ "Capability Capital#2": {
+  "label": "borderline",
+  "reason": "Both titles name Capability Capital and Ecosystem Learning at v0.1 with different wording (t071 adds 'Technological Development Accounting' and drops 'Innovation Evolution'), so it could be a re-proposal or a deliberate refinement, but the shown text does not say which is current."
+ },
+ "Capability Capital#3": {
+  "label": "borderline",
+  "reason": "Both lists classify how a capability is owned or accessed, but the first (INTERNAL/EXTERNAL/SHARED/DEPENDENT) is a general ownership taxonomy, while the second (INTERNAL_CAPABILITY/FEDERATED_ACCESS/MARKET_ACCESS) subdivides external access modes in a different part of the conversation, so they may be intended as different levels, and nothing explicitly reconciles them."
+ },
+ "Capability Capital#1": {
+  "label": "borderline",
+  "reason": "The earlier place only shows a CAPABILITY_CREATED example, and the later one offers a 'Better event sequence' (DISCOVERED/ACQUIRED/VERIFIED/OPERATIONAL) with loss events added, which suggests a revision; but the shown text neither says CREATED is dropped nor shows the full earlier list, so it could be a refined lifecycle rather than a replacement."
+ },
+ "Capability Package#1": {
+  "label": "real",
+  "reason": "The same term 'Capability Package' is first shown as a market package of people (2 engineers, designer, security specialist) and later defined as a portable installable software package that changes system capabilities, with no text reconciling these two meanings.",
+  "confidence": "medium"
+ },
+ "Capability Capital#4": {
+  "label": "borderline",
+  "reason": "The earlier line is only a heading, \"All increase capability of the system\", and the list it refers to (dataset, software, method) is not shown, so it may be loose shorthand or a different scope than the later, stricter \"Dataset alone ≠ Capability\", but a reader could be misled if datasets were in that list."
+ },
+ "Capability Package#3": {
+  "label": "weak",
+  "reason": "The earlier 'Team Capability Package' (team members and capabilities) and the later 'Capability Package' (resources, required actions, verification contract) are different objects at different design stages, so the differing structures do not contradict each other."
+ },
+ "Capability Package#2": {
+  "label": "weak",
+  "reason": "CPM is a manifest describing a package's declared interface (provides/requires/permissions), while CapabilityPackage in t054 is a resolver-result model of resolved resources, actions and unknowns; they are different objects at different stages, and nothing claims they are the same or that one replaces the other."
+ },
+ "Funding Resolver#1": {
+  "label": "borderline",
+  "reason": "t034 lists Consortium Analysis as a pipeline stage leading to Funding Options, while t056 routes Consortium Gaps to a separate resolver, but these could be different levels (analysis stage vs. gap routing) and the shown text doesn't say Funding Resolver owns consortium analysis, so it may be intended."
+ },
+ "Funding Resolver#2": {
+  "label": "borderline",
+  "reason": "Early text calls the Funding Resolver just another way to close a gap (not a separate service), while later Funding becomes a fourth supply-layer Observatory with its own resolver; this may be a deliberate evolution of scope (resolver type vs. full layer), but the earlier 'not a separate service' claim is in tension with the later separate layer."
+ }
+}

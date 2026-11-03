@@ -1,0 +1,236 @@
+[
+ {
+  "id": "s_f062",
+  "type": "semantic",
+  "text": "Which file is the server-side handler that serves the whole top-level sign-in popup page for the sandbox preview, redirecting straight to the OAuth provider on the first step and then returning a tiny HTML page that sends the session token back to the opener window and closes itself?",
+  "path": "src/lib/auth/popup.server.ts",
+  "check": [
+   "popup\\.server\\.ts"
+  ]
+ },
+ {
+  "id": "s_f029",
+  "type": "semantic",
+  "text": "Which file implements a testable, side-effect-injected logic for ending a user's session that waits a short time in a sandboxed preview but a much longer time when deployed, throwing an error on failure only in the deployed case, plus a best-effort variant that runs before a new login begins?",
+  "path": "scripts/sign-out-plan.mjs",
+  "check": [
+   "sign\\-out\\-plan\\.mjs"
+  ]
+ },
+ {
+  "id": "s_f074",
+  "type": "semantic",
+  "text": "Which file glues the client-side desk state store to the Python/SQLite engine by sending short text commands (canon, raw, plant, accept, take, run, fetch) through the server call and then parsing the tab-separated, JSON or arrow-style output back into store rows, instruments and wires?",
+  "path": "src/lib/desk-bridge.ts",
+  "check": [
+   "desk\\-bridge\\.ts"
+  ]
+ },
+ {
+  "id": "s_f011",
+  "type": "semantic",
+  "text": "Which file configures the project's linting rules, skipping build output folders and the generated route tree, enabling React hooks and fast-refresh checks, relaxing the unused-variable and explicit-any rules for TypeScript, and finally turning off rules that clash with the code formatter?",
+  "path": "eslint.config.mjs",
+  "check": [
+   "eslint\\.config\\.mjs"
+  ]
+ },
+ {
+  "id": "s_f009",
+  "type": "semantic",
+  "text": "Which file defines the SQLite table layout for a local portfolio index, including tables for objects, their links, session origins, an event log, and messages passed between sessions, along with supporting lookup indexes?",
+  "path": "engine/schema.sql",
+  "check": [
+   "schema\\.sql"
+  ]
+ },
+ {
+  "id": "s_f077",
+  "type": "semantic",
+  "text": "Which file defines the full-screen fallback view shown when a route throws, displaying a warning icon, a \"something went wrong\" heading, and the error's message (or a generic retry hint) with light and dark theme styling?",
+  "path": "src/lib/error-component.tsx",
+  "check": [
+   "error\\-component\\.tsx"
+  ]
+ },
+ {
+  "id": "s_f052",
+  "type": "semantic",
+  "text": "Which file is the browser-side authentication client that keeps a session-scoped bearer token for the embedded sandbox preview iframe, opens a popup for sign-in there but uses a normal redirect when deployed, and wraps sign-out so the stored token is also cleared?",
+  "path": "src/lib/auth/client.ts",
+  "check": [
+   "client\\.ts"
+  ]
+ },
+ {
+  "id": "s_f092",
+  "type": "semantic",
+  "text": "Which file implements the third-stage memory page of the web app, showing the stored canon split into subject–object cells, graph edges between packets, and remaining records, with a per-row button that runs an item and then jumps to the fourth-stage page?",
+  "path": "src/routes/l3.tsx",
+  "check": [
+   "l3\\.tsx"
+  ]
+ },
+ {
+  "id": "s_f036",
+  "type": "semantic",
+  "text": "Which file renders the SVG diagram of four stages laid out in switchable geometric arrangements (diamond, figure-eight, isometric), with clickable stage nodes that toggle a stop state and small selectable token dots orbiting each node?",
+  "path": "src/components/cycle-board.tsx",
+  "check": [
+   "cycle\\-board\\.tsx"
+  ]
+ },
+ {
+  "id": "s_f058",
+  "type": "semantic",
+  "text": "Which file provides the React components that conditionally render content based on whether a visitor is signed in, signed out, or still loading, plus a redirect to the login route, provider sign-in buttons, and a small user identity chip whose sign-out control is hidden for auto-signed-in gate sessions?",
+  "path": "src/lib/auth/gates.tsx",
+  "check": [
+   "gates\\.tsx"
+  ]
+ },
+ {
+  "id": "s_f008",
+  "type": "semantic",
+  "text": "Which file is the command-line script that builds a local SQLite project database from a schema and seed data, then reports status counts, lists open questions and blockers, runs consistency checks, prints next-step rules, and exports a markdown status summary?",
+  "path": "engine/pm.py",
+  "check": [
+   "pm\\.py"
+  ]
+ },
+ {
+  "id": "s_f050",
+  "type": "semantic",
+  "text": "Which file declares the shared constants and type definitions for calling third-party connector tools, including the supported connector kinds (mail, calendar, drive, chat, etc.), the tool name lists for the Google Drive and Calendar integrations, the header and event names for the access-token handoff, and the result and options shapes for a tool call?",
+  "path": "src/lib/app-data/types.ts",
+  "check": [
+   "types\\.ts"
+  ]
+ },
+ {
+  "id": "s_f020",
+  "type": "semantic",
+  "text": "Which file is a standalone check that compares whether sign-in is enabled on a locally running development server against what the production build would use, exiting with distinct codes for agreement, divergence, or inability to observe?",
+  "path": "scripts/check-auth-invariant.mjs",
+  "check": [
+   "check\\-auth\\-invariant\\.mjs"
+  ]
+ },
+ {
+  "id": "s_f006",
+  "type": "semantic",
+  "text": "Which file is a short Russian-language reference describing the small command language for a set-based portfolio calculator, covering set union/intersection/difference operations, a ban on multiplying matrices, and bulk macros that accept or take whole sets of items rather than lists pasted from chat?",
+  "path": "engine/LANG.md",
+  "check": [
+   "LANG\\.md"
+  ]
+ },
+ {
+  "id": "s_f010",
+  "type": "semantic",
+  "text": "Which file is the SQL script that wipes all portfolio tables and reloads them with the initial canonical set of records about a Kazakhstan employment-service AI case (facts, questions, decisions, observations, signals, links, a handoff packet and a single seeding event)?",
+  "path": "engine/seed.sql",
+  "check": [
+   "seed\\.sql"
+  ]
+ },
+ {
+  "id": "s_f040",
+  "type": "semantic",
+  "text": "Which file is the small React component, mounted once at the app root, that wires the router into the embedding preview chrome so the host can trigger page navigation and read the app's route paths, doing nothing when the app isn't embedded?",
+  "path": "src/components/preview-host-bridge.tsx",
+  "check": [
+   "preview\\-host\\-bridge\\.tsx"
+  ]
+ },
+ {
+  "id": "s_f039",
+  "type": "semantic",
+  "text": "Which file defines the React gauge components that render circular percentage dials for charge, raw versus canon counts, and skew warnings, plus a small cluster-to-cluster packet count table and a one-line compact status summary?",
+  "path": "src/components/instruments.tsx",
+  "check": [
+   "instruments\\.tsx"
+  ]
+ },
+ {
+  "id": "s_f091",
+  "type": "semantic",
+  "text": "Which file implements the second-stage page of the desk app, showing a filterable grid of raw and canonical database records by cluster and search text, with buttons to run bulk fill, sweep, gap and purge commands and to load the kit's ontology tables into the store?",
+  "path": "src/routes/l2.tsx",
+  "check": [
+   "l2\\.tsx"
+  ]
+ },
+ {
+  "id": "s_f023",
+  "type": "semantic",
+  "text": "Which file is the build-time script that connects to a Postgres database via the URL in the environment, applies any not-yet-run SQL files from the migrations folder each inside its own transaction while logging them in a bookkeeping table, and quietly exits when no database URL is configured?",
+  "path": "scripts/migrate.mjs",
+  "check": [
+   "migrate\\.mjs"
+  ]
+ },
+ {
+  "id": "s_f090",
+  "type": "semantic",
+  "text": "Which file implements the app's landing page where a user pastes or uploads raw text, sends it to be planted into the database before moving on to the second stage, can reset the working desk, and sees a preview table of the first 40 already-stored raw rows?",
+  "path": "src/routes/index.tsx",
+  "check": [
+   "index\\.tsx"
+  ]
+ },
+ {
+  "id": "s_f054",
+  "type": "semantic",
+  "text": "Which file verifies short-lived signed identity tokens passed in a request header by the hosting gateway, fetching and caching the gateway's public keys and deciding which issuer to trust based on the request's host, then turns the verified identity into a user-info record with fallback email and name?",
+  "path": "src/lib/auth/gate-identity.server.ts",
+  "check": [
+   "gate\\-identity\\.server\\.ts"
+  ]
+ },
+ {
+  "id": "s_f075",
+  "type": "semantic",
+  "text": "Which file defines the client-side persisted state store for the desk workflow, holding the pasted tape text, candidate rows that can be accepted or rejected, an event log capped at a fixed length, and a small text-command interpreter (status, look, plant, accept, run, fetch, reset), where only the tape text survives reloads?",
+  "path": "src/lib/desk-store.ts",
+  "check": [
+   "desk\\-store\\.ts"
+  ]
+ },
+ {
+  "id": "s_f082",
+  "type": "semantic",
+  "text": "Which file splits a pasted chat transcript into blank-line-separated chunks and classifies each chunk heuristically (as a link, a continuation or affirmation, a question, an invariant-style observation, or a numbered section heading) into a structured record with an id, cluster, and type?",
+  "path": "src/lib/parse-l1.ts",
+  "check": [
+   "parse\\-l1\\.ts"
+  ]
+ },
+ {
+  "id": "s_f057",
+  "type": "semantic",
+  "text": "Which file implements the server-side Better Auth plugin logic that turns a Grok gate viewer's identity header into a signed session cookie delivered through both the framework's cookie store and the auth response headers, expires the previous user's cached session data when identities swap, and manages a client-readable marker cookie for gate-created sessions?",
+  "path": "src/lib/auth/gate-session.server.ts",
+  "check": [
+   "gate\\-session\\.server\\.ts"
+  ]
+ },
+ {
+  "id": "s_f012",
+  "type": "semantic",
+  "text": "Which file is the generated, do-not-edit SQL migration that creates the tables for users, login sessions, linked provider accounts, and verification tokens, along with lookup indexes on their foreign-key and identifier columns, for the app's sign-in system?",
+  "path": "migrations/auth/0001_auth.sql",
+  "check": [
+   "0001_auth\\.sql"
+  ]
+ },
+ {
+  "id": "s_f022",
+  "type": "semantic",
+  "text": "Which file is the static HTML template that detects whether the visitor is on an iPhone, iPad, Android or desktop and shows step-by-step instructions for adding the app to an iOS Home Screen, or on desktop just tells them to open the link on their iOS device?",
+  "path": "scripts/install-page.html",
+  "check": [
+   "install\\-page\\.html"
+  ]
+ }
+]

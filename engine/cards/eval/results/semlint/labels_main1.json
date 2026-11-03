@@ -1,0 +1,244 @@
+{
+ "Signpost#1": {
+  "label": "real",
+  "note": "t025: стратегия сама ускоряет/откладывает программы по signpost; t043: срабатывание только запускает review, стратегию не меняет"
+ },
+ "Signpost#2": {
+  "label": "real",
+  "note": "t046: «THEN start pilot», через 40 строк «Trigger ≠ automatic commitment»: сам текст поправляет себя (это revision, не conflict)",
+  "kind_ok": false
+ },
+ "Signpost#3": {
+  "label": "real",
+  "note": "два разных набора полей объекта Signpost: scenario/metric/trigger (t025) и mission_id/observation_rule/review_action (t063)"
+ },
+ "Signpost#4": {
+  "label": "weak",
+  "note": "кто следит за сигналами: World State и роль Signpost Monitor совместимы (данные и агент)"
+ },
+ "Kill Criteria#1": {
+  "label": "borderline",
+  "note": "t021: сработали критерии → Opportunity REJECTED; t046: «пересекли критерии, но ещё не рассмотрены» (очередь). Разные уровни (идея и проект)"
+ },
+ "Kill Criteria#2": {
+  "label": "weak",
+  "note": "обязательные критерии идеи (t022) и «Program Kill Criteria — по мере пользы» (t062): разный уровень"
+ },
+ "Kill Criteria#3": {
+  "label": "weak",
+  "note": "критерии «нужна ли программа» и условия остановки пилота: разные вещи под одним названием, не противоречат"
+ },
+ "Architecture Freeze#1": {
+  "label": "real",
+  "note": "t051 файл ARCHITECTURE_FREEZE_v0.1.md → t068 «can become» kernel_manifest.yaml: явная смена"
+ },
+ "Entity Resolution#1": {
+  "label": "real",
+  "note": "наборы состояний связи: CONFIRMED/POSSIBLE/REJECTED (t051) против CONFIRMED/POSSIBLE/UNRESOLVED (t053)"
+ },
+ "Entity Resolution#2": {
+  "label": "real",
+  "note": "CONFIRMED/POSSIBLE/REJECTED (t054) против пятизначной шкалы EXACT…UNRESOLVED (t065)"
+ },
+ "Entity Resolution#3": {
+  "label": "real",
+  "note": "пятизначная шкала (t065) против SAME_CONFIRMED/SAME_PROBABLE/… (t076)"
+ },
+ "Entity Resolution#4": {
+  "label": "real",
+  "note": "порядок стадий: ER после LLM extraction (t053) и до Semantic Extraction (t064)"
+ },
+ "Capability Contract#1": {
+  "label": "real",
+  "note": "поля контракта: Inputs/Outputs/Constraints/Side Effects/Verification (t043) против inputs/outputs/preconditions/side effects/quality constraints (t067)"
+ },
+ "Capability Contract#2": {
+  "label": "weak",
+  "note": "контракт меняется в degraded-режиме (t075) и «остаётся стабильным» при смене провайдеров (t079): разные ситуации"
+ },
+ "Capability Contract#3": {
+  "label": "borderline",
+  "note": "Data Rights названы частью контракта (t081), в списках полей их нет: скорее дополнение, но читателя это введёт в заблуждение"
+ },
+ "Capability Contract#4": {
+  "label": "weak",
+  "note": "физический профиль (t057) сам оговаривает, что профили зависят от области («domain-specific profiles допустимы»)"
+ },
+ "Foresight#1": {
+  "label": "real",
+  "note": "порядок стадий конвейера: Mission Relevance после Trend Hypotheses (t062) и Relevance Mapping до них (t063); цитата ранней стороны указывает на соседний список критериев, а не на конвейер (t062 L5792)",
+  "anchor_ok": false
+ },
+ "Foresight#2": {
+  "label": "real",
+  "note": "t062: будущее целиком у Strategic Foresight; t063: PLANNED FUTURE → Strategy/Portfolio, «теперь добавляется ещё один слой» POSSIBLE FUTURES"
+ },
+ "Capability Capital#1": {
+  "label": "real",
+  "note": "события журнала: CAPABILITY_CREATED… (t061) и «Better event sequence» DISCOVERED/ACQUIRED/VERIFIED/OPERATIONAL (t072)"
+ },
+ "Capability Capital#2": {
+  "label": "borderline",
+  "note": "модуль про Capability Capital предложен дважды под разными названиями (t061, t071); что действует, не сказано"
+ },
+ "Capability Capital#3": {
+  "label": "borderline",
+  "note": "классификации INTERNAL/EXTERNAL/SHARED/DEPENDENT (владение, t038) и INTERNAL_CAPABILITY/FEDERATED_ACCESS/MARKET_ACCESS (доступ, t072): частично разные измерения"
+ },
+ "Capability Capital#4": {
+  "label": "real",
+  "note": "t055: любой результат повышает capability; t072: «Dataset alone ≠ Capability»"
+ },
+ "Idempotency#1": {
+  "label": "weak",
+  "note": "UNIQUE(idempotency_key) и тест «не две активные команды с одним ключом» согласуются"
+ },
+ "Open Knowledge#1": {
+  "label": "weak",
+  "note": "три состояния ресурса (t039) и политика публикации Claim из четырёх шагов (t042) — разные объекты, второе не отрицает первое"
+ },
+ "Open Knowledge#2": {
+  "label": "borderline",
+  "note": "два цикла в одной реплике: «Development workflow» (Discover…Fork) и «Полный цикл» (READ…UPDATE)"
+ },
+ "Open Knowledge#3": {
+  "label": "weak",
+  "note": "t042 перечисляет «some documents» — не полный список уровней"
+ },
+ "Team Builder#1": {
+  "label": "real",
+  "note": "две дорожные карты: Team Builder — фаза 4 (t028) и фаза 6 (t050)"
+ },
+ "Team Builder#2": {
+  "label": "real",
+  "note": "t013: «Это радикально меняет Team Builder. Он больше не ищет четыре человека, он ищет минимальный набор ресурсо-часов»"
+ },
+ "Team Builder#3": {
+  "label": "weak",
+  "note": "Gap Detector как шаг схемы и «Team Builder … автоматически создаёт RESOURCE GAP» — одно и то же действие"
+ },
+ "Team Builder#4": {
+  "label": "weak",
+  "note": "версии matcher и версии плана разработки — разные шкалы; цитата «Team Builder» нашлась в первой же строке карточки, а не там, где утверждение (t016 L1449)",
+  "anchor_ok": false
+ },
+ "Promotion#1": {
+  "label": "weak",
+  "note": "стадии зрелости стандартов (t068) и Sandbox Promotion (t079): разные виды продвижения (в ответе на вопрос набора их несколько)"
+ },
+ "Promotion#2": {
+  "label": "real",
+  "note": "t061: «Promotion pipeline» (Episode→Pattern→Validated Pattern→Package) и через 3000 строк «Knowledge Promotion levels» (Observation→Pattern→Hypothesis→…): две лестницы для одного"
+ },
+ "Promotion#3": {
+  "label": "weak",
+  "note": "вывод «Project Memory хранит только подтверждённое» противоречит «LLM inference → project hypothesis» не следует: гипотеза может лежать отдельно"
+ },
+ "Promotion#4": {
+  "label": "borderline",
+  "note": "Discussion-to-Claim: Comment→Candidate→Evidence→Validation (t049) и Message→…→Review→Canonical Claim (t059)"
+ },
+ "Procedural Graph#1": {
+  "label": "weak",
+  "note": "n8n — бэкенд компиляции и в t014, и в t041; разницы по существу нет"
+ },
+ "Procedural Graph#2": {
+  "label": "weak",
+  "note": "«напоминает Procedural Graphs» (t013) — аналогия, позже (t027) явно разведены три слоя"
+ },
+ "Acceptance Test#1": {
+  "label": "borderline",
+  "note": "пять тестов (t029) и десять шагов MVP (t050) оба названы «доказательством ядра»"
+ },
+ "Acceptance Test#2": {
+  "label": "weak",
+  "note": "десять тестов MVP и шесть тестов релиза v0.1 — разные вехи"
+ },
+ "Acceptance Test#3": {
+  "label": "borderline",
+  "note": "Opportunity Engine «только после пяти тестов» (t029) и тест Opportunity Hypothesis в релизе v0.1 (t050)"
+ },
+ "Research Observatory#1": {
+  "label": "weak",
+  "note": "статусы Claim (t033) и статусы после отзыва (t065): дополнение"
+ },
+ "Causal Engine#1": {
+  "label": "weak",
+  "note": "две лестницы рядом в t061 («learning maturity» и «Knowledge Promotion levels») описывают разное"
+ },
+ "Team Hypothesis#1": {
+  "label": "real",
+  "note": "схема TeamHypothesis: member_ids/missing_capabilities (t030) против resource_ids/uncovered_capabilities/status (t053)"
+ },
+ "Team Hypothesis#2": {
+  "label": "borderline",
+  "note": "status: investigate (t016) и status = HYPOTHESIS (t053)"
+ },
+ "Team Hypothesis#3": {
+  "label": "real",
+  "note": "перетаскивание кандидата создаёт «Team Proposal» (t049) и «Team Hypothesis» (t053)"
+ },
+ "Query Planner#1": {
+  "label": "real",
+  "note": "стадии после Query Planner: t019 (Hard Constraint Filtering, Compatibility Evaluation, Cost/Time/Risk) и t032 (Constraint Evaluation)"
+ },
+ "Query Planner#2": {
+  "label": "weak",
+  "note": "query_plan и GitHubSearchPlan — структуры разных уровней; цитата ранней/поздней стороны ведёт не туда (CapabilityPackage)",
+  "anchor_ok": false
+ },
+ "Query Planner#3": {
+  "label": "weak",
+  "note": "роли Query Planner (запрос → semantic+graph, контрфакт → Scenario Patch, подзапросы резолверам) совместимы"
+ },
+ "Handoff#1": {
+  "label": "real",
+  "note": "поля протокола handoff (t027: current state, blocker, required capability…) и Handoff Contract (t047: open questions, …); цитата ранней стороны указывает на другой «required capability» (t027 L244)",
+  "anchor_ok": false
+ },
+ "Strategy Engine#1": {
+  "label": "weak",
+  "note": "«Governance chooses lens» и «Strategy Engine decides» — про разные решения"
+ },
+ "Commitment#1": {
+  "label": "weak",
+  "note": "Commitment сужает варианты, а уровни WATCH/EXPLORE — слабые обязательства: согласуется"
+ },
+ "Commitment#2": {
+  "label": "real",
+  "note": "две пятиступенчатые шкалы: Commitment Levels (WATCH…SCALE, t062) и Commitment Ladder (Explore…Scale, t071)"
+ },
+ "Commitment#3": {
+  "label": "real",
+  "note": "Progressive Commitment: бюджетные Stage 0–3 (t022) и Hypothesis→Desk Research→…→Program (t070)"
+ },
+ "Commitment#4": {
+  "label": "wrong",
+  "note": "«commitment: pending» из заявки на финансирование (t056) приписан consortium.lock; это разные объекты"
+ },
+ "Technopedia#1": {
+  "label": "weak",
+  "note": "«can host Organization Workspace» (t059) и «can live primarily in open layer» (t076): «primarily» не исключает"
+ },
+ "Capability Package#1": {
+  "label": "real",
+  "note": "рыночный пакет людей (Package #174, t011) и переносимый устанавливаемый пакет (t040)"
+ },
+ "Capability Package#2": {
+  "label": "borderline",
+  "note": "манифест CPM (t040) и модель CapabilityPackage (t054): артефакт и экземпляр, разные поля"
+ },
+ "Capability Package#3": {
+  "label": "weak",
+  "note": "«Team Capability Package» — отдельный вид с отдельным названием"
+ },
+ "Funding Resolver#1": {
+  "label": "borderline",
+  "note": "Consortium Analysis внутри Funding Resolver (t034) и отдельные Consortium Gaps (t056)"
+ },
+ "Funding Resolver#2": {
+  "label": "real",
+  "note": "t019: «не отдельный сервис, а способ закрыть gap»; t056: Funding — отдельный слой/обсерватория (это revision, не conflict)",
+  "kind_ok": false
+ }
+}

@@ -1,0 +1,1460 @@
+{
+ "arm": "main",
+ "results": {
+  "Idempotency": {
+   "mode": "chat",
+   "term": "Idempotency",
+   "pattern": "Idempotency",
+   "info": {
+    "cards": 14,
+    "hit_lines": 32,
+    "truncated": 0,
+    "mode": "sections≤120 / window ±30",
+    "passages": 17,
+    "chars": 12304
+   },
+   "findings": [
+    {
+     "kind": "divergent",
+     "summary": "В t051 ограничение уникальности ключа идемпотентности ставится на все команды (UNIQUE(idempotency_key), если semantics требуют), а в t052 тест требует лишь не создавать две активные команды с одним ключом. Из текста неясно, какое правило действует.",
+     "a": {
+      "card": "t051",
+      "l1": 2036,
+      "l2": 2036,
+      "quote": "UNIQUE(idempotency_key)",
+      "relabeled": false
+     },
+     "b": {
+      "card": "t052",
+      "l1": 3625,
+      "l2": 3625,
+      "quote": "не должен создать две active команды одного side effect.",
+      "relabeled": false
+     }
+    }
+   ],
+   "rejected": {},
+   "proposed": 1,
+   "asked": true,
+   "failed": false,
+   "prompt_chars": 15191,
+   "invalid": null
+  },
+  "Open Knowledge": {
+   "mode": "chat",
+   "term": "Open Knowledge",
+   "pattern": "Open\\s+Knowledge",
+   "info": {
+    "cards": 18,
+    "hit_lines": 38,
+    "truncated": 0,
+    "mode": "sections≤120 / window ±30",
+    "passages": 32,
+    "chars": 23067
+   },
+   "findings": [
+    {
+     "kind": "divergent",
+     "summary": "Open Knowledge сначала назван программой («Open Knowledge OS») или программой «Open Knowledge Infrastructure», а затем портфелем («Open Knowledge Portfolio»); уровень в иерархии Portfolio/Program описан по-разному.",
+     "a": {
+      "card": "t022",
+      "l1": 2078,
+      "l2": 2078,
+      "quote": "«Open Knowledge OS» или «Virtual Technopark Core»",
+      "relabeled": false
+     },
+     "b": {
+      "card": "t023",
+      "l1": 108,
+      "l2": 108,
+      "quote": "Open Knowledge Portfolio",
+      "relabeled": false
+     }
+    },
+    {
+     "kind": "divergent",
+     "summary": "Путь знания к публикации описан по-разному: сначала Private → (sanitize) Shared → (review) Public, затем sanitize → review → approve → publish. Набор этапов отличается: нет промежуточного SHARED, добавлены approve и publish.",
+     "a": {
+      "card": "t039",
+      "l1": 1689,
+      "l2": 1689,
+      "quote": "# 596. Private → Shared → Public pipeline",
+      "relabeled": false
+     },
+     "b": {
+      "card": "t042",
+      "l1": 2373,
+      "l2": 2373,
+      "quote": "Private Claim can become public only through:",
+      "relabeled": false
+     }
+    },
+    {
+     "kind": "divergent",
+     "summary": "Для одного и того же Open Knowledge Development заданы два разных цикла: Discover→Discuss→Formalize→Verify→Publish→Reuse→Fork/Improve и READ→QUESTION→DISCUSS→FORMALIZE→VERIFY→ACT→OBSERVE→UPDATE KNOWLEDGE. Набор стадий разный, и неясно, какой из них актуален.",
+     "a": {
+      "card": "t059",
+      "l1": 2329,
+      "l2": 2329,
+      "quote": "# 9817. Open Knowledge Development workflow",
+      "relabeled": false
+     },
+     "b": {
+      "card": "t059",
+      "l1": 6284,
+      "l2": 6284,
+      "quote": "# 10329. Полный цикл открытого знания",
+      "relabeled": false
+     }
+    }
+   ],
+   "rejected": {},
+   "proposed": 3,
+   "asked": true,
+   "failed": false,
+   "prompt_chars": 26599,
+   "invalid": null
+  },
+  "Promotion": {
+   "mode": "chat",
+   "term": "Promotion",
+   "pattern": "Promotion",
+   "info": {
+    "cards": 21,
+    "hit_lines": 55,
+    "truncated": 0,
+    "mode": "sections≤120 / window ±30",
+    "passages": 42,
+    "chars": 28733
+   },
+   "findings": [
+    {
+     "kind": "divergent",
+     "summary": "В t027 Knowledge Promotion идёт через уровни: гипотеза проекта, факт проекта, claim мира. В t043 Claim Promotion описан как другая шкала HYPOTHESIS→SUPPORTED→VERIFIED, и текст не говорит, какая из них действует.",
+     "a": {
+      "card": "t027",
+      "l1": 567,
+      "l2": 567,
+      "quote": "→ project hypothesis",
+      "relabeled": false
+     },
+     "b": {
+      "card": "t043",
+      "l1": 938,
+      "l2": 938,
+      "quote": "# 1674. Claim Promotion",
+      "relabeled": false
+     }
+    },
+    {
+     "kind": "divergent",
+     "summary": "В t027 Memory Promotion идёт от наблюдения агента через candidate claim и verification в Project memory, затем в World memory. В t044 это шкала Event→Episode→Project Lesson→Reusable Pattern→World Knowledge с другими ступенями и другим основанием.",
+     "a": {
+      "card": "t027",
+      "l1": 540,
+      "l2": 540,
+      "quote": "Agent observation",
+      "relabeled": false
+     },
+     "b": {
+      "card": "t044",
+      "l1": 292,
+      "l2": 292,
+      "quote": "Но каждая ступень требует основания.",
+      "relabeled": false
+     }
+    },
+    {
+     "kind": "divergent",
+     "summary": "Стадии зрелости и продвижения компонентов и стандартов описаны по-разному: в t068 это EXPERIMENTAL/CANDIDATE/STABLE/LEGACY, в t079 это Sandbox Promotion с состояниями EXPERIMENT/PILOT/SUPPORTED/CORE_CANDIDATE, и текст не говорит, какая схема текущая.",
+     "a": {
+      "card": "t068",
+      "l1": 8473,
+      "l2": 8473,
+      "quote": "# 18121. Therefore use maturity stages:",
+      "relabeled": false
+     },
+     "b": {
+      "card": "t079",
+      "l1": 6238,
+      "l2": 6238,
+      "quote": "# 28039. Sandbox Promotion",
+      "relabeled": false
+     }
+    },
+    {
+     "kind": "divergent",
+     "summary": "В t052 путь от Candidate Claim к Canonical Claim состоит из schema и semantic validation. В t065 между ними и Canonical Object добавлен шаг Policy, и текст не говорит, что это замена.",
+     "a": {
+      "card": "t052",
+      "l1": 3304,
+      "l2": 3304,
+      "quote": "# 5835. Затем validation/promotion",
+      "relabeled": false
+     },
+     "b": {
+      "card": "t065",
+      "l1": 1297,
+      "l2": 1297,
+      "quote": "# 14198. Promotion Pipeline remains:",
+      "relabeled": false
+     }
+    }
+   ],
+   "rejected": {},
+   "proposed": 4,
+   "asked": true,
+   "failed": false,
+   "prompt_chars": 32685,
+   "invalid": null
+  },
+  "Procedural Graph": {
+   "mode": "chat",
+   "term": "Procedural Graph",
+   "pattern": "Procedural\\s+Graph",
+   "info": {
+    "cards": 24,
+    "hit_lines": 77,
+    "truncated": 0,
+    "mode": "sections≤120 / window ±30",
+    "passages": 44,
+    "chars": 34663
+   },
+   "findings": [
+    {
+     "kind": "divergent",
+     "summary": "В t014 Procedural Graph назван одним из backend-форматов исполнения Project IR, а в t041 он — источник истины, из которого компилируются backend'ы (n8n и др.).",
+     "a": {
+      "card": "t014",
+      "l1": 961,
+      "l2": 961,
+      "quote": "То есть PG — это один из возможных backend execution formats.",
+      "relabeled": false
+     },
+     "b": {
+      "card": "t041",
+      "l1": 2155,
+      "l2": 2155,
+      "quote": "# 1222. But n8n workflow is backend representation",
+      "relabeled": false
+     }
+    },
+    {
+     "kind": "divergent",
+     "summary": "В t013 исполняемый Task Graph (owner, tools, status) приравнен к Procedural Graph, а в t041 Task — это результат работы, а Procedural Graph — отдельный, более низкий слой процедуры.",
+     "a": {
+      "card": "t013",
+      "l1": 473,
+      "l2": 473,
+      "quote": "Это уже напоминает Procedural Graphs, которые мы обсуждали раньше: проект представлен не только текстом, а явной структурой действий и зависимостей.",
+      "relabeled": false
+     },
+     "b": {
+      "card": "t041",
+      "l1": 120,
+      "l2": 120,
+      "quote": "описывает результат работы, но ещё не обязательно низкоуровневую процедуру.",
+      "relabeled": false
+     }
+    }
+   ],
+   "rejected": {},
+   "proposed": 2,
+   "asked": true,
+   "failed": false,
+   "prompt_chars": 38704,
+   "invalid": null
+  },
+  "Team Builder": {
+   "mode": "chat",
+   "term": "Team Builder",
+   "pattern": "Team\\s+Builder",
+   "info": {
+    "cards": 22,
+    "hit_lines": 52,
+    "truncated": 0,
+    "mode": "sections≤120 / window ±30",
+    "passages": 43,
+    "chars": 33454
+   },
+   "findings": [
+    {
+     "kind": "divergent",
+     "summary": "В t028 Team Builder идёт раньше GitHub (Phase 4, потом Phase 5 GitHub Resolver), а в t050 GitHub enrichment/Evidence стоит раньше Team Builder (Phase 5 и Phase 6).",
+     "a": {
+      "card": "t028",
+      "l1": 1364,
+      "l2": 1364,
+      "quote": "# 68. Phase 4 — Team Builder",
+      "relabeled": false
+     },
+     "b": {
+      "card": "t050",
+      "l1": 1961,
+      "l2": 1961,
+      "quote": "# 4677. Phase 6 — Team Builder",
+      "relabeled": false
+     }
+    },
+    {
+     "kind": "divergent",
+     "summary": "Версия, с которой появляется Team Builder, описана по-разному: в t007 это последний шаг matcher_v0.6, а в t016 greedy team builder входит уже в стек первого MVP, хотя Team Builder числится в этапе v0.3.",
+     "a": {
+      "card": "t007",
+      "l1": 957,
+      "l2": 957,
+      "quote": "+ team builder",
+      "relabeled": false
+     },
+     "b": {
+      "card": "t016",
+      "l1": 1421,
+      "l2": 1421,
+      "quote": "greedy team builder",
+      "relabeled": false
+     }
+    },
+    {
+     "kind": "revision",
+     "summary": "Раньше Team Builder искал комбинацию людей. В t013 сказано, что он больше не ищет людей, а подбирает минимальный набор ресурсо-часов, включая part-time, фрилансеров и AI-агентов.",
+     "a": {
+      "card": "t005",
+      "l1": 927,
+      "l2": 927,
+      "quote": "Team Builder ищет комбинацию людей.",
+      "relabeled": false
+     },
+     "b": {
+      "card": "t013",
+      "l1": 205,
+      "l2": 205,
+      "quote": "### 65. Это радикально меняет Team Builder",
+      "relabeled": false
+     }
+    },
+    {
+     "kind": "divergent",
+     "summary": "В MVP-алгоритме избыточные участники убираются, а позже говорится, что redundancy не всегда плоха и критические capabilities лучше дублировать.",
+     "a": {
+      "card": "t015",
+      "l1": 1255,
+      "l2": 1255,
+      "quote": "4. Затем попробовать убрать избыточных участников.",
+      "relabeled": false
+     },
+     "b": {
+      "card": "t017",
+      "l1": 1280,
+      "l2": 1280,
+      "quote": "Поэтому redundancy сама по себе не всегда плоха.",
+      "relabeled": false
+     }
+    },
+    {
+     "kind": "revision",
+     "summary": "Team Builder сначала описан как подбор людей, а в t035 его состав расширен: теперь он может включать роботов, машины и AI-агентов.",
+     "a": {
+      "card": "t004",
+      "l1": 555,
+      "l2": 555,
+      "quote": "best combination of people",
+      "relabeled": false
+     },
+     "b": {
+      "card": "t035",
+      "l1": 2249,
+      "l2": 2249,
+      "quote": "Team Builder теперь может включать:",
+      "relabeled": false
+     }
+    }
+   ],
+   "rejected": {},
+   "proposed": 5,
+   "asked": true,
+   "failed": false,
+   "prompt_chars": 37427,
+   "invalid": null
+  },
+  "Acceptance Test": {
+   "mode": "chat",
+   "term": "Acceptance Test",
+   "pattern": "Acceptance\\s+Test",
+   "info": {
+    "cards": 27,
+    "hit_lines": 103,
+    "truncated": 0,
+    "mode": "sections≤120 / window ±30",
+    "passages": 28,
+    "chars": 27425
+   },
+   "findings": [
+    {
+     "kind": "divergent",
+     "summary": "Ядро/архитектура считается доказанной пятью acceptance tests (HN→Match, +GitHub repo, +второй person, approval→project.lock, выполнение Action), но позже минимальный MVP описан десятью другими acceptance tests, и не сказано, какой набор действующий.",
+     "a": {
+      "card": "t029",
+      "l1": 2442,
+      "l2": 2442,
+      "quote": "После этих пяти tests ядро доказано",
+      "relabeled": false
+     },
+     "b": {
+      "card": "t050",
+      "l1": 2138,
+      "l2": 2138,
+      "quote": "Если эти десять шагов работают — архитектура уже доказана в миниатюре",
+      "relabeled": false
+     }
+    },
+    {
+     "kind": "divergent",
+     "summary": "В одной карточке MVP доказывается десятью acceptance tests, а release gate v0.1 определён шестью другими тестами (HN→Project, Match, Runtime, External action, Opportunity, UI), и не указано, какой набор считать действующим.",
+     "a": {
+      "card": "t050",
+      "l1": 2138,
+      "l2": 2138,
+      "quote": "Если эти десять шагов работают — архитектура уже доказана в миниатюре",
+      "relabeled": false
+     },
+     "b": {
+      "card": "t050",
+      "l1": 5203,
+      "l2": 5203,
+      "quote": "If all six work",
+      "relabeled": false
+     }
+    }
+   ],
+   "rejected": {},
+   "proposed": 2,
+   "asked": true,
+   "failed": false,
+   "prompt_chars": 30797,
+   "invalid": null
+  },
+  "Kill Criteria": {
+   "mode": "chat",
+   "term": "Kill Criteria",
+   "pattern": "Kill\\s+Criteria",
+   "info": {
+    "cards": 8,
+    "hit_lines": 19,
+    "truncated": 0,
+    "mode": "sections≤120 / window ±30",
+    "passages": 14,
+    "chars": 11051
+   },
+   "findings": [
+    {
+     "kind": "conflict",
+     "summary": "В t021 срабатывание kill criteria сразу переводит opportunity в REJECTED, то есть автоматически. В t046 проекты, пересёкшие kill criteria, ждут проверки в Kill Queue, и остановка зависит от решения организации.",
+     "a": {
+      "card": "t021",
+      "l1": 953,
+      "l2": 953,
+      "quote": "Opportunity → REJECTED",
+      "relabeled": false
+     },
+     "b": {
+      "card": "t046",
+      "l1": 2685,
+      "l2": 2685,
+      "quote": "but not yet reviewed",
+      "relabeled": false
+     }
+    }
+   ],
+   "rejected": {},
+   "proposed": 1,
+   "asked": true,
+   "failed": false,
+   "prompt_chars": 13807,
+   "invalid": "примеров условий остановки много на разных уровнях (генератор, программа, финансирование, гипотеза); перечень не определён"
+  },
+  "Research Observatory": {
+   "mode": "chat",
+   "term": "Research Observatory",
+   "pattern": "Research\\s+Observatory",
+   "info": {
+    "cards": 16,
+    "hit_lines": 43,
+    "truncated": 0,
+    "mode": "sections≤120 / window ±30",
+    "passages": 38,
+    "chars": 27605
+   },
+   "findings": [
+    {
+     "kind": "divergent",
+     "summary": "В t033 жизненный цикл Claim задан набором PROPOSED/SUPPORTED/CONTESTED/REPLICATED/REJECTED как application-level статус, а в t065 Claim после ретракции получает другой набор: REFUTED / QUALIFIED / SOURCE_RETRACTED. Текст не говорит, какой набор статусов актуален.",
+     "a": {
+      "card": "t033",
+      "l1": 1287,
+      "l2": 1287,
+      "quote": "Но это application-level status, не менять Core ClaimType.",
+      "relabeled": false
+     },
+     "b": {
+      "card": "t065",
+      "l1": 5002,
+      "l2": 5002,
+      "quote": "REFUTED / QUALIFIED / SOURCE_RETRACTED",
+      "relabeled": false
+     }
+    },
+    {
+     "kind": "divergent",
+     "summary": "В t033 Paper напрямую SUPPORTS/REFUTES Claim, а в t055 Claim поддерживается или опровергается Evidence, и Paper лишь Artifact с Evidence. Модель связи Paper–Claim–Evidence описана по-разному.",
+     "a": {
+      "card": "t033",
+      "l1": 686,
+      "l2": 686,
+      "quote": "Paper A SUPPORTS Claim X",
+      "relabeled": false
+     },
+     "b": {
+      "card": "t055",
+      "l1": 201,
+      "l2": 201,
+      "quote": "Claims are supported/refuted/qualified by Evidence",
+      "relabeled": false
+     }
+    }
+   ],
+   "rejected": {},
+   "proposed": 2,
+   "asked": true,
+   "failed": false,
+   "prompt_chars": 31407,
+   "invalid": null
+  },
+  "Signpost": {
+   "mode": "chat",
+   "term": "Signpost",
+   "pattern": "Signpost",
+   "info": {
+    "cards": 14,
+    "hit_lines": 106,
+    "truncated": 0,
+    "mode": "sections≤120 / window ±30",
+    "passages": 50,
+    "chars": 44110
+   },
+   "findings": [
+    {
+     "kind": "revision",
+     "summary": "Early сигнпосты автоматически запускают действие (ускорить программу X). Позже сказано, что пересечение порога ведёт только к пересмотру стратегии и не меняет её автоматически.",
+     "a": {
+      "card": "t025",
+      "l1": 2106,
+      "l2": 2106,
+      "quote": "→ accelerate Program X",
+      "relabeled": false
+     },
+     "b": {
+      "card": "t043",
+      "l1": 4710,
+      "l2": 4710,
+      "quote": "not automatically change it.",
+      "relabeled": false
+     }
+    },
+    {
+     "kind": "revision",
+     "summary": "Внутри t046 сначала правило «IF ... THEN start pilot» напрямую запускает пилот. Затем уточняется, что триггер должен запускать Strategy Review, а не исполнение.",
+     "a": {
+      "card": "t046",
+      "l1": 1201,
+      "l2": 1201,
+      "quote": "THEN start pilot",
+      "relabeled": false
+     },
+     "b": {
+      "card": "t046",
+      "l1": 1240,
+      "l2": 1240,
+      "quote": "instead of execution.",
+      "relabeled": false
+     }
+    },
+    {
+     "kind": "divergent",
+     "summary": "Поля объекта Signpost описаны по-разному. В t025 это scenario/metric/trigger, в t046 observable/condition/related option/review action, в t063 mission_id/observation_rule/related_assumption_ids. Привязка идёт то к сценарию, то к опции, то к допущениям, и не сказано, какое описание текущее.",
+     "a": {
+      "card": "t046",
+      "l1": 1213,
+      "l2": 1213,
+      "quote": "related option",
+      "relabeled": false
+     },
+     "b": {
+      "card": "t063",
+      "l1": 1264,
+      "l2": 1264,
+      "quote": "related_assumption_ids: list[UUID]",
+      "relabeled": false
+     }
+    },
+    {
+     "kind": "conflict",
+     "summary": "Risk trigger (сигнпост) в t071 лишь запускает пересмотр (contingency review). В t080 тот же сигнпост напрямую активирует contingency branch.",
+     "a": {
+      "card": "t071",
+      "l1": 3076,
+      "l2": 3076,
+      "quote": "Triggers contingency review.",
+      "relabeled": false
+     },
+     "b": {
+      "card": "t080",
+      "l1": 4928,
+      "l2": 4928,
+      "quote": "contingency branch.",
+      "relabeled": false
+     }
+    }
+   ],
+   "rejected": {},
+   "proposed": 4,
+   "asked": true,
+   "failed": false,
+   "prompt_chars": 48398,
+   "invalid": "«ранняя версия» не определена: источники сигналов описаны и в t025, и в t043"
+  },
+  "Causal Engine": {
+   "mode": "chat",
+   "term": "Causal Engine",
+   "pattern": "Causal\\s+Engine",
+   "info": {
+    "cards": 17,
+    "hit_lines": 33,
+    "truncated": 0,
+    "mode": "sections≤120 / window ±30",
+    "passages": 27,
+    "chars": 19362
+   },
+   "findings": [
+    {
+     "kind": "divergent",
+     "summary": "В одной карточке даны две разные лестницы зрелости знания: «Observed Pattern → Hypothesis → Causal Evidence → Validated Intervention Pattern» и «Observation → Pattern → Hypothesis → Validated Pattern → Policy/Package». Наборы стадий различаются, и текст не говорит, какая из них актуальна.",
+     "a": {
+      "card": "t061",
+      "l1": 4628,
+      "l2": 4628,
+      "quote": "Therefore learning maturity:",
+      "relabeled": false
+     },
+     "b": {
+      "card": "t061",
+      "l1": 4643,
+      "l2": 4643,
+      "quote": "Knowledge Promotion levels",
+      "relabeled": false
+     }
+    }
+   ],
+   "rejected": {},
+   "proposed": 1,
+   "asked": true,
+   "failed": false,
+   "prompt_chars": 22680,
+   "invalid": null
+  },
+  "Architecture Freeze": {
+   "mode": "chat",
+   "term": "Architecture Freeze",
+   "pattern": "Architecture\\s+Freeze",
+   "info": {
+    "cards": 25,
+    "hit_lines": 39,
+    "truncated": 0,
+    "mode": "sections≤120 / window ±30",
+    "passages": 33,
+    "chars": 28348
+   },
+   "findings": [
+    {
+     "kind": "revision",
+     "summary": "Сначала Architecture Freeze задумывался как текстовый документ ARCHITECTURE_FREEZE_v0.1.md, позже его предлагается превратить в машинно проверяемый kernel_manifest.yaml, который проверяет CI.",
+     "a": {
+      "card": "t051",
+      "l1": 5669,
+      "l2": 5669,
+      "quote": "ARCHITECTURE_FREEZE_v0.1.md",
+      "relabeled": false
+     },
+     "b": {
+      "card": "t068",
+      "l1": 9504,
+      "l2": 9504,
+      "quote": "Earlier architecture freeze can become:",
+      "relabeled": false
+     }
+    },
+    {
+     "kind": "revision",
+     "summary": "Объём заморозки сузился: сначала 15–20 canonical predicates, позже зафиксировано ровно 20 predicates.",
+     "a": {
+      "card": "t028",
+      "l1": 2386,
+      "l2": 2386,
+      "quote": "окончательные 10–12 типов сущностей, 15–20 canonical predicates и точную минимальную схему",
+      "relabeled": false
+     },
+     "b": {
+      "card": "t051",
+      "l1": 5678,
+      "l2": 5678,
+      "quote": "20 predicates",
+      "relabeled": false
+     }
+    }
+   ],
+   "rejected": {},
+   "proposed": 2,
+   "asked": true,
+   "failed": false,
+   "prompt_chars": 31932,
+   "invalid": "первоначальный план v0.1 описан дважды (t028 — перечень схем, t029 — 12 канонических типов); якорь взят из одного описания"
+  },
+  "Package Manager": {
+   "mode": "chat",
+   "term": "Package Manager",
+   "pattern": "Package\\s+Manager",
+   "info": {
+    "cards": 17,
+    "hit_lines": 39,
+    "truncated": 0,
+    "mode": "sections≤120 / window ±30",
+    "passages": 31,
+    "chars": 23204
+   },
+   "findings": [],
+   "rejected": {
+    "quote not found": 1
+   },
+   "proposed": 1,
+   "asked": true,
+   "failed": false,
+   "prompt_chars": 26692,
+   "invalid": null
+  },
+  "Team Hypothesis": {
+   "mode": "chat",
+   "term": "Team Hypothesis",
+   "pattern": "Team\\s+Hypothesis",
+   "info": {
+    "cards": 20,
+    "hit_lines": 36,
+    "truncated": 0,
+    "mode": "sections≤120 / window ±30",
+    "passages": 30,
+    "chars": 24388
+   },
+   "findings": [
+    {
+     "kind": "divergent",
+     "summary": "В application-схеме TeamHypothesis состав — member_ids (люди); позже состав — resource_ids, смешанные ресурсы (люди + репозитории) с полем status=HYPOTHESIS. Названия полей и состав участников различаются, текст не говорит, какая схема актуальна.",
+     "a": {
+      "card": "t030",
+      "l1": 1012,
+      "l2": 1012,
+      "quote": "member_ids: list[UUID]",
+      "relabeled": false
+     },
+     "b": {
+      "card": "t053",
+      "l1": 2033,
+      "l2": 2033,
+      "quote": "resource_ids: list[UUID]",
+      "relabeled": false
+     }
+    },
+    {
+     "kind": "divergent",
+     "summary": "В визуальном UI перетаскивание кандидата в слот создаёт «Team Proposal», а в Team Builder UI выбор ресурсов создаёт только «Team Hypothesis». Это разные сущности для одного и того же действия, и не сказано, какая из них актуальна.",
+     "a": {
+      "card": "t049",
+      "l1": 5588,
+      "l2": 5588,
+      "quote": "Team Proposal",
+      "relabeled": false
+     },
+     "b": {
+      "card": "t053",
+      "l1": 3295,
+      "l2": 3295,
+      "quote": "But selection creates only:",
+      "relabeled": false
+     }
+    },
+    {
+     "kind": "divergent",
+     "summary": "Latent Team Detector в одном месте требует availability и совместимых constraints как входы обнаружения, в другом допускает, что availability/interest неизвестны, но гипотеза всё равно создаётся.",
+     "a": {
+      "card": "t021",
+      "l1": 1781,
+      "l2": 1781,
+      "quote": "complementary capability coverage",
+      "relabeled": false
+     },
+     "b": {
+      "card": "t053",
+      "l1": 2472,
+      "l2": 2472,
+      "quote": "Но availability/interest может быть UNKNOWN",
+      "relabeled": false
+     }
+    }
+   ],
+   "rejected": {},
+   "proposed": 3,
+   "asked": true,
+   "failed": false,
+   "prompt_chars": 27832,
+   "invalid": null
+  },
+  "Entity Resolution": {
+   "mode": "chat",
+   "term": "Entity Resolution",
+   "pattern": "Entity\\s+Resolution",
+   "info": {
+    "cards": 19,
+    "hit_lines": 35,
+    "truncated": 0,
+    "mode": "sections≤120 / window ±30",
+    "passages": 31,
+    "chars": 20066
+   },
+   "findings": [
+    {
+     "kind": "conflict",
+     "summary": "Порядок стадий различается: в HN-pipeline Entity Resolution идёт после LLM Semantic Extraction, а в Evidence Fabric она стоит до Semantic Extraction.",
+     "a": {
+      "card": "t053",
+      "l1": 76,
+      "l2": 76,
+      "quote": "LLM Semantic Extraction",
+      "relabeled": false
+     },
+     "b": {
+      "card": "t064",
+      "l1": 6719,
+      "l2": 6719,
+      "quote": "Entity Resolution",
+      "relabeled": false
+     }
+    },
+    {
+     "kind": "divergent",
+     "summary": "Набор состояний результата identity linking различается: в одном месте REJECTED, в другом UNRESOLVED. Какой набор актуален, не сказано.",
+     "a": {
+      "card": "t051",
+      "l1": 1489,
+      "l2": 1489,
+      "quote": "# 5168. Link states",
+      "relabeled": false
+     },
+     "b": {
+      "card": "t053",
+      "l1": 684,
+      "l2": 684,
+      "quote": "# 6066. Возможные состояния",
+      "relabeled": false
+     }
+    },
+    {
+     "kind": "divergent",
+     "summary": "Третий набор состояний Entity Resolution (EXACT/CONFIRMED/CANDIDATE/AMBIGUOUS/UNRESOLVED) не совпадает с набором CONFIRMED/POSSIBLE/REJECTED.",
+     "a": {
+      "card": "t054",
+      "l1": 2033,
+      "l2": 2033,
+      "quote": "# 6708. Entity Resolution Result",
+      "relabeled": false
+     },
+     "b": {
+      "card": "t065",
+      "l1": 1120,
+      "l2": 1120,
+      "quote": "# 14178. Entity Resolution states",
+      "relabeled": false
+     }
+    },
+    {
+     "kind": "divergent",
+     "summary": "Пятое, пятизвенное состояние Identity Match (SAME_CONFIRMED/SAME_PROBABLE/POSSIBLE/DIFFERENT/UNKNOWN) снова отличается от прежних трёхзначных и пятизначных наборов.",
+     "a": {
+      "card": "t065",
+      "l1": 1120,
+      "l2": 1120,
+      "quote": "# 14178. Entity Resolution states",
+      "relabeled": false
+     },
+     "b": {
+      "card": "t076",
+      "l1": 2896,
+      "l2": 2896,
+      "quote": "# 24773. Identity Match states:",
+      "relabeled": false
+     }
+    },
+    {
+     "kind": "divergent",
+     "summary": "В t030 к автоматическому слиянию допускаются только сильные сигналы (явный URL, verified link, явный сайт), а в t051 начальная функциональность включает совпадение email/domain, не названное сильным сигналом.",
+     "a": {
+      "card": "t030",
+      "l1": 1256,
+      "l2": 1256,
+      "quote": "Сначала объединять только strong signals:",
+      "relabeled": false
+     },
+     "b": {
+      "card": "t051",
+      "l1": 2760,
+      "l2": 2760,
+      "quote": "email/domain exact match",
+      "relabeled": false
+     }
+    }
+   ],
+   "rejected": {},
+   "proposed": 5,
+   "asked": true,
+   "failed": false,
+   "prompt_chars": 23559,
+   "invalid": "несколько верных списков сигналов и внешних идентификаторов в t019, t030, t051, t068, t076"
+  },
+  "Capability Contract": {
+   "mode": "chat",
+   "term": "Capability Contract",
+   "pattern": "Capability\\s+Contract",
+   "info": {
+    "cards": 24,
+    "hit_lines": 46,
+    "truncated": 0,
+    "mode": "sections≤120 / window ±30",
+    "passages": 40,
+    "chars": 27011
+   },
+   "findings": [
+    {
+     "kind": "divergent",
+     "summary": "Раньше состав Capability Contract описывался как inputs/outputs/preconditions/side effects/quality constraints, а позже сказано, что Data Rights входят в Capability Contract. Это отдельное поле, которого в прежнем перечне нет.",
+     "a": {
+      "card": "t067",
+      "l1": 476,
+      "l2": 476,
+      "quote": "quality constraints",
+      "relabeled": false
+     },
+     "b": {
+      "card": "t081",
+      "l1": 5255,
+      "l2": 5255,
+      "quote": "Data Rights are part of:",
+      "relabeled": false
+     }
+    },
+    {
+     "kind": "conflict",
+     "summary": "Раньше сказано, что при дрейфе capability контракт остаётся прежним. Позже в degraded-режиме «Capability Contract changes», то есть контракт меняется.",
+     "a": {
+      "card": "t072",
+      "l1": 2279,
+      "l2": 2279,
+      "quote": "Capability contract stays same,",
+      "relabeled": false
+     },
+     "b": {
+      "card": "t075",
+      "l1": 7230,
+      "l2": 7230,
+      "quote": "Capability Contract changes.",
+      "relabeled": false
+     }
+    }
+   ],
+   "rejected": {},
+   "proposed": 2,
+   "asked": true,
+   "failed": false,
+   "prompt_chars": 30890,
+   "invalid": "в чате несколько разных наборов полей контракта (input/output schema, quality profile, side effects; inputs, outputs, constraints, verification…)"
+  },
+  "Query Planner": {
+   "mode": "chat",
+   "term": "Query Planner",
+   "pattern": "Query\\s+Planner",
+   "info": {
+    "cards": 10,
+    "hit_lines": 19,
+    "truncated": 0,
+    "mode": "sections≤120 / window ±30",
+    "passages": 15,
+    "chars": 11497
+   },
+   "findings": [],
+   "rejected": {},
+   "proposed": 0,
+   "asked": true,
+   "failed": false,
+   "prompt_chars": 14293,
+   "invalid": null
+  },
+  "Foresight": {
+   "mode": "chat",
+   "term": "Foresight",
+   "pattern": "Foresight",
+   "info": {
+    "cards": 10,
+    "hit_lines": 111,
+    "truncated": 0,
+    "mode": "sections≤120 / window ±30",
+    "passages": 42,
+    "chars": 47382
+   },
+   "findings": [
+    {
+     "kind": "revision",
+     "summary": "В t062 временная картина состоит из трёх слоёв, где будущее целиком отдано Strategic Foresight. В t063 будущее разделено: PLANNED FUTURE относится к Strategy/Portfolio, а POSSIBLE FUTURES добавлен как новый слой Foresight.",
+     "a": {
+      "card": "t062",
+      "l1": 5844,
+      "l2": 5844,
+      "quote": "→ Strategic Foresight",
+      "relabeled": false
+     },
+     "b": {
+      "card": "t063",
+      "l1": 32,
+      "l2": 32,
+      "quote": "Теперь добавляется ещё один слой:",
+      "relabeled": false
+     }
+    },
+    {
+     "kind": "divergent",
+     "summary": "Порядок стадий конвейера Foresight различается. В t062 Mission Relevance идёт после Trend Hypotheses, а в t063 Relevance Mapping стоит до Trend/Change Hypotheses и после отдельных стадий Observation и Signal Validation. Текст не говорит, какая версия актуальна.",
+     "a": {
+      "card": "t062",
+      "l1": 504,
+      "l2": 504,
+      "quote": "Mission Relevance",
+      "relabeled": false
+     },
+     "b": {
+      "card": "t063",
+      "l1": 134,
+      "l2": 134,
+      "quote": "Relevance Mapping",
+      "relabeled": false
+     }
+    }
+   ],
+   "rejected": {},
+   "proposed": 2,
+   "asked": true,
+   "failed": false,
+   "prompt_chars": 51325,
+   "invalid": "в чате два разных конвейера Foresight; «какой сигнал добавляется позже» не определён"
+  },
+  "Handoff": {
+   "mode": "chat",
+   "term": "Handoff",
+   "pattern": "Handoff",
+   "info": {
+    "cards": 15,
+    "hit_lines": 57,
+    "truncated": 0,
+    "mode": "sections≤120 / window ±30",
+    "passages": 28,
+    "chars": 22359
+   },
+   "findings": [
+    {
+     "kind": "divergent",
+     "summary": "«Handoff Contract» описан по-разному: в t047 есть remaining work и blockers, а в t080 набор другой (what was done, open questions, artifacts, next action), без remaining и blockers; какой вариант актуален, не сказано.",
+     "a": {
+      "card": "t047",
+      "l1": 478,
+      "l2": 478,
+      "quote": "# 2991. Handoff Contract",
+      "relabeled": false
+     },
+     "b": {
+      "card": "t080",
+      "l1": 3967,
+      "l2": 3967,
+      "quote": "next action.",
+      "relabeled": false
+     }
+    },
+    {
+     "kind": "divergent",
+     "summary": "В M2M-описании (t067) Handoff содержит objective, current state и unknowns, но не blockers и не requested capability, которые есть в Handoff Package (t041).",
+     "a": {
+      "card": "t041",
+      "l1": 1609,
+      "l2": 1609,
+      "quote": "# 1179. Handoff Package",
+      "relabeled": false
+     },
+     "b": {
+      "card": "t067",
+      "l1": 3542,
+      "l2": 3542,
+      "quote": "# 16354. Handoff includes:",
+      "relabeled": false
+     }
+    },
+    {
+     "kind": "divergent",
+     "summary": "«Human Handoff» понимается по-разному: в t049 это ожидающая человеческая задача в inbox, а в t080 это заметка человека, покидающего задачу.",
+     "a": {
+      "card": "t049",
+      "l1": 5257,
+      "l2": 5257,
+      "quote": "Waiting human Task appears visually in:",
+      "relabeled": false
+     },
+     "b": {
+      "card": "t080",
+      "l1": 4004,
+      "l2": 4004,
+      "quote": "Person leaving task writes:",
+      "relabeled": false
+     }
+    }
+   ],
+   "rejected": {
+    "quote not found": 1
+   },
+   "proposed": 4,
+   "asked": true,
+   "failed": false,
+   "prompt_chars": 25700,
+   "invalid": null
+  },
+  "Commitment": {
+   "mode": "chat",
+   "term": "Commitment",
+   "pattern": "Commitment",
+   "info": {
+    "cards": 30,
+    "hit_lines": 158,
+    "truncated": 0,
+    "mode": "sections≤120 / window ±30",
+    "passages": 99,
+    "chars": 72791
+   },
+   "findings": [
+    {
+     "kind": "divergent",
+     "summary": "Лестница уровней commitment описана двумя разными наборами ступеней: WATCH/EXPLORE/PILOT/COMMIT/SCALE в портфеле и Explore/Prototype/Pilot/Deploy/Scale в Program, без указания, какая актуальна.",
+     "a": {
+      "card": "t062",
+      "l1": 906,
+      "l2": 906,
+      "quote": "# 12047. Commitment Levels",
+      "relabeled": false
+     },
+     "b": {
+      "card": "t071",
+      "l1": 832,
+      "l2": 832,
+      "quote": "# 20231. Commitment Ladder",
+      "relabeled": false
+     }
+    },
+    {
+     "kind": "divergent",
+     "summary": "Progressive Commitment сначала задан как 4 денежные стадии (€200 → €2k → €20k → полный проект), позже как 5 стадий по доказательствам (Hypothesis → Desk Research → Experiment → Pilot → Program).",
+     "a": {
+      "card": "t022",
+      "l1": 525,
+      "l2": 525,
+      "quote": "# 21. Progressive Commitment",
+      "relabeled": false
+     },
+     "b": {
+      "card": "t070",
+      "l1": 2656,
+      "l2": 2656,
+      "quote": "# 19744. Progressive Commitment",
+      "relabeled": false
+     }
+    },
+    {
+     "kind": "divergent",
+     "summary": "Связь Commitment и Binding описана по-разному: Binding создаётся на стадии Commitment, а позже Binding сам становится подписанным commitment.",
+     "a": {
+      "card": "t036",
+      "l1": 550,
+      "l2": 550,
+      "quote": "создаётся Binding.",
+      "relabeled": false
+     },
+     "b": {
+      "card": "t039",
+      "l1": 4288,
+      "l2": 4288,
+      "quote": "can become signed machine-readable commitment.",
+      "relabeled": false
+     }
+    },
+    {
+     "kind": "divergent",
+     "summary": "В consortium.lock хранится либо «commitment state», либо «commitment evidence», а в примере поле commitment содержит confirmed/pending.",
+     "a": {
+      "card": "t034",
+      "l1": 687,
+      "l2": 687,
+      "quote": "commitment state",
+      "relabeled": false
+     },
+     "b": {
+      "card": "t056",
+      "l1": 1957,
+      "l2": 1957,
+      "quote": "commitment evidence",
+      "relabeled": false
+     }
+    },
+    {
+     "kind": "divergent",
+     "summary": "Два разных набора состояний commitment: UNKNOWN/CONTACTED/INTERESTED/NEGOTIATING/COMMITTED/DECLINED и PROPOSED/ACCEPTED/ACTIVE/AT_RISK/COMPLETED/WITHDRAWN.",
+     "a": {
+      "card": "t056",
+      "l1": 972,
+      "l2": 972,
+      "quote": "# 7830. Interest/commitment states",
+      "relabeled": false
+     },
+     "b": {
+      "card": "t062",
+      "l1": 4906,
+      "l2": 4906,
+      "quote": "# 12534. Federated Commitment States",
+      "relabeled": false
+     }
+    }
+   ],
+   "rejected": {},
+   "proposed": 5,
+   "asked": true,
+   "failed": false,
+   "prompt_chars": 79169,
+   "invalid": null
+  },
+  "Strategy Engine": {
+   "mode": "chat",
+   "term": "Strategy Engine",
+   "pattern": "Strategy\\s+Engine",
+   "info": {
+    "cards": 14,
+    "hit_lines": 39,
+    "truncated": 0,
+    "mode": "sections≤120 / window ±30",
+    "passages": 29,
+    "chars": 22908
+   },
+   "findings": [],
+   "rejected": {},
+   "proposed": 0,
+   "asked": true,
+   "failed": false,
+   "prompt_chars": 26322,
+   "invalid": null
+  },
+  "Technopedia": {
+   "mode": "chat",
+   "term": "Technopedia",
+   "pattern": "Technopedia",
+   "info": {
+    "cards": 26,
+    "hit_lines": 96,
+    "truncated": 0,
+    "mode": "sections≤120 / window ±30",
+    "passages": 64,
+    "chars": 49062
+   },
+   "findings": [
+    {
+     "kind": "divergent",
+     "summary": "Technopedia описана как хостящая закрытые пространства (Organization Workspace), а позже сказано, что она живёт в основном в открытом слое, отдельно от restricted-слоя; не ясно, входят ли приватные пространства в Technopedia.",
+     "a": {
+      "card": "t059",
+      "l1": 2669,
+      "l2": 2669,
+      "quote": "Technopedia can host:",
+      "relabeled": false
+     },
+     "b": {
+      "card": "t076",
+      "l1": 6039,
+      "l2": 6039,
+      "quote": "Technopedia can live primarily in:",
+      "relabeled": false
+     }
+    }
+   ],
+   "rejected": {
+    "quote not found": 1
+   },
+   "proposed": 2,
+   "asked": true,
+   "failed": false,
+   "prompt_chars": 53959,
+   "invalid": null
+  },
+  "Funding Resolver": {
+   "mode": "chat",
+   "term": "Funding Resolver",
+   "pattern": "Funding\\s+Resolver",
+   "info": {
+    "cards": 16,
+    "hit_lines": 34,
+    "truncated": 0,
+    "mode": "sections≤120 / window ±30",
+    "passages": 29,
+    "chars": 20789
+   },
+   "findings": [
+    {
+     "kind": "divergent",
+     "summary": "В t034 анализ консорциума входит в пайплайн самого Funding Resolver, а в t056 консорциумы вынесены в отдельный Consortium Resolver с собственным Consortium Gap. Из текста не ясно, какая схема действует.",
+     "a": {
+      "card": "t034",
+      "l1": 346,
+      "l2": 346,
+      "quote": "Consortium Analysis",
+      "relabeled": false
+     },
+     "b": {
+      "card": "t056",
+      "l1": 4511,
+      "l2": 4511,
+      "quote": "# 8236. Consortium Resolver",
+      "relabeled": false
+     }
+    }
+   ],
+   "rejected": {},
+   "proposed": 1,
+   "asked": true,
+   "failed": false,
+   "prompt_chars": 24191,
+   "invalid": null
+  },
+  "Capability Capital": {
+   "mode": "chat",
+   "term": "Capability Capital",
+   "pattern": "Capability\\s+Capital",
+   "info": {
+    "cards": 16,
+    "hit_lines": 126,
+    "truncated": 0,
+    "mode": "sections≤120 / window ±30",
+    "passages": 87,
+    "chars": 69401
+   },
+   "findings": [
+    {
+     "kind": "revision",
+     "summary": "Набор событий Capability Capital Ledger в t061 (CREATED/EXPANDED/REPLICATED/DEGRADED/RETIRED) в t072 заменён «лучшей» последовательностью (DISCOVERED/ACQUIRED/VERIFIED/OPERATIONAL, плюс LOST/RESTORED/UNAVAILABLE).",
+     "a": {
+      "card": "t061",
+      "l1": 1228,
+      "l2": 1228,
+      "quote": "CAPABILITY_REPLICATED",
+      "relabeled": false
+     },
+     "b": {
+      "card": "t072",
+      "l1": 646,
+      "l2": 646,
+      "quote": "# 20857. Better event sequence:",
+      "relabeled": false
+     }
+    },
+    {
+     "kind": "divergent",
+     "summary": "API для Capability Capital описан по-разному: в t061 один endpoint /capability-capital, в t072 набор /capabilities/{id}/capital, /capital/debt и др.; соотношение не объяснено.",
+     "a": {
+      "card": "t061",
+      "l1": 3992,
+      "l2": 3992,
+      "quote": "GET /api/v1/capability-capital",
+      "relabeled": false
+     },
+     "b": {
+      "card": "t072",
+      "l1": 5954,
+      "l2": 5954,
+      "quote": "GET /api/v1/capabilities/{id}/capital",
+      "relabeled": false
+     }
+    },
+    {
+     "kind": "conflict",
+     "summary": "Слой Capability Capital уже введён в t061 (с Ledger, Matrix, API), но в t071–t072 он представлен как новый модуль, а «до сих пор» система якобы измеряла только Projects/Actions/Artifacts/Costs/Events.",
+     "a": {
+      "card": "t060",
+      "l1": 7639,
+      "l2": 7639,
+      "quote": "Следующий модуль логично оформить как:",
+      "relabeled": true
+     },
+     "b": {
+      "card": "t072",
+      "l1": 19,
+      "l2": 19,
+      "quote": "До сих пор Innovation OS измерял в основном:",
+      "relabeled": false
+     }
+    }
+   ],
+   "rejected": {
+    "quote not found": 1
+   },
+   "proposed": 4,
+   "asked": true,
+   "failed": false,
+   "prompt_chars": 75279,
+   "invalid": "«сначала предлагали описывать» не определено: в t038 есть и структурированная карта, и вектор роста (Capability Growth Vector)"
+  },
+  "Capability Package": {
+   "mode": "chat",
+   "term": "Capability Package",
+   "pattern": "Capability\\s+Package",
+   "info": {
+    "cards": 20,
+    "hit_lines": 56,
+    "truncated": 0,
+    "mode": "sections≤120 / window ±30",
+    "passages": 42,
+    "chars": 29871
+   },
+   "findings": [],
+   "rejected": {
+    "quote not found": 1
+   },
+   "proposed": 1,
+   "asked": true,
+   "failed": false,
+   "prompt_chars": 33829,
+   "invalid": null
+  }
+ },
+ "kind": "natural",
+ "usage": {
+  "calls": 24,
+  "usd_reported": 0.7975601999999999,
+  "input_tokens": 48,
+  "cache_creation_input_tokens": 0,
+  "cache_read_input_tokens": 355171,
+  "output_tokens": 72643
+ }
+}

@@ -1,0 +1,98 @@
+[
+ {
+  "id": "q1",
+  "text": "In which file and on which line is the Python function `parse_neq_title` defined?",
+  "check": [
+   "pm\\.py",
+   "(?<!\\d)337(?!\\d)"
+  ],
+  "forbid": null,
+  "type": "lookup"
+ },
+ {
+  "id": "q2",
+  "text": "In which file and on which line is `readKitFile` defined?",
+  "check": [
+   "kit-api\\.ts",
+   "(?<![\\d.])4(?!\\d)"
+  ],
+  "forbid": null,
+  "type": "lookup"
+ },
+ {
+  "id": "q3",
+  "text": "In which file and on which line is the React component `AppErrorComponent` defined?",
+  "check": [
+   "error-component\\.tsx",
+   "(?<!\\d)12(?!\\d)"
+  ],
+  "forbid": null,
+  "type": "lookup"
+ },
+ {
+  "id": "q4",
+  "text": "Which source files import from `parse-l1`? List file names only.",
+  "check": [
+   "desk-store"
+  ],
+  "forbid": "cycle-store|kit-api|pm-api|machine\\.ts|desk-bridge|multiplayer",
+  "type": "lookup"
+ },
+ {
+  "id": "q5",
+  "text": "Which function in engine/pm.py deletes the SQLite database file?",
+  "check": [
+   "cmd_init"
+  ],
+  "forbid": null,
+  "type": "lookup"
+ },
+ {
+  "id": "q6",
+  "text": "Which file starts a child process running `python3`, and which working directory does it pass to it?",
+  "check": [
+   "pm-api",
+   "/workspace/engine"
+  ],
+  "forbid": null,
+  "type": "lookup"
+ },
+ {
+  "id": "q7",
+  "text": "How many test files (names ending in .test.ts, .test.tsx or .test.mjs) are in the repository? Answer with a number.",
+  "check": [
+   "(?<!\\d)12(?!\\d)"
+  ],
+  "forbid": null,
+  "type": "lookup"
+ },
+ {
+  "id": "q8",
+  "text": "Which SQLite database file name does engine/pm.py use as its store? Answer with the file name.",
+  "check": [
+   "project-store\\.sqlite"
+  ],
+  "forbid": null,
+  "type": "lookup"
+ },
+ {
+  "id": "q9",
+  "text": "In which file and on which line is the Python function `plant_text` defined?",
+  "check": [
+   "pm\\.py",
+   "(?<!\\d)242(?!\\d)"
+  ],
+  "forbid": null,
+  "type": "lookup"
+ },
+ {
+  "id": "q10",
+  "text": "Which file defines and exports the function `getRouter`, and on which line?",
+  "check": [
+   "router\\.tsx",
+   "(?<![\\d.])5(?!\\d)"
+  ],
+  "forbid": null,
+  "type": "lookup"
+ }
+]
